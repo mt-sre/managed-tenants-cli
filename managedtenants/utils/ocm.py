@@ -1,7 +1,8 @@
+import re
 from datetime import datetime, timedelta
 
-import re
 import requests
+from sretoolbox.utils import retry
 
 
 class OcmCli:
@@ -172,6 +173,7 @@ class OcmCli:
     def _post(self, path, **kwargs):
         return self._api(requests.post, path, **kwargs)
 
+    @retry()
     def _get(self, path, **kwargs):
         return self._api(requests.get, path, **kwargs)
 
