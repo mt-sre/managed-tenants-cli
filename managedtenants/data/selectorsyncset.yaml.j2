@@ -1,0 +1,190 @@
+kind: List
+metadata: {}
+apiVersion: v1
+items:
+{% if ADDON.manager == AddonManager.UKNOWN %}
+- apiVersion: hive.openshift.io/v1
+  kind: SelectorSyncSet
+  metadata:
+    name: addon-{{ADDON.metadata['id']}}
+  spec:
+    clusterDeploymentSelector:
+      matchLabels:
+        {{ADDON.metadata['label']}}: 'true'
+    resourceApplyMode: Sync
+    resources:
+
+{% for namespace in ADDON.metadata['namespaces'] %}
+    - apiVersion: v1
+      kind: Namespace
+      metadata:
+        annotations:
+          openshift.io/node-selector: ''
+          {% for key, value in ADDON.metadata['namespaceAnnotations'].items() %}{{key}}: '{{value}}'
+          {% endfor %}
+        {% if ADDON.metadata['namespaceLabels'] %}
+        labels:
+          {% for key, value in ADDON.metadata['namespaceLabels'].items() %}{{key}}: '{{value}}'
+          {% endfor %}
+        {% endif %}
+        name: {{namespace}}
+
+    {% if ADDON.metadata['pullSecret'] is defined %}
+    - apiVersion: v1
+      kind: Secret
+      metadata:
+        name: addon-{{ADDON.metadata['id']}}-pullsecret
+        namespace: {{namespace}}
+      labels:
+        addon-pullsecret: "{{ADDON.metadata['id']}}"
+      type: kubernetes.io/dockerconfigjson
+      data:
+        .dockerconfigjson: >-
+          {{ADDON.metadata['pullSecret']}}
+    {% endif %}
+
+{% endfor %}
+    - apiVersion: operators.coreos.com/v1alpha1
+      kind: CatalogSource
+      metadata:
+        name: addon-{{ADDON.metadata['id']}}-catalog
+        namespace: openshift-marketplace
+      spec:
+        displayName: {{ADDON.metadata['name']}}
+        image: {{ADDON.image_tag.format(hash='${IMAGE_TAG}')}}
+        publisher: OSD Red Hat Addons
+        sourceType: grpc
+
+{% if ADDON.metadata['namespaces'] %}
+    - apiVersion: operators.coreos.com/v1alpha2
+      kind: OperatorGroup
+      metadata:
+        name: redhat-layered-product-og
+        namespace: {{ADDON.metadata['targetNamespace']}}
+      {% if ADDON.metadata['installMode'] in ['SingleNamespace', 'OwnNamespace'] %}
+      spec:
+        targetNamespaces:
+          - {{ADDON.metadata['targetNamespace']}}
+      {% endif %}
+{% endif %}
+
+    - apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: addon-{{ADDON.metadata['id']}}
+        namespace: {{ADDON.metadata['targetNamespace']}}
+      spec:
+        channel: {{ADDON.metadata['defaultChannel']}}
+        name: {{ADDON.metadata['id']}}
+        source: addon-{{ADDON.metadata['id']}}-catalog
+        sourceNamespace: openshift-marketplace
+{% if ADDON.metadata['manualInstallPlanApproval'] is defined and ADDON.metadata['manualInstallPlanApproval'] %}
+        installPlanApproval: Manual
+{% endif %}
+{% if ADDON.metadata['startingCSV'] is defined %}
+        startingCSV: {{ADDON.metadata['startingCSV']}}
+{% endif %}
+{% if ADDON.metadata['extraResources'] is defined %}
+  {% for resource in ADDON.metadata['extraResources'] %}
+- {% filter indent(width=2) %}{% include resource %}{% endfilter %}
+  {% endfor %}
+{% endif %}
+{% elif ADDON.manager == AddonManager.ADDON_OPERATOR %}
+- apiVersion: hive.openshift.io/v1
+  kind: SelectorSyncSet
+  metadata:
+    name: addon-{{ADDON.metadata['id']}}
+  spec:
+    clusterDeploymentSelector:
+      matchLabels:
+        {{ADDON.metadata['label']}}: 'true'
+    resourceApplyMode: Sync
+    resources:
+{% if ADDON.metadata['indexImage'] is defined %}
+    - apiVersion: addons.managed.openshift.io/v1alpha1
+      kind: Addon
+      metadata:
+        name: {{ADDON.metadata['id']}}
+      spec:
+        displayName: {{ADDON.metadata['name']}}
+        namespaces:
+{% for namespace in ADDON.metadata['namespaces'] %}
+        - name: {{namespace}}
+{% endfor %}
+        install:
+          type: OLMOwnNamespace
+          olmOwnNamespace:
+            namespace: {{ADDON.metadata['targetNamespace']}}
+            packageName: {{ADDON.metadata['operatorName']}}
+            channel: {{ADDON.metadata['defaultChannel']}}
+            catalogSourceImage: {{ADDON.metadata['indexImage']}}
+{% endif %}
+{# TODO: move pullsecret management into the addon-operator #}
+{% for namespace in ADDON.metadata['namespaces'] %}
+    {% if ADDON.metadata['pullSecret'] is defined %}
+    - apiVersion: v1
+      kind: Secret
+      metadata:
+        name: addon-{{ADDON.metadata['id']}}-pullsecret
+        namespace: {{namespace}}
+      labels:
+        addon-pullsecret: "{{ADDON.metadata['id']}}"
+      type: kubernetes.io/dockerconfigjson
+      data:
+        .dockerconfigjson: >-
+          {{ADDON.metadata['pullSecret']}}
+    {% endif %}
+{% endfor %}
+
+{% if ADDON.metadata['extraResources'] is defined %}
+  {% for resource in ADDON.metadata['extraResources'] %}
+- {% filter indent(width=2) %}{% include resource %}{% endfilter %}
+  {% endfor %}
+{% endif %}
+{% endif %}
+- apiVersion: hive.openshift.io/v1
+  kind: SelectorSyncSet
+  metadata:
+    name: addon-{{ADDON.metadata['id']}}-delete
+  spec:
+    clusterDeploymentSelector:
+      matchLabels:
+        {{ADDON.metadata['label']}}-delete: 'true'
+    resourceApplyMode: Upsert
+    resources:
+    - apiVersion: v1
+      kind: Namespace
+      metadata:
+        labels:
+          {{ADDON.metadata['label']}}-delete: 'true'
+        name: {{ADDON.metadata['targetNamespace']}}
+    # first let's keep both the NS and the CF. Later, when
+    # all addons are fine with that, we should remove the NS.
+    - apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        namespace: {{ADDON.metadata['targetNamespace']}}
+        labels:
+          {{ADDON.metadata['label']}}-delete: 'true'
+        name: {{ADDON.metadata['id']}}
+{% if ADDON.metadata['pagerduty'] is defined %}
+- apiVersion: pagerduty.openshift.io/v1alpha1
+  kind: PagerDutyIntegration
+  metadata:
+    name: addon-{{ADDON.metadata['id']}}
+    namespace: pagerduty-operator
+  spec:
+    acknowledgeTimeout: {{ADDON.metadata['pagerduty']['acknowledgeTimeout']}}
+    resolveTimeout: {{ADDON.metadata['pagerduty']['resolveTimeout']}}
+    escalationPolicy: {{ADDON.metadata['pagerduty']['escalationPolicy']}}
+    servicePrefix: {{ADDON.metadata['id']}}
+    pagerdutyApiKeySecretRef:
+      name: pagerduty-api-key
+      namespace: pagerduty-operator
+    clusterDeploymentSelector:
+      matchLabels:
+          {{ADDON.metadata['label']}}: "true"
+    targetSecretRef:
+      name: {{ADDON.metadata['pagerduty']['secretName']}}
+      namespace: {{ADDON.metadata['pagerduty']['secretNamespace']}}
+{% endif %}

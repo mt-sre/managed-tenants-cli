@@ -1,0 +1,3 @@
+# vi: ft=toml :
+[flake8]
+max-line-length = 80
