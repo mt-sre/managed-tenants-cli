@@ -1,0 +1,31 @@
+addons/*/.dockerignore
+selectorsyncsets
+
+##
+## IDE
+##
+.idea
+*.swo
+*.swp
+.vscode
+
+##
+## Python
+##
+*.egg-info/
+*.egg
+.eggs/
+venv
+build
+dist
+*.pyc
+*.pyo
+__pycache__/
+.pytest_cache/
+.hypothesis/
+
+
+# Jenkins adds those files during build phase, and it makes `git status --porcelain`
+# detect the repo as dirty, let's gitignore them
+.docker
+tmp.*/

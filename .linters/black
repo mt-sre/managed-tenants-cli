@@ -1,0 +1,4 @@
+# vi: ft=toml:
+# https://black.readthedocs.io/en/stable/usage_and_configuration/the_basics.html#configuration-format
+[tool.black]
+line-length = 80

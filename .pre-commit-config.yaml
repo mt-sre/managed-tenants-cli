@@ -1,0 +1,35 @@
+# Supported hooks: https://pre-commit.com/hooks.html
+---
+# exclude addons as this triggers expensive rebuilds, and is currently being moved to managed-tenants-bundles
+repos:
+  # Built-ins
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  # Black
+  - repo: https://github.com/psf/black
+    rev: 21.6b0 # Please keep in sync /w requirements.txt
+    hooks:
+      - id: black
+        args: [--config, .linters/black, --experimental-string-processing]
+  # Flake8
+  - repo: https://github.com/PyCQA/flake8
+    rev: 3.9.2 # Please keep in sync /w requirements.txt
+    hooks:
+      - id: flake8
+        args: [--config, .linters/flake8]
+  # Yamllint
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.26.1 # Please keep in sync /w requirements.txt
+    hooks:
+      - id: yamllint
+        args: [--config-file, .linters/yamllint]
+  # Pylint - TODO requires virtualenv as it validates imports
+  #- repo: https://github.com/PyCQA/pylint
+  #rev: v2.9.3 # Please keep in sync /w requirements.txt
+  #hooks:
+  #- id: pylint
+  #args: [--rcfile=, .linters/pylint]

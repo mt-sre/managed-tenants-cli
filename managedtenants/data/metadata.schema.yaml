@@ -1,0 +1,359 @@
+---
+"$schema": "http://json-schema.org/draft-07/schema#"
+type: object
+additionalProperties: false
+properties:
+  id:
+    pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,30}[A-Za-z0-9]$
+    type: string
+  name:
+    type: string
+    pattern: ^[0-9A-Z][A-Za-z0-9-_ ()]+$
+  description:
+    type: string
+    format: printable
+  link:
+    type: string
+    pattern: ^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$
+  icon:
+    type: string
+    contentEncoding: base64
+    contentMediaType: image/png
+    format: printable
+  label:
+    type: string
+    pattern: ^api\.openshift\.com/addon-[0-9a-z][0-9a-z-]{0,30}[0-9a-z]$
+  enabled:
+    type: boolean
+  hasExternalResources:
+    type: boolean
+  addonOwner:
+    type: string
+    pattern: ^([A-Za-z -]+ <[0-9A-Za-z_.-]+@redhat\.com>,?)+$
+  addonNotifications:
+    type: array
+    items:
+      type: string
+      pattern: ^([A-Za-z -]+ <[0-9A-Za-z_.-]+@redhat\.com>,?)+$
+  quayRepo:
+    type: string
+    pattern: ^quay\.io/osd-addons/[a-z-]+$
+  testHarness:
+    type: string
+    pattern: ^quay\.io/[0-9A-Za-z._-]+/[0-9A-Za-z._-]+(:[A-Za-z0-9._-]+)?$
+  installMode:
+    type: string
+    enum:
+      - AllNamespaces
+      - SingleNamespace
+      - OwnNamespace
+  manualInstallPlanApproval:
+    type: boolean
+  targetNamespace:
+    type: string
+    pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+  namespaces:
+    type: array
+    items:
+      type: string
+      pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+  pullSecret:
+    type: string
+    format: printable
+  namespaceLabels:
+    type: object
+    items:
+      type: string
+      pattern: ^[A-Za-z0-9-_.]+$
+  namespaceAnnotations:
+    type: object
+    items:
+      type: string
+      pattern: ^[A-Za-z0-9-_.]+$
+  defaultChannel:
+    type: string
+    enum:
+      - alpha
+      - beta
+      - stable
+      - edge
+      - rc
+  ocmQuotaName:
+    type: string
+    pattern: ^[A-Za-z0-9][A-Za-z0-9-_]{0,35}[A-Za-z0-9]$
+  ocmQuotaCost:
+    type: integer
+    minimum: 0
+  operatorName:
+    type: string
+    pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,30}[A-Za-z0-9]$
+  bundleParameters:
+    type: object
+    additionalProperties: false
+    properties:
+      useClusterStorage:
+        type: string
+        pattern: ^(true|false|^$)$
+      alertingEmailAddress:
+        type: string
+        pattern: ^([0-9A-Za-z_.-]+@redhat\.com,? ?)+$
+      buAlertingEmailAddress:
+        type: string
+        pattern: ^([0-9A-Za-z_.-]+@redhat\.com,? ?)+$
+      alertSMTPFrom:
+        type: string
+        pattern: ^[0-9A-Za-z._-]+@(devshift\.net|rhmw\.io)$
+      addonParamsSecretName:
+        type: string
+        pattern: ^addon-[0-9A-Za-z-]+-parameters$
+  channels:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          format: printable
+        currentCSV:
+          type: string
+          format: printable
+  startingCSV:
+    type: string
+    format: printable
+  indexImage:
+    type: string
+    pattern: ^quay\.io/osd-addons/[a-z-]+
+  pagerduty:
+    type: object
+    additionalProperties: false
+    required:
+      - escalationPolicy
+      - acknowledgeTimeout
+      - resolveTimeout
+      - secretName
+      - secretNamespace
+    properties:
+      escalationPolicy:
+        type: string
+        pattern: ^[A-Za-z0-9]+$
+      acknowledgeTimeout:
+        type: integer
+        minimum: 0
+      resolveTimeout:
+        type: integer
+        minimum: 0
+      secretName:
+        type: string
+        pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+      secretNamespace:
+        type: string
+        pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+  extraResources:
+    type: array
+    items:
+      type: string
+      format: printable
+  addOnParameters:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - description
+        - value_type
+        - required
+        - editable
+        - enabled
+      properties:
+        id:
+          type: string
+          format: printable
+        name:
+          type: string
+          format: printable
+        description:
+          type: string
+          format: printable
+        value_type:
+          type: string
+          enum:
+            - string
+            - number
+            - boolean
+            - cidr
+            - resource
+        validation:
+          type: string
+          format: printable
+        required:
+          type: boolean
+        editable:
+          type: boolean
+        enabled:
+          type: boolean
+        default_value:
+          type: string
+          format: printable
+        options:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              - name
+              - value
+            properties:
+              name:
+                type: string
+                format: printable
+              value:
+                type: string
+                format: printable
+        conditions:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              - resource
+              - data
+            properties:
+              resource:
+                type: string
+                enum:
+                  - cluster
+              data:
+                type: object
+                additionalProperties: false
+                properties:
+                  aws.sts.enabled:
+                    type: boolean
+                  ccs.enabled:
+                    type: boolean
+                  cloud_provider.id:
+                    type:
+                      - array
+                      - string
+                    items:
+                      type: string
+                      format: printable
+                  product.id:
+                    type:
+                      - array
+                      - string
+                    items:
+                      type: string
+                      format: printable
+                  version.raw_id:
+                    type: string
+                    format: printable
+  addOnRequirements:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - resource
+        - data
+        - enabled
+      properties:
+        id:
+          type: string
+          format: printable
+        resource:
+          type: string
+          enum:
+            - cluster
+            - addon
+            - machine_pool
+        data:
+          type: object
+          additionalProperties: false
+          properties:
+            id:
+              type: string
+              format: printable
+            #AddOn
+            state:
+              type: string
+              format: printable
+            #Cluster
+            aws.sts.enabled:
+              type: boolean
+            cloud_provider.id:
+              type:
+                - array
+                - string
+              items:
+                type: string
+                format: printable
+            product.id:
+              type:
+                - array
+                - string
+              items:
+                type: string
+                format: printable
+            compute.memory:
+              type: integer
+            compute.cpu:
+              type: integer
+            ccs.enabled:
+              type: boolean
+            nodes.compute:
+              type: integer
+            nodes.compute_machine_type.id:
+              type: string
+              format: printable
+            version.raw_id:
+              type: string
+              format: printable
+            #MachinePool
+            instance_type:
+              type: string
+              format: printable
+            replicas:
+              type: integer
+        enabled:
+          type: boolean
+  subOperators:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      required:
+        - operatorName
+        - operatorNamespace
+        - enabled
+      properties:
+        operator_name:
+          type: string
+          format: printable
+        operator_namespace:
+          type: string
+          format: printable
+        enabled:
+          type: boolean
+required:
+  - id
+  - name
+  - description
+  - icon
+  - label
+  - enabled
+  - addonOwner
+  - quayRepo
+  - testHarness
+  - installMode
+  - targetNamespace
+  - namespaces
+  - ocmQuotaName
+  - ocmQuotaCost
+  - operatorName
+  - defaultChannel
+  - namespaceLabels
+  - namespaceAnnotations

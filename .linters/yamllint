@@ -1,0 +1,25 @@
+# vi: ft=yaml :
+---
+extends: relaxed
+
+ignore: |
+  addons/
+  build/
+  dist/
+  venv/
+
+yaml-files:
+  - "*.yaml"
+  - "*.yml"
+
+rules:
+  line-length: disable
+  # accept both     key:
+  #                   - item
+  #
+  # and             key:
+  #                 - item
+  indentation:
+    indent-sequences: whatever
+  # Allow Addon description to use empty-lines
+  empty-lines: disable
