@@ -1,14 +1,17 @@
 import json
+import logging
 import re
-from collections import defaultdict
+from collections import ChainMap, defaultdict
 from copy import deepcopy
 
 import yaml
 from jinja2 import ChoiceLoader, Environment, FileSystemLoader, StrictUndefined
 from jinja2.exceptions import UndefinedError
+from managedtenants.core.addon_manager import AddonManager
 from managedtenants.core.addons_loader.exceptions import SssLoadError
 from managedtenants.data.paths import DATA_DIR
-from managedtenants.core.addon_manager import AddonManager
+
+APP_LOG = logging.getLogger("app")
 
 
 class Sss:
@@ -35,7 +38,15 @@ class Sss:
                 loader = ChoiceLoader(
                     [loader, self._addon.extra_resources_loader]
                 )
-            env = Environment(loader=loader, undefined=StrictUndefined)
+            env = Environment(
+                loader=loader,
+                undefined=StrictUndefined,
+                # https://ttl255.com/jinja2-tutorial-part-3-whitespace-control/
+                trim_blocks=True,  # remove newlines after blocks
+                lstrip_blocks=True,  # lstrip whitespace preceding blocks
+            )
+            # pylint: disable=unnecessary-lambda
+            env.filters["merge_dicts"] = lambda d1, d2: ChainMap(d1, d2)
             template = env.get_template(str(self._sss_filename))
             content = template.render(
                 AddonManager=AddonManager, ADDON=self._addon
@@ -50,7 +61,16 @@ class Sss:
             self._validate_deadmans_snitch(content_yaml)
             return content_yaml
         except yaml.error.MarkedYAMLError as details:
-            raise SssLoadError(f"invalid YAML: {details}") from details
+            APP_LOG.info(
+                "Invalid YAML for addon %s. Here is the raw template:",
+                self._addon.metadata["id"],
+            )
+            for line_number, line in enumerate(content.split("\n")):
+                APP_LOG.info("%s: %s", line_number + 1, line)
+            raise SssLoadError(
+                f"invalid YAML: {details} for addon:"
+                f" {self._addon.metadata['id']}"
+            ) from details
 
     def _validate_deadmans_snitch(self, content):
         pattern = r"^hive-.*$"

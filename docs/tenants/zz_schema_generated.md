@@ -50,6 +50,14 @@
 
   - **Items** *(string)*
 
+- **`commonLabels`** *(object)*
+
+  - **Items** *(string)*
+
+- **`commonAnnotations`** *(object)*
+
+  - **Items** *(string)*
+
 - **`defaultChannel`** *(string)*: Must be one of: `['alpha', 'beta', 'stable', 'edge', 'rc']`.
 
 - **`ocmQuotaName`** *(string)*
