@@ -1,0 +1,21 @@
+id: test-operator
+name: Test Operator
+description: Random operator to be deprecated as soon as Addon can be loaded without the filesystem
+link: https://github.com/mtsre/test-operator
+icon: invalid_icon
+label: api.openshift.com/addon-test-operator
+enabled: true
+addonOwner: MT-SRE Team <sd-mt-sre@redhat.com>
+quayRepo: quay.io/osd-addons/test-operator
+testHarness: quay.io/miwilson/test-operator
+installMode: OwnNamespace
+targetNamespace: redhat-test-operator
+namespaces:
+  - redhat-test-operator
+ocmQuotaName: test-operator
+ocmQuotaCost: 1
+operatorName: test-operator
+defaultChannel: alpha
+namespaceLabels: {}
+namespaceAnnotations: {}
+indexImage: quay.io/osd-addons/test-operator-index@sha256:8980b407722366080af758b138f438618912ce3270c72134273440c477653b56

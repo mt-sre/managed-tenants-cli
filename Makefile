@@ -61,9 +61,23 @@ lint: develop ## Runs flake8, pylint and yamllint
 fmt: requirements-dev ## Formats python files with black
 	$(BIN)/black --config=$(LINTERS)/black --experimental-string-processing $(PY_SRCS)
 
-# TODO: Uncomment once tests are added here
-# test: clean develop ## Cleans cache and runs test suite using Pytest
-# 	$(BIN)/pytest -v tests
+test: clean develop ## Cleans cache and runs test suite using Pytest
+	$(BIN)/pytest --cache-clear -v tests
+
+##@ Build & Deploy
+
+ENVIRONMENTS := stage integration production
+check: develop ## Runs the style check, the code check and all the tasks in dry-run mode
+	for task_type in check deploy; do \
+		for env in $(ENVIRONMENTS); do \
+			$(BIN)/managedtenants --environment=$${env} run --dry-run tasks/$${task_type}/ ; \
+		done \
+	done
+
+build-deploy: develop ## Runs the 'deploy' tasks in debug mode
+	for env in $(ENVIRONMENTS); do \
+		$(BIN)/managedtenants --environment=$${env} run --debug tasks/deploy/ ; \
+	done
 
 ##@ Generators
 

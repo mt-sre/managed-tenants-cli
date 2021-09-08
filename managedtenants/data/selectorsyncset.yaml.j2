@@ -1,7 +1,11 @@
+{# vi: ft=jinja : #}
+{% from 'macros.j2' import maybe_labels, maybe_annotations %}
+---
 kind: List
 metadata: {}
 apiVersion: v1
 items:
+{# addon v1 create OLM resources manually #}
 {% if ADDON.manager == AddonManager.UKNOWN %}
 - apiVersion: hive.openshift.io/v1
   kind: SelectorSyncSet
@@ -18,15 +22,17 @@ items:
     - apiVersion: v1
       kind: Namespace
       metadata:
-        annotations:
-          openshift.io/node-selector: ''
-          {% for key, value in ADDON.metadata['namespaceAnnotations'].items() %}{{key}}: '{{value}}'
-          {% endfor %}
-        {% if ADDON.metadata['namespaceLabels'] %}
-        labels:
-          {% for key, value in ADDON.metadata['namespaceLabels'].items() %}{{key}}: '{{value}}'
-          {% endfor %}
-        {% endif %}
+        {{
+            maybe_annotations(ADDON.metadata.get('namespaceAnnotations', {})
+              | merge_dicts(ADDON.metadata.get('commonAnnotations', {}))
+              | merge_dicts({'openshift.io/node-selector': ''}))
+              | indent(8)
+        }}
+        {{
+            maybe_labels(ADDON.metadata['namespaceLabels']
+              | merge_dicts(ADDON.metadata.get('commonLabels', {})))
+              | indent(8)
+        }}
         name: {{namespace}}
 
     {% if ADDON.metadata['pullSecret'] is defined %}
@@ -35,20 +41,26 @@ items:
       metadata:
         name: addon-{{ADDON.metadata['id']}}-pullsecret
         namespace: {{namespace}}
-      labels:
-        addon-pullsecret: "{{ADDON.metadata['id']}}"
+        {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
+        {{
+            maybe_labels(ADDON.metadata.get('commonLabels', {})
+              | merge_dicts({'addon-pullsecret': ADDON.metadata['id']}))
+              | indent(8)
+        }}
       type: kubernetes.io/dockerconfigjson
       data:
         .dockerconfigjson: >-
           {{ADDON.metadata['pullSecret']}}
     {% endif %}
-
 {% endfor %}
+
     - apiVersion: operators.coreos.com/v1alpha1
       kind: CatalogSource
       metadata:
         name: addon-{{ADDON.metadata['id']}}-catalog
         namespace: openshift-marketplace
+        {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
+        {{ maybe_labels(ADDON.metadata.get('commonLabels')) | indent(8) }}
       spec:
         displayName: {{ADDON.metadata['name']}}
         image: {{ADDON.image_tag.format(hash='${IMAGE_TAG}')}}
@@ -61,6 +73,8 @@ items:
       metadata:
         name: redhat-layered-product-og
         namespace: {{ADDON.metadata['targetNamespace']}}
+        {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
+        {{ maybe_labels(ADDON.metadata.get('commonLabels')) | indent(8) }}
       {% if ADDON.metadata['installMode'] in ['SingleNamespace', 'OwnNamespace'] %}
       spec:
         targetNamespaces:
@@ -73,6 +87,8 @@ items:
       metadata:
         name: addon-{{ADDON.metadata['id']}}
         namespace: {{ADDON.metadata['targetNamespace']}}
+        {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
+        {{ maybe_labels(ADDON.metadata.get('commonLabels')) | indent(8) }}
       spec:
         channel: {{ADDON.metadata['defaultChannel']}}
         name: {{ADDON.metadata['id']}}
@@ -84,11 +100,8 @@ items:
 {% if ADDON.metadata['startingCSV'] is defined %}
         startingCSV: {{ADDON.metadata['startingCSV']}}
 {% endif %}
-{% if ADDON.metadata['extraResources'] is defined %}
-  {% for resource in ADDON.metadata['extraResources'] %}
-- {% filter indent(width=2) %}{% include resource %}{% endfilter %}
-  {% endfor %}
-{% endif %}
+
+{# addon v2 create the Addon CR #}
 {% elif ADDON.manager == AddonManager.ADDON_OPERATOR %}
 - apiVersion: hive.openshift.io/v1
   kind: SelectorSyncSet
@@ -135,13 +148,14 @@ items:
           {{ADDON.metadata['pullSecret']}}
     {% endif %}
 {% endfor %}
+{% endif %}
 
 {% if ADDON.metadata['extraResources'] is defined %}
   {% for resource in ADDON.metadata['extraResources'] %}
 - {% filter indent(width=2) %}{% include resource %}{% endfilter %}
   {% endfor %}
 {% endif %}
-{% endif %}
+
 - apiVersion: hive.openshift.io/v1
   kind: SelectorSyncSet
   metadata:
