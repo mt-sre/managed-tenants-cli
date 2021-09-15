@@ -1,3 +1,4 @@
+import hashlib
 from copy import deepcopy
 from string import ascii_letters, ascii_lowercase, digits, punctuation
 
@@ -53,6 +54,14 @@ def environment(**kwargs):
 
 def addon(env):
     return AddonStrategy(env)
+
+
+def quay_image(addon_id):
+    def callback(seed):
+        sha = hashlib.sha256(seed.encode()).hexdigest()
+        return f"quay.io/osd-addons/{addon_id}@sha256:{sha}"
+
+    return st.builds(callback, text(min_size=10, max_size=20))
 
 
 #

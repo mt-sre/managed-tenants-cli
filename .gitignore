@@ -25,6 +25,7 @@ __pycache__/
 .pytest_cache/
 .hypothesis/
 pyproject.toml
+Pipfile.lock
 
 
 # Jenkins adds those files during build phase, and it makes `git status --porcelain`
