@@ -36,7 +36,7 @@ setup(
     author="Red Hat Managed Tenants SRE Team",
     author_email="sd-mt-sre@redhat.com",
     url="https://github.com/mt-sre/managed-tenants-cli",
-    description="Set of libraries commonly across MT-SRE projects",
+    description="A CLI tool commonly used by MT-SRE projects at Red Hat",
     long_description=get_readme_content(),
     python_requires=">=3.6",
     license="Apache-2.0",
