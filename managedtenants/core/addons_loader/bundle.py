@@ -1,5 +1,5 @@
-from managedtenants.core.addons_loader.manifest import Manifest
 from managedtenants.core.addons_loader.exceptions import BundleLoadError
+from managedtenants.core.addons_loader.manifest import Manifest
 
 
 class Bundle:

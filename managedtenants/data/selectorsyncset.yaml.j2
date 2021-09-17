@@ -1,5 +1,5 @@
 {# vi: ft=jinja : #}
-{% from 'macros.j2' import maybe_labels, maybe_annotations %}
+{% from 'macros.j2' import maybe_labels, maybe_annotations, render_extra_resource %}
 ---
 kind: List
 metadata: {}
@@ -150,12 +150,6 @@ items:
 {% endfor %}
 {% endif %}
 
-{% if ADDON.metadata['extraResources'] is defined %}
-  {% for resource in ADDON.metadata['extraResources'] %}
-- {% filter indent(width=2) %}{% include resource %}{% endfilter %}
-  {% endfor %}
-{% endif %}
-
 - apiVersion: hive.openshift.io/v1
   kind: SelectorSyncSet
   metadata:
@@ -181,6 +175,7 @@ items:
         labels:
           {{ADDON.metadata['label']}}-delete: 'true'
         name: {{ADDON.metadata['id']}}
+
 {% if ADDON.metadata['pagerduty'] is defined %}
 - apiVersion: pagerduty.openshift.io/v1alpha1
   kind: PagerDutyIntegration
@@ -201,4 +196,11 @@ items:
     targetSecretRef:
       name: {{ADDON.metadata['pagerduty']['secretName']}}
       namespace: {{ADDON.metadata['pagerduty']['secretNamespace']}}
+{% endif %}
+
+{# extra resources to be deployed to the hive cluster #}
+{% if ADDON.metadata['extraResources'] is defined %}
+{% for resource in ADDON.metadata['extraResources'] %}
+- {{ render_extra_resource(ADDON, resource) | indent(2) }}
+{% endfor %}
 {% endif %}

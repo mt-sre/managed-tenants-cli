@@ -1,11 +1,8 @@
 import logging
-
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 from managedtenants.core.tasks_loader.environment import Environment
-from managedtenants.core.tasks_loader.exceptions import TaskFail
-from managedtenants.core.tasks_loader.exceptions import TaskSkip
+from managedtenants.core.tasks_loader.exceptions import TaskFail, TaskSkip
 
 
 class Task(ABC):

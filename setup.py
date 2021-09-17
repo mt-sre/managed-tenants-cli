@@ -53,7 +53,7 @@ setup(
         "PyYAML~=5.1",
         "jsonschema~=3.1",
         "requests~=2.23",
-        "sretoolbox==0.10.0",
+        "sretoolbox==0.15.0",
         "semver~=2.9",
         "python-gitlab~=2.6",
         "checksumdir~=1.2",
