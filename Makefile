@@ -36,3 +36,6 @@ SCHEMA_IN := $(PWD)/managedtenants/data/metadata.schema.yaml
 MARKDOWN_OUT := $(PWD)/docs/tenants/zz_schema_generated.md
 generate-md-schema: develop
 	$(BIN)/python $(PWD)/hack/yamlschema2md.py --schema $(SCHEMA_IN) --output $(MARKDOWN_OUT)
+
+test:
+	@echo "hello"
