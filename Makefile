@@ -38,4 +38,4 @@ generate-md-schema: develop
 	$(BIN)/python $(PWD)/hack/yamlschema2md.py --schema $(SCHEMA_IN) --output $(MARKDOWN_OUT)
 
 test:
-	@echo "hello"
+	@echo "hello world"
