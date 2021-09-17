@@ -18,3 +18,8 @@ annotations:
 {{ expand_dict(annotations) | indent(2, first=True) }}
 {%- endif %}
 {% endmacro %}
+
+{# jinja does not keep indent on included templates #}
+{% macro render_extra_resource(ADDON, resource) %}
+{% include resource %}
+{% endmacro %}

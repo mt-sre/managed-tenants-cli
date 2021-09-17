@@ -7,6 +7,7 @@ from copy import deepcopy
 import yaml
 from jinja2 import ChoiceLoader, Environment, FileSystemLoader, StrictUndefined
 from jinja2.exceptions import UndefinedError
+
 from managedtenants.core.addon_manager import AddonManager
 from managedtenants.core.addons_loader.exceptions import SssLoadError
 from managedtenants.data.paths import DATA_DIR
@@ -105,6 +106,7 @@ class Sss:
 
 
 PAGERDUTY_KIND = "PagerDutyIntegration"
+DEADMANSSNITCH_KIND = "DeadmansSnitchIntegration"
 SSS_KIND = "SelectorSyncSet"
 
 
@@ -123,7 +125,8 @@ class SssWalker:
         res = {
             "sss_deploy": None,
             "sss_delete": None,
-            "pagerduty": None,
+            "pdi": None,
+            "dms": None,
         }
         for item in data["items"]:
             if item["kind"] == SSS_KIND:
@@ -132,7 +135,9 @@ class SssWalker:
                 else:
                     res["sss_deploy"] = self._walk_sss(item)
             elif item["kind"] == PAGERDUTY_KIND:
-                res["pagerduty"] = item
+                res["pdi"] = item
+            elif item["kind"] == DEADMANSSNITCH_KIND:
+                res["dms"] = item
             else:
                 raise TypeError(
                     f"Unhandled type {item['kind']}. Please update SssWalker."
@@ -168,7 +173,7 @@ class SssWalker:
             }
         }
         """
-        sss = data
+        sss = deepcopy(data)
         old_resources = deepcopy(data["spec"]["resources"])
         sss["spec"]["resources"] = defaultdict(list)
         for resource in old_resources:

@@ -3,6 +3,7 @@ from pathlib import Path
 import yaml
 from jsonschema import Draft7Validator
 from jsonschema.exceptions import SchemaError
+
 from managedtenants.data.paths import DATA_DIR
 
 

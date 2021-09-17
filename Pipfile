@@ -14,6 +14,7 @@ hypothesis_jsonschema = "0.20.1"
 jsonschema2md = "0.2.0.post1"
 PyYAML = "5.4.1"
 pre-commit = "2.13.0"
+sretoolbox = "0.15.0"
 
 
 [packages]

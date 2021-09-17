@@ -1,9 +1,8 @@
 import logging
 import sys
 
-from managedtenants.core.status import Status
 from managedtenants.core import tasks_loader
-
+from managedtenants.core.status import Status
 
 APP_LOG = logging.getLogger("app")
 

@@ -5,6 +5,22 @@ import requests
 from sretoolbox.utils import retry
 
 
+class OCMAPIError(Exception):
+    """Used when there are errors with the OCM API"""
+
+    def __init__(self, message, response):
+        super().__init__(message)
+        self.response = response
+
+
+def retry_hook(exception):
+    if not isinstance(exception, OCMAPIError):
+        return
+
+    if exception.response.status_code < 500:
+        raise exception
+
+
 class OcmCli:
     API = "https://api.stage.openshift.com"
     TOKEN_EXPIRATION_MINUTES = 15
@@ -28,11 +44,6 @@ class OcmCli:
         "subOperators": "sub_operators",
     }
 
-    class OCMAPIError(Exception):
-        def __init__(self, message, response):
-            super().__init__(message)
-            self.response = response
-
     def __init__(self, offline_token, api=API, api_insecure=False):
         self.offline_token = offline_token
         self._token = None
@@ -45,6 +56,7 @@ class OcmCli:
             self.api = api
 
     @property
+    @retry(hook=retry_hook)
     def token(self):
         now = datetime.utcnow()
         if self._token:
@@ -64,8 +76,9 @@ class OcmCli:
             "refresh_token": self.offline_token,
         }
 
-        response = requests.post(url, data=data)
-        response.raise_for_status()
+        method = requests.post
+        response = method(url, data=data)
+        self._raise_for_status(response, reqs_method=method, url=url)
         self._token = response.json()["access_token"]
         self._last_token_issue = now
         return self._token
@@ -106,7 +119,7 @@ class OcmCli:
     def upsert_addon(self, metadata):
         try:
             addon = self.add_addon(metadata)
-        except self.OCMAPIError as exception:
+        except OCMAPIError as exception:
             if exception.response.status_code == 409:
                 return self.update_addon(metadata)
 
@@ -143,27 +156,16 @@ class OcmCli:
     def _url(self, path):
         return f"{self.api}{path}"
 
+    @retry(hook=retry_hook)
     def _api(self, reqs_method, path, **kwargs):
         if self.api_insecure:
             kwargs["verify"] = False
         url = self._url(path)
         headers = self._headers(kwargs.pop("headers", None))
         response = reqs_method(url, headers=headers, **kwargs)
-
-        try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as exception:
-            method = reqs_method.__name__.upper()
-            error_message = f"Error {method} {path}\n{exception}\n"
-
-            if kwargs.get("params"):
-                error_message += f"params: {kwargs['params']}\n"
-
-            if kwargs.get("json"):
-                error_message += f"json: {kwargs['json']}\n"
-
-            error_message += f"original error: {response.text}"
-            raise self.OCMAPIError(error_message, response)
+        self._raise_for_status(
+            response, reqs_method=reqs_method, url=url, **kwargs
+        )
 
         if response.headers.get("Content-Type") == "application/json":
             return response.json()
@@ -173,7 +175,6 @@ class OcmCli:
     def _post(self, path, **kwargs):
         return self._api(requests.post, path, **kwargs)
 
-    @retry()
     def _get(self, path, **kwargs):
         return self._api(requests.get, path, **kwargs)
 
@@ -197,6 +198,20 @@ class OcmCli:
                 break
 
         return items
+
+    @staticmethod
+    def _raise_for_status(response, reqs_method, url, **kwargs):
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as exception:
+            method = reqs_method.__name__.upper()
+            error_message = f"Error {method} {url}\n{exception}\n"
+            if kwargs.get("params"):
+                error_message += f"params: {kwargs['params']}\n"
+            if kwargs.get("json"):
+                error_message += f"json: {kwargs['json']}\n"
+            error_message += f"original error: {response.text}"
+            raise OCMAPIError(error_message, response)
 
 
 def _camel_to_snake_case(val):

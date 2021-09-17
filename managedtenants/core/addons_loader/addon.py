@@ -2,16 +2,15 @@ import jsonschema
 import semver
 import yaml
 from jinja2 import FileSystemLoader
-
 from sretoolbox.container import Image
 
+from managedtenants.core.addon_manager import AddonManager
 from managedtenants.core.addons_loader.bundle import Bundle
 from managedtenants.core.addons_loader.exceptions import AddonLoadError
 from managedtenants.core.addons_loader.package import Package
 from managedtenants.core.addons_loader.sss import Sss
 from managedtenants.utils.hash import hash_dir_sha256, hash_sha256
 from managedtenants.utils.schema import load_addon_metadata_schema
-from managedtenants.core.addon_manager import AddonManager
 
 # IDs of addons that are managed by the addon-operator
 # These addon IDs _MUST_ be stable and not changed or bad things will happen
