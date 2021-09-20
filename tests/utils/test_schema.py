@@ -2,6 +2,7 @@ from io import StringIO
 
 import pytest
 from jsonschema.exceptions import SchemaError
+
 from managedtenants.data.paths import DATA_DIR
 from managedtenants.utils.schema import (
     AddonMetadataSchema,

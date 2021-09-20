@@ -1,10 +1,12 @@
 import pytest
-from managedtenants.data.paths import DATA_DIR
+
+from managedtenants.data.paths import ADDONS_DIR, DATA_DIR
 
 
 @pytest.mark.parametrize(
     "case",
     [
+        {"dir": ADDONS_DIR, "expected": "addons"},
         {"dir": DATA_DIR, "expected": "data"},
     ],
 )
