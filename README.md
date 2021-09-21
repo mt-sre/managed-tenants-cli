@@ -6,33 +6,43 @@ A CLI tool commonly used by MT-SRE projects at Red Hat.
 
 ### Available subcommands
 
-- `load` - Loads the addons inventory
-- `run` - Runs the task
-- `task_reference` - [path:search] "path" for the directory or file and
-  "search" string to filter tasks
+| Subcommand       | Description                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| `load`           | Loads the addons inventory                                                         |
+| `run`            | Runs the task                                                                      |
+| `task_reference` | [path:search] "path" for the directory or file and "search" string to filter tasks |
 
 ### Available flags
 
-- `-v` or `--version` - CLI version
-- `--environment` - Target environment
-- `--adon-name` - Load only a given addon
-- `--addon-dir` - [path] "path" for the addons directory
-- `--ocm-api` - Override the environments in OCM A
-- `--ocm-api-insecure` - Allow Insecure connections to OCM API
+| Flag                 | Description                            |
+| -------------------- | -------------------------------------- |
+| `-v` or `--version`  | CLI version                            |
+| `--environment`      | Target environment                     |
+| `--adon-name`        | Load only a given addon                |
+| `--addon-dir`        | [path] "path" for the addons directory |
+| `--ocm-api`          | Override the environments in OCM API   |
+| `--ocm-api-insecure` | Allow Insecure connections to OCM API  |
 
 ## Install
 
 From PyPI:
+
 ```bash
 $ pip install managedtenants_cli
 ```
 
 From source:
+
 ```bash
 $ python setup.py install
 ```
 
 ## Develop
+
+Install `pre-commit` hooks:
+```bash
+$ pre-commit install
+```
 
 Install the development requirements:
 
@@ -40,11 +50,17 @@ Install the development requirements:
 $ make develop
 ```
 
-Run the code checks and tests:
+Run the code checks:
+
 ```bash
 $ make check
 ```
 
+Run the tests:
+
+```bash
+$ make test
+```
 
 ## Release
 
