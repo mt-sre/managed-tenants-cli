@@ -59,4 +59,7 @@ setup(
         "checksumdir~=1.2",
         "hypothesis~=6.17.4",
     ],
+    entry_points={
+        "console_scripts": ["managedtenants = managedtenants.cli:main"]
+    },
 )
