@@ -1,7 +1,8 @@
 import hypothesis.strategies as hypothesis_strategies
 import pytest
-import tests.testutils.strategies as custom_strategies
 from hypothesis import given
+
+import tests.testutils.strategies as custom_strategies
 from managedtenants.core.addons_loader.sss import Sss
 
 

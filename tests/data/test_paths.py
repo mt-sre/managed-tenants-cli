@@ -1,4 +1,5 @@
 import pytest
+
 from managedtenants.data.paths import DATA_DIR
 
 

@@ -3,6 +3,7 @@ from string import ascii_letters, ascii_lowercase, digits, punctuation
 
 from hypothesis import strategies as st
 from hypothesis_jsonschema import from_schema
+
 from managedtenants.core.addons_loader import Addon
 from managedtenants.data.environments import ENVIRONMENTS
 from managedtenants.utils.schema import load_addon_metadata_schema
