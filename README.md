@@ -6,22 +6,19 @@ A CLI tool commonly used by MT-SRE projects at Red Hat.
 
 ### Available subcommands
 
-| Subcommand       | Description                                                                        |
-|------------------|------------------------------------------------------------------------------------|
-| `load`           | Loads the addons inventory                                                         |
-| `run`            | Runs the task                                                                      |
-| `task_reference` | [path:search] "path" for the directory or file and "search" string to filter tasks |
+- `load` - Loads the addons inventory
+- `run` - Runs the task
+- `task_reference` - [path:search] "path" for the directory or file and
+  "search" string to filter tasks
 
 ### Available flags
 
-| Flag                 | Description                            |
-|----------------------|----------------------------------------|
-| `-v` or `--version`  | CLI version                            |
-| `--environment`      | Target environment                     |
-| `--adon-name`        | Load only a given addon                |
-| `--addon-dir`        | [path] "path" for the addons directory |
-| `--ocm-api`          | Override the environments in OCM API   |
-| `--ocm-api-insecure` | Allow Insecure connections to OCM API  |
+- `-v` or `--version` - CLI version
+- `--environment` - Target environment
+- `--adon-name` - Load only a given addon
+- `--addon-dir` - [path] "path" for the addons directory
+- `--ocm-api` - Override the environments in OCM A
+- `--ocm-api-insecure` - Allow Insecure connections to OCM API
 
 ## Install
 
