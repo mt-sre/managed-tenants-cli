@@ -62,4 +62,5 @@ setup(
     entry_points={
         "console_scripts": ["managedtenants = managedtenants.cli:main"]
     },
+    include_package_data=True,
 )
