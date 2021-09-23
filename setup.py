@@ -38,7 +38,7 @@ setup(
     url="https://github.com/mt-sre/managed-tenants-cli",
     description="A CLI tool commonly used by MT-SRE projects at Red Hat",
     long_description=get_readme_content(),
-    python_requires=">=3.6",
+    python_requires=">=3.9",
     license="Apache-2.0",
     classifiers=[
         "Intended Audience :: Developers",
@@ -50,14 +50,13 @@ setup(
     ],
     install_requires=[
         "Jinja2~=2.10",
-        "PyYAML~=5.1",
+        "PyYAML~=5.4.1",
         "jsonschema~=3.1",
         "requests~=2.23",
         "sretoolbox==0.15.0",
         "semver~=2.9",
         "python-gitlab~=2.6",
         "checksumdir~=1.2",
-        "hypothesis~=6.17.4",
     ],
     entry_points={
         "console_scripts": ["managedtenants = managedtenants.cli:main"]

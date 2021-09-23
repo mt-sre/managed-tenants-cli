@@ -34,8 +34,7 @@ def load_tasks(addons_factory, args, tasks_path, task_type, search):
                 continue
 
             if task_type in [PreTask, PostTask]:
-                instance = obj(addons=addons_factory,
-                               args=args, path=task_file)
+                instance = obj(addons=addons_factory, args=args, path=task_file)
                 if search is None:
                     tasks_factory.append(instance)
                 else:

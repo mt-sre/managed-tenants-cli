@@ -4,49 +4,49 @@
 ## Properties
 
 
-- **`id`** *(string)*
+- **`id`** *(string)*: Unique ID of the addon.
 
-- **`name`** *(string)*
+- **`name`** *(string)*: Friendly name for the addon, displayed in the UI.
 
-- **`description`** *(string)*
+- **`description`** *(string)*: Short description for the addon.
 
-- **`link`** *(string)*
+- **`link`** *(string)*: Link to the addon documentation.
 
-- **`icon`** *(string)*
+- **`icon`** *(string)*: Icon to be shown in UI. Should be around 200px and base64 encoded.
 
-- **`label`** *(string)*
+- **`label`** *(string)*: Kubernetes label for the addon. Needs to match: 'api.openshift.com/<addon-id>'.
 
-- **`enabled`** *(boolean)*
+- **`enabled`** *(boolean)*: Set to true to allow installation of the addon.
 
 - **`hasExternalResources`** *(boolean)*
 
-- **`addonOwner`** *(string)*
+- **`addonOwner`** *(string)*: Team or individual responsible for this addon. Needs to match: 'some name <some-email@redhat.com>'.
 
 - **`addonNotifications`** *(array)*
 
   - **Items** *(string)*
 
-- **`quayRepo`** *(string)*
+- **`quayRepo`** *(string)*: Quay repository for the addon operator. Needs to match: 'quay.io/osd-addons/<my-addon-repo>'.
 
-- **`testHarness`** *(string)*
+- **`testHarness`** *(string)*: Quay repository for the testHarness image. Needs to match: 'quay.io/<my-repo>/<my-test-harness>:<my-tag>'.
 
-- **`installMode`** *(string)*: Must be one of: `['AllNamespaces', 'SingleNamespace', 'OwnNamespace']`.
+- **`installMode`** *(string)*: OLM InstallMode for the addon operator. Must be one of: `['AllNamespaces', 'SingleNamespace', 'OwnNamespace']`.
 
 - **`manualInstallPlanApproval`** *(boolean)*
 
-- **`targetNamespace`** *(string)*
+- **`targetNamespace`** *(string)*: Namespace where the addon operator should be installed.
 
-- **`namespaces`** *(array)*
+- **`namespaces`** *(array)*: Namespaces managed by the addon-operator. Need to include the TargetNamespace.
 
   - **Items** *(string)*
 
 - **`pullSecret`** *(string)*
 
-- **`namespaceLabels`** *(object)*
+- **`namespaceLabels`** *(object)*: Labels to be applied on all listed namespaces.
 
   - **Items** *(string)*
 
-- **`namespaceAnnotations`** *(object)*
+- **`namespaceAnnotations`** *(object)*: Annotations to be applied on all listed namespaces.
 
   - **Items** *(string)*
 
@@ -58,13 +58,13 @@
 
   - **Items** *(string)*
 
-- **`defaultChannel`** *(string)*: Must be one of: `['alpha', 'beta', 'stable', 'edge', 'rc']`.
+- **`defaultChannel`** *(string)*: OLM channel from which to install the addon-operator. Must be one of: `['alpha', 'beta', 'stable', 'edge', 'rc']`.
 
-- **`ocmQuotaName`** *(string)*
+- **`ocmQuotaName`** *(string)*: Refers to the SKU name for the addon.
 
 - **`ocmQuotaCost`** *(integer)*: Minimum: `0`.
 
-- **`operatorName`** *(string)*
+- **`operatorName`** *(string)*: Name of the addon operator.
 
 - **`bundleParameters`** *(object)*: Cannot contain additional properties.
 
@@ -102,7 +102,7 @@
 
   - **`secretNamespace`** *(string)*
 
-- **`extraResources`** *(array)*
+- **`extraResources`** *(array)*: Extra Resources to be applied to the Hive cluster.
 
   - **Items** *(string)*
 
@@ -190,11 +190,11 @@
 
       - **`nodes.compute`** *(integer)*
 
-      - **`nodes.compute_machine_type.id`** *(string)*
+      - **`nodes.compute_machine_type.id`** *(['array', 'string'])*
 
       - **`version.raw_id`** *(string)*
 
-      - **`instance_type`** *(string)*
+      - **`instance_type`** *(['array', 'string'])*
 
       - **`replicas`** *(integer)*
 

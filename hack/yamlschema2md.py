@@ -1,8 +1,7 @@
 import argparse
 
-import yaml
-
 import jsonschema2md
+import yaml
 
 
 def main(schema, output):

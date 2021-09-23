@@ -1,35 +1,65 @@
 # Supported hooks: https://pre-commit.com/hooks.html
+#
+# The order of the repos matter. We need to run hooks that modify files before
+# the one that validates them. Hooks should be ordered following these categories:
+#   1. Generators
+#   2. Formatters
+#   3. Linters
 ---
-# exclude addons as this triggers expensive rebuilds, and is currently being moved to managed-tenants-bundles
 repos:
+  ###
+  ### 1. Generators
+  ###
+  # make generate
+  - repo: local
+    hooks:
+      - id: make-generate
+        name: Run make generate
+        language: system
+        entry: make generate
+        pass_filenames: false # only invoke once
+  ###
+  ### 2. Formatters
+  ###
+  #
   # Built-ins
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
     hooks:
-      - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
   # Black
   - repo: https://github.com/psf/black
-    rev: 21.6b0 # Please keep in sync /w requirements.txt
+    rev: 21.9b0
     hooks:
       - id: black
-        args: [--config, .linters/black, --experimental-string-processing]
+        args: ["--config", ".linters/black", "--experimental-string-processing"]
+  # isort
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.9.3
+    hooks:
+      - id: isort
+        args: ["--profile", "black", "-l", "80"]
+  ###
+  ### 3. Linters
+  ###
   # Flake8
   - repo: https://github.com/PyCQA/flake8
-    rev: 3.9.2 # Please keep in sync /w requirements.txt
+    rev: 3.9.2
     hooks:
       - id: flake8
-        args: [--config, .linters/flake8]
+        args: ["--config", ".linters/flake8"]
   # Yamllint
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.26.1 # Please keep in sync /w requirements.txt
+    rev: v1.26.3
     hooks:
       - id: yamllint
-        args: [--config-file, .linters/yamllint]
-  # Pylint - TODO requires virtualenv as it validates imports
-  #- repo: https://github.com/PyCQA/pylint
-  #rev: v2.9.3 # Please keep in sync /w requirements.txt
-  #hooks:
-  #- id: pylint
-  #args: [--rcfile=, .linters/pylint]
+        args: ["--config-file", ".linters/yamllint"]
+  # Pylint - runs from inside the venv as it needs to validate imports
+  - repo: local
+    hooks:
+      - id: pylint
+        name: Run pylint
+        language: system
+        entry: make pylint
+        pass_filenames: false # only invoke once

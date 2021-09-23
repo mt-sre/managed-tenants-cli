@@ -30,8 +30,7 @@ class GitLab:
             "branch": branch_name,
             "commit_message": commit_message,
             "actions": [
-                {"action": "update", "file_path": file_path,
-                 "content": content}
+                {"action": "update", "file_path": file_path, "content": content}
             ],
         }
         self.project.commits.create(data)
@@ -41,8 +40,7 @@ class GitLab:
             "branch": branch_name,
             "commit_message": commit_message,
             "actions": [
-                {"action": "create", "file_path": file_path,
-                 "content": content}
+                {"action": "create", "file_path": file_path, "content": content}
             ],
         }
         self.project.commits.create(data)

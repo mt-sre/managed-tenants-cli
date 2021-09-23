@@ -4,21 +4,21 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-flake8 = "3.9.2"
-pylint = "2.9.3"
-black = "21.6b0"
-yamllint = "1.26.1"
 pytest = "6.2.4"
 hypothesis = "6.14.2"
 hypothesis_jsonschema = "0.20.1"
 jsonschema2md = "0.2.0.post1"
 PyYAML = "5.4.1"
 pre-commit = "2.13.0"
-sretoolbox = "0.15.0"
-
+# Please keep the following in-sync /w .pre-commit-config.yaml
+flake8 = "3.9.2"
+isort = "5.9.3"
+pylint = "2.9.3"
+black = "21.9b0"
+yamllint = "1.26.3"
 
 [packages]
 managedtenants_cli = {editable = true,path = "."}
 
 [requires]
-python_version = "3.6"
+python_version = "3.9"
