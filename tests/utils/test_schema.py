@@ -5,7 +5,7 @@ from jsonschema.exceptions import SchemaError
 
 from managedtenants.data.paths import DATA_DIR
 from managedtenants.utils.schema import (
-    AddonMetadataSchema,
+    SchemaLoader,
     load_addon_metadata_schema,
     load_draft7_schema,
 )
@@ -42,4 +42,8 @@ def test_load_addon_metadata_schema():
 
 
 def test_singleton_AddonMetadataSchema():
-    assert id(AddonMetadataSchema()) == id(AddonMetadataSchema())
+    assert id(SchemaLoader("metadata")) == id(SchemaLoader("metadata"))
+
+
+def test_singleton_AddonImageSetSchema():
+    assert id(SchemaLoader("imageset")) == id(SchemaLoader("imageset"))

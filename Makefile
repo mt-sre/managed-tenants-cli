@@ -52,8 +52,11 @@ generate: generate-md-schema pre-commit-autoupdate
 
 SCHEMA_IN := $(PWD)/managedtenants/data/metadata.schema.yaml
 MARKDOWN_OUT := $(PWD)/docs/tenants/zz_schema_generated.md
+IMAGESET_SCHEMA_IN :=  $(PWD)/managedtenants/data/imageset.schema.yaml
+IMAGESET_MARKDOWN_OUT := $(PWD)/docs/tenants/zz_imageset_schema_generated.md
 generate-md-schema: develop
 	pipenv run python $(PWD)/hack/yamlschema2md.py --schema $(SCHEMA_IN) --output $(MARKDOWN_OUT)
+	pipenv run python $(PWD)/hack/yamlschema2md.py --schema $(IMAGESET_SCHEMA_IN) --output $(IMAGESET_MARKDOWN_OUT)
 
 pre-commit-autoupdate: develop
 	pipenv run pre-commit autoupdate
