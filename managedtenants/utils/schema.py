@@ -12,7 +12,11 @@ def load_addon_metadata_schema():
     Wrapper that returns the addon metadata schema and utilizes
     Singleton pattern for optimization.
     """
-    return AddonMetadataSchema()
+    return SchemaLoader("metadata")
+
+
+def load_addon_imageset_schema():
+    return SchemaLoader("imageset")
 
 
 # Accept path or file for easier testing
@@ -47,14 +51,19 @@ def load_draft7_schema(path_or_file):
             file_to_close.close()
 
 
-class AddonMetadataSchema:
-    """Singleton wrapper to load the addon metadata schema only once."""
+class SchemaLoader:
+    """Singleton wrapper to load schemas only once."""
 
-    _instance = None
+    _instances = {}
+    _SUPPORTED_SCHEMAS = ["metadata", "imageset"]
 
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = load_draft7_schema(
-                path_or_file=DATA_DIR / "metadata.schema.yaml"
-            )
-        return cls._instance
+    def __new__(cls, schema_type):
+        if schema_type in cls._SUPPORTED_SCHEMAS:
+            if cls._instances.get(schema_type) is None:
+                cls._instances[schema_type] = load_draft7_schema(
+                    path_or_file=DATA_DIR / f"{schema_type}.schema.yaml"
+                )
+        else:
+            raise SchemaError(f"{schema_type} schema is not supported")
+
+        return cls._instances[schema_type]
