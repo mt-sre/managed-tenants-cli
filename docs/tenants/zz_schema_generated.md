@@ -90,6 +90,8 @@
 
 - **`indexImage`** *(string)*
 
+- **`addonImageSetVersion`** *(string)*: A string which specifies the imageset to use. Can either be 'latest' or a version string).
+
 - **`pagerduty`** *(object)*: Cannot contain additional properties.
 
   - **`escalationPolicy`** *(string)*
