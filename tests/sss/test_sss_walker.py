@@ -16,19 +16,14 @@ def test_sss_deploy(data):
         )
     )
     addon.metadata["pullSecret"] = data.draw(custom_strategies.k8s_name())
-    import json
-
-    print(json.dumps(addon.metadata, indent=4))
 
     # Rerender template
     addon.sss = Sss(addon=addon)
     walker = addon.sss.walker()
     resources = walker["sss_deploy"]["spec"]["resources"]
 
-    # Validate namespaces and secrets
     assert len(resources["Namespace"]) == len(addon.metadata["namespaces"])
     assert len(resources["Secret"]) == len(addon.metadata["namespaces"])
-    print(resources["Namespace"])
     for ns, _ in resources["Namespace"]:
         assert ns in addon.metadata["namespaces"]
 

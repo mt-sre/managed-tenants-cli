@@ -1,5 +1,5 @@
 {# vi: ft=jinja : #}
-{% from 'macros.j2' import maybe_labels, maybe_annotations, render_extra_resource %}
+{% from 'macros.j2' import maybe_labels, maybe_annotations, render_extra_resource, expand_dict %}
 ---
 kind: List
 metadata: {}
@@ -99,6 +99,47 @@ items:
 {% endif %}
 {% if ADDON.metadata['startingCSV'] is defined %}
         startingCSV: {{ADDON.metadata['startingCSV']}}
+{% endif %}
+
+{# federated metrics namespace + ServiceMonitor (v1 only) #}
+{% if ADDON.metadata['monitoring'] is defined %}
+    - apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: redhat-monitoring-{{ ADDON.metadata['id'] }}
+        labels:
+          openshift.io/cluster-monitoring: 'true'
+    - apiVersion: monitoring.coreos.com/v1
+      kind: ServiceMonitor
+      metadata:
+        name: federated-sm-{{ ADDON.metadata['id'] }}
+        namespace: redhat-monitoring-{{ ADDON.metadata['id'] }}
+      spec:
+        endpoints:
+          - honorLabels: true
+            port: "9090"
+            path: /federate
+            scheme: https
+            interval: 30s
+            tlsConfig:
+              ca:
+                configMap:
+                  name: openshift-service-ca.crt
+                  key: service-ca.crt
+            params:
+              'match[]':
+                - ALERTS{alertstate="firing"}
+              {% for matchName in ADDON.metadata['monitoring']['matchNames'] %}
+                - '{__name__="{{ matchName }}"}'
+              {% endfor %}
+        namespaceSelector:
+          matchNames:
+          {% for namespace in ADDON.metadata['namespaces'] %}
+            - {{ namespace }}
+          {% endfor %}
+        selector:
+          matchLabels:
+            {{ expand_dict(ADDON.metadata['monitoring']['matchLabels']) | indent(12) }}
 {% endif %}
 
 {# addon v2 create the Addon CR #}
