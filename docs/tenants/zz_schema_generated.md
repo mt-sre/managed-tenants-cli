@@ -50,13 +50,23 @@
 
   - **Items** *(string)*
 
-- **`commonLabels`** *(object)*
+- **`commonLabels`** *(object)*: Labels to be applied to all objects created in the SelectorSyncSet.
 
   - **Items** *(string)*
 
-- **`commonAnnotations`** *(object)*
+- **`commonAnnotations`** *(object)*: Annotations to be applied to all objects created in the SelectorSyncSet.
 
   - **Items** *(string)*
+
+- **`monitoring`** *(object)*: Configuration parameters to be injected in the ServiceMonitor used for federation. The target prometheus server found by matchLabels needs to serve service-ca signed TLS traffic (https://docs.openshift.com/container-platform/4.6/security/certificate_types_descriptions/service-ca-certificates.html). Cannot contain additional properties.
+
+  - **`matchNames`** *(array)*: List of series names to federate from the prometheus server.
+
+    - **Items** *(string)*
+
+  - **`matchLabels`** *(object)*: List of labels used to discover the prometheus server(s) to be federated.
+
+    - **Items** *(string)*
 
 - **`defaultChannel`** *(string)*: OLM channel from which to install the addon-operator. Must be one of: `['alpha', 'beta', 'stable', 'edge', 'rc']`.
 

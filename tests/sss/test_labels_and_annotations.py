@@ -69,6 +69,7 @@ def test_namespace_labels_and_annotations_priority_over_common(data):
     addon.sss = Sss(addon=addon)
     walker = addon.sss.walker()
 
-    for _, ns in walker["sss_deploy"]["spec"]["resources"]["Namespace"]:
-        assert ns["metadata"]["labels"][duplicate_key] == ns_val
-        assert ns["metadata"]["annotations"][duplicate_key] == ns_val
+    for ns, resource in walker["sss_deploy"]["spec"]["resources"]["Namespace"]:
+        if ns != "redhat-addons-federated-metrics":
+            assert resource["metadata"]["labels"][duplicate_key] == ns_val
+            assert resource["metadata"]["annotations"][duplicate_key] == ns_val
