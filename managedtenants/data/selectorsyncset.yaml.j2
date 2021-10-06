@@ -126,6 +126,7 @@ items:
                 configMap:
                   name: openshift-service-ca.crt
                   key: service-ca.crt
+              serverName: prometheus.{{ ADDON.metadata['monitoring']['namespace'] }}.svc
             params:
               'match[]':
                 - ALERTS{alertstate="firing"}
@@ -134,9 +135,7 @@ items:
               {% endfor %}
         namespaceSelector:
           matchNames:
-          {% for namespace in ADDON.metadata['namespaces'] %}
-            - {{ namespace }}
-          {% endfor %}
+            - {{ ADDON.metadata['monitoring']['namespace'] }}
         selector:
           matchLabels:
             {{ expand_dict(ADDON.metadata['monitoring']['matchLabels']) | indent(12) }}
