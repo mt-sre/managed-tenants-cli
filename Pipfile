@@ -21,4 +21,4 @@ yamllint = "1.26.3"
 managedtenants_cli = {editable = true,path = "."}
 
 [requires]
-python_version = "3.9"
+python_version = "3"

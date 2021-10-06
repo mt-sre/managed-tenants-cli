@@ -38,7 +38,7 @@ setup(
     url="https://github.com/mt-sre/managed-tenants-cli",
     description="A CLI tool commonly used by MT-SRE projects at Red Hat",
     long_description=get_readme_content(),
-    python_requires=">=3.9",
+    python_requires=">=3.6",
     license="Apache-2.0",
     classifiers=[
         "Intended Audience :: Developers",
