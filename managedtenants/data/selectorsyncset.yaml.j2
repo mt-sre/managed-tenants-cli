@@ -154,7 +154,7 @@ items:
         {{ADDON.metadata['label']}}: 'true'
     resourceApplyMode: Sync
     resources:
-{% if ADDON.metadata['indexImage'] is defined %}
+{% if (ADDON.metadata.get('indexImage') or ADDON.imageset) %}
     - apiVersion: addons.managed.openshift.io/v1alpha1
       kind: Addon
       metadata:
@@ -171,7 +171,7 @@ items:
             namespace: {{ADDON.metadata['targetNamespace']}}
             packageName: {{ADDON.metadata['operatorName']}}
             channel: {{ADDON.metadata['defaultChannel']}}
-            catalogSourceImage: {{ADDON.metadata['indexImage']}}
+            catalogSourceImage: {{ADDON.metadata.get('indexImage') or ADDON.imageset['indexImage']}}
 {% endif %}
 {# TODO: move pullsecret management into the addon-operator #}
 {% for namespace in ADDON.metadata['namespaces'] %}
