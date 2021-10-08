@@ -1,4 +1,3 @@
-import random
 from pathlib import Path
 from unittest import mock
 
@@ -32,14 +31,15 @@ def addon_with_indeximage():
 
 
 @pytest.fixture
-def addon_managed_by_addon_cr():
-    addon_path = random.choice(
-        [addon_with_imageset_path(), addon_with_indeximage_path()]
-    )
-    addon = Addon(addon_path, "stage")
-    addon.manager = AddonManager.ADDON_OPERATOR
-    addon.sss = Sss(addon=addon)
-    return addon
+def addons_managed_by_addon_cr():
+    def create_addon_managed_by_addon_cr(path):
+        addon = Addon(path, "stage")
+        addon.manager = AddonManager.ADDON_OPERATOR
+        addon.sss = Sss(addon=addon)
+        return addon
+
+    addon_paths = [addon_with_imageset_path(), addon_with_indeximage_path()]
+    return list(map(create_addon_managed_by_addon_cr, addon_paths))
 
 
 @pytest.fixture
