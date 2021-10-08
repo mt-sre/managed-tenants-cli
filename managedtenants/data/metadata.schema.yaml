@@ -99,12 +99,17 @@ properties:
     description: "Annotations to be applied to all objects created in the SelectorSyncSet."
   monitoring:
     type: object
-    description: "Configuration parameters to be injected in the ServiceMonitor used for federation. The target prometheus server found by matchLabels needs to serve service-ca signed TLS traffic (https://docs.openshift.com/container-platform/4.6/security/certificate_types_descriptions/service-ca-certificates.html)."
+    description: "Configuration parameters to be injected in the ServiceMonitor used for federation. The target prometheus server found by matchLabels needs to serve service-ca signed TLS traffic (https://docs.openshift.com/container-platform/4.6/security/certificate_types_descriptions/service-ca-certificates.html), and it needs to be runing inside the monitoring.namespace, with the service name 'prometheus'."
     additionalProperties: false
     required:
+      - namespace
       - matchNames
       - matchLabels
     properties:
+      namespace:
+        type: string
+        pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+        description: "Namespace where the prometheus server is running."
       matchNames:
         type: array
         items:

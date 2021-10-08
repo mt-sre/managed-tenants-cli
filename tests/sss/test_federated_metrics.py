@@ -12,6 +12,7 @@ def test_namespace_and_servicemonitor_v1(data):
     env = data.draw(custom_strategies.environment())
     addon = data.draw(custom_strategies.addon(env))
     addon.metadata["monitoring"] = {
+        "namespace": data.draw(custom_strategies.namespace()),
         "matchNames": data.draw(
             hypothesis_strategies.lists(custom_strategies.k8s_name())
         ),
@@ -36,8 +37,10 @@ def test_namespace_and_servicemonitor_v1(data):
     _, sm = walker["sss_deploy"]["spec"]["resources"]["ServiceMonitor"][0]
     assert sm["metadata"]["namespace"] == expected_ns_name
 
-    for ns in addon.metadata["namespaces"]:
-        assert ns in sm["spec"]["namespaceSelector"]["matchNames"]
+    assert (
+        addon.metadata["monitoring"]["namespace"]
+        == sm["spec"]["namespaceSelector"]["matchNames"][0]
+    )
 
     for matchName in addon.metadata["monitoring"]["matchNames"]:
         series_name = f"""'{{__name__="{matchName}"}}'"""
