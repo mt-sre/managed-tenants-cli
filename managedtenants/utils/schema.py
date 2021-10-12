@@ -19,6 +19,10 @@ def load_addon_imageset_schema():
     return SchemaLoader("imageset")
 
 
+def load_addon_versionedmeta_schema():
+    return SchemaLoader("versionedmetadata")
+
+
 # Accept path or file for easier testing
 def load_draft7_schema(path_or_file):
     """

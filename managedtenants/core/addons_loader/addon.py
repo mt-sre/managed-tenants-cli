@@ -15,12 +15,15 @@ from managedtenants.utils.hash import hash_dir_sha256, hash_sha256
 from managedtenants.utils.schema import (
     load_addon_imageset_schema,
     load_addon_metadata_schema,
+    load_addon_versionedmeta_schema,
 )
 
 # IDs of addons that are managed by the addon-operator
 # These addon IDs _MUST_ be stable and not changed or bad things will happen
 # (this applies to addon IDs in general, but it's worth pointing out here, too)
 _ADDON_OPERATOR_ADDON_IDS = ["reference-addon"]
+
+ADDON_VERSIONED_META_DIR = "versionedmetadata"
 
 
 class Addon:
@@ -29,6 +32,9 @@ class Addon:
         self.extra_resources_loader = None
         self.metadata = self.load_metadata(environment=environment)
         self.imageset_version = self.metadata.get("addonImageSetVersion")
+        self.versionedmeta_path = (
+            self.path / f"{ADDON_VERSIONED_META_DIR}/{environment}"
+        )
         # If imagebundles are provided
         if self.imageset_version is not None:
             self.imagesets_path = self.path / "imagesets"
@@ -49,6 +55,8 @@ class Addon:
             self.bundles = self.load_bundles(metadata=self.metadata)
             self.package = Package(addon=self)
             self.catalog_image = self.get_image_name(environment=environment)
+
+        self.versioned_meta = self.load_versioned_meta()
         self.image_tag = (  # Used with .format(hash=...)
             f'{self.metadata["quayRepo"]}:{environment}-{{hash}}'
         )
@@ -99,15 +107,42 @@ class Addon:
 
         return metadata
 
+    @staticmethod
+    def is_not_none(arg):
+        return arg is not None
+
+    # Returns None if:
+    # - Addon is not being versioned according to imagesets, or
+    # - Addon is versioned but metadata is not
+    def load_versioned_meta(self):
+        # check if addon and metadata are both versioned
+        if (
+            self.imageset_version is None
+            or not self.versionedmeta_path.is_dir()
+        ):
+            return None
+
+        if not version_parsable(self.imageset_version):
+            raise AddonLoadError(
+                "Addon versionedmeta must be in semantic version"
+            )
+
+        versionedmeta_yamls = map(
+            self.load_yaml, self.get_available_versionedmeta()
+        )
+        valid_versionedmeta = filter(self.is_not_none, versionedmeta_yamls)
+        required_imageset = self.get_target_versionedmeta(
+            versionedmeta_iter=valid_versionedmeta
+        )
+        self._validate_versionedmeta_schema(versionedmeta=required_imageset)
+        return required_imageset
+
     def load_imageset(self, imageset_version):
         if not version_parsable(imageset_version):
             raise AddonLoadError("Addon imageset must be in semantic version")
 
-        def is_not_none(arg):
-            return arg is not None
-
         imageset_yamls = map(self.load_yaml, self.get_available_imagesets())
-        valid_imagesets = filter(is_not_none, imageset_yamls)
+        valid_imagesets = filter(self.is_not_none, imageset_yamls)
         concerned_imageset = self.get_target_imageset(
             imagesets_iter=valid_imagesets
         )
@@ -115,40 +150,51 @@ class Addon:
         return concerned_imageset
 
     def get_available_imagesets(self):
-        imageset_files = (
-            p for p in self.imagesets_path.iterdir() if p.is_file()
-        )
-        return imageset_files
+        return self.get_available_files_from_path(self.imagesets_path)
 
-    def get_target_imageset(self, imagesets_iter):
+    def get_available_versionedmeta(self):
+        return self.get_available_files_from_path(self.versionedmeta_path)
+
+    @staticmethod
+    def get_available_files_from_path(path):
+        files = (p for p in path.iterdir() if p.is_file())
+        return files
+
+    @staticmethod
+    def get_version(yaml_file):
+        return parse_image_version_from_name(name=yaml_file.get("name", ""))
+
+    def version_not_none(self, imageset_yaml):
+        return self.get_version(imageset_yaml) is not None
+
+    def get_target_from_iter(self, iterator, filetype):
         target_version = self.imageset_version
 
-        def get_version(imageset_yaml):
-            return parse_image_version_from_name(
-                name=imageset_yaml.get("name", "")
-            )
+        valid_files = filter(self.version_not_none, iterator)
 
-        def version_not_none(imageset_yaml):
-            return get_version(imageset_yaml) is not None
-
-        valid_imagesets = filter(version_not_none, imagesets_iter)
-        # get the latest imageset
+        # get the latest file
         if target_version == "latest":
-            result = max(valid_imagesets, key=get_version)
+            result = max(valid_files, key=self.get_version)
             if not result:
-                raise AddonLoadError("No valid imageset found!")
+                raise AddonLoadError(f"No valid {filetype} found!")
             return result
 
         result = find(
-            iterator=valid_imagesets,
-            key_func=get_version,
+            iterator=valid_files,
+            key_func=self.get_version,
             item=target_version,
         )
         if not result:
             raise AddonLoadError(
-                f'Imageset version "{target_version}" does not exist.'
+                f'{filetype} version "{target_version}" does not exist.'
             )
         return result
+
+    def get_target_imageset(self, imagesets_iter):
+        return self.get_target_from_iter(imagesets_iter, "imageset")
+
+    def get_target_versionedmeta(self, versionedmeta_iter):
+        return self.get_target_from_iter(versionedmeta_iter, "versionedmeta")
 
     def _validate_imageset_schema(self, imageset):
         try:
@@ -158,6 +204,20 @@ class Addon:
         except jsonschema.exceptions.SchemaError as details:
             raise AddonLoadError(
                 f"imageset schema error: {details.message}"
+            ) from details
+        except jsonschema.exceptions.ValidationError as details:
+            raise AddonLoadError(
+                f"{self.path} validation error: {details.message}"
+            ) from details
+
+    def _validate_versionedmeta_schema(self, versionedmeta):
+        try:
+            jsonschema.validate(
+                instance=versionedmeta, schema=load_addon_versionedmeta_schema()
+            )
+        except jsonschema.exceptions.SchemaError as details:
+            raise AddonLoadError(
+                f"versionedmetadata schema error: {details.message}"
             ) from details
         except jsonschema.exceptions.ValidationError as details:
             raise AddonLoadError(
