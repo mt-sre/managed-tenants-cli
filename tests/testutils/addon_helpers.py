@@ -4,7 +4,9 @@ from unittest import mock
 import pytest
 import yaml
 
+from managedtenants.core.addon_manager import AddonManager
 from managedtenants.core.addons_loader.addon import Addon
+from managedtenants.core.addons_loader.sss import Sss
 
 ADDON_WITH_BUNDLES_TYPE = "with_bundles"
 ADDON_WITH_IMAGESET_TYPE = "with_imageset"
@@ -16,6 +18,28 @@ def addon_with_imageset_path():
 
 def addon_with_bundles_path():
     return Path("tests/testdata/addons/mock-operator-with-bundles")
+
+
+def addon_with_indeximage_path():
+    return Path("tests/testdata/addons/test-operator")
+
+
+@pytest.fixture
+def addon_with_indeximage():
+    addon_path = addon_with_indeximage_path()
+    return Addon(addon_path, "stage")
+
+
+@pytest.fixture
+def addons_managed_by_addon_cr():
+    def create_addon_managed_by_addon_cr(path):
+        addon = Addon(path, "stage")
+        addon.manager = AddonManager.ADDON_OPERATOR
+        addon.sss = Sss(addon=addon)
+        return addon
+
+    addon_paths = [addon_with_imageset_path(), addon_with_indeximage_path()]
+    return list(map(create_addon_managed_by_addon_cr, addon_paths))
 
 
 @pytest.fixture
