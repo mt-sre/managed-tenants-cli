@@ -41,6 +41,7 @@ class Cli:
         parser.add_argument(
             "--addons-dir",
             type=self._validate_addons_dir,
+            required=True,
             help='[path] "path" for the addons directory',
         )
         parser.add_argument(
@@ -94,7 +95,10 @@ class Cli:
         addons_path = Path(value)
         if addons_path.is_dir():
             return value
-        raise argparse.ArgumentTypeError("not found: %s" % addons_path)
+        raise argparse.ArgumentTypeError(
+            f"The addons dir path: {addons_path} is invalid. Please provide a"
+            " valid addons_dir using '--addons-dir'."
+        )
 
     @staticmethod
     def _validate_tasks_reference(value):
