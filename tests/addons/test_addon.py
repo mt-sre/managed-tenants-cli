@@ -112,7 +112,8 @@ def test_addon_imageset_latest():
     addon.imageset_version = "latest"
     res = addon.load_imageset("latest")
     latest_imageset_path = (
-        addon_with_imageset_path() / "imagesets/stage/mock-operator.v1.0.2.yml"
+        addon_with_imageset_path()
+        / "addonimagesets/stage/mock-operator.v1.0.2.yml"
     )
     with open(latest_imageset_path) as file_obj:
         expected_imageset = yaml.safe_load(file_obj.read())
@@ -122,6 +123,6 @@ def test_addon_imageset_latest():
 def test_raises_imageset_missing_error():
     addon = Addon(addon_with_imageset_path(), "stage")
     # Doesnt have imagesets for this env
-    addon.imagesets_path = addon.path / "imagesets/prod"
+    addon.imagesets_path = addon.path / "addonimagesets/prod"
     with pytest.raises(AddonLoadError):
         addon.load_imageset(addon.imageset_version)
