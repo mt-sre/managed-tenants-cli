@@ -10,7 +10,7 @@ A CLI tool commonly used by MT-SRE projects at Red Hat.
 | ---------------- | ---------------------------------------------------------------------------------- |
 | `load`           | Loads the addons inventory                                                         |
 | `run`            | Runs the task                                                                      |
-| `task_reference` | [path:search] "path" for the directory or file and "search" string to filter tasks |
+| `tasks_reference` | [path:search] "path" for the directory or file and "search" string to filter tasks |
 
 ### Available flags
 
@@ -18,8 +18,8 @@ A CLI tool commonly used by MT-SRE projects at Red Hat.
 | -------------------- | -------------------------------------- |
 | `-v` or `--version`  | CLI version                            |
 | `--environment`      | Target environment                     |
-| `--adon-name`        | Load only a given addon                |
-| `--addon-dir`        | [path] "path" for the addons directory |
+| `--addon-name`        | Load only a given addon                |
+| `--addons-dir`        | [path] "path" for the addons directory |
 | `--ocm-api`          | Override the environments in OCM API   |
 | `--ocm-api-insecure` | Allow Insecure connections to OCM API  |
 
