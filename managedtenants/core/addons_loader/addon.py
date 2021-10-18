@@ -31,7 +31,7 @@ class Addon:
         self.imageset_version = self.metadata.get("addonImageSetVersion")
         # If imagebundles are provided
         if self.imageset_version is not None:
-            self.imagesets_path = self.path / "imagesets"
+            self.imagesets_path = self.path / f"addonimagesets/{environment}"
             self.imageset = self.load_imageset(self.imageset_version)
             self.package = None
             self.bundles = None
@@ -102,6 +102,12 @@ class Addon:
     def load_imageset(self, imageset_version):
         if not version_parsable(imageset_version):
             raise AddonLoadError("Addon imageset must be in semantic version")
+
+        if not self.imagesets_path.is_dir():
+            raise AddonLoadError(
+                "imagesets directory missing at the path:"
+                f" {self.imagesets_path}"
+            )
 
         def is_not_none(arg):
             return arg is not None
