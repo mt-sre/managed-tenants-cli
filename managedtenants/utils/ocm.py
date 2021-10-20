@@ -56,7 +56,7 @@ class OcmCli:
             self.api = api
 
     @property
-    @retry(hook=retry_hook)
+    @retry(hook=retry_hook, max_attempts=10)
     def token(self):
         now = datetime.utcnow()
         if self._token:
