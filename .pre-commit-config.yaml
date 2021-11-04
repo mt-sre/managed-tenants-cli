@@ -30,13 +30,13 @@ repos:
       - id: trailing-whitespace
   # Black
   - repo: https://github.com/psf/black
-    rev: 21.9b0
+    rev: 21.10b0
     hooks:
       - id: black
         args: ["--config", ".linters/black", "--experimental-string-processing"]
   # isort
   - repo: https://github.com/PyCQA/isort
-    rev: 5.9.3
+    rev: 5.10.1
     hooks:
       - id: isort
         args: ["--profile", "black", "-l", "80"]

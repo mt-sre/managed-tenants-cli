@@ -53,6 +53,21 @@ class Cli:
             default=False,
             help="Allow Insecure connection to OCM API",
         )
+        parser.add_argument(
+            "--only-changed",
+            action="store_true",
+            default=False,
+            help=(
+                "Modifies the addons_loader to only consider addons with"
+                " changed files"
+            ),
+        )
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            default=False,
+            help="Flag to specify a non-invasive execution",
+        )
 
         subcommands = parser.add_subparsers(
             title="subcommands", help="subcommand help", dest="subcommand"
@@ -69,12 +84,6 @@ class Cli:
                 'or file and "search" string to filter '
                 "tasks"
             ),
-        )
-        run_parser.add_argument(
-            "--dry-run",
-            action="store_true",
-            default=False,
-            help="Flag to the tasks that this is a non-invasive execution",
         )
         run_parser.add_argument(
             "--debug",
@@ -140,6 +149,7 @@ class Cli:
                 path=addons_path,
                 environment=self.args.environment,
                 addon_name=addon_name,
+                args=self.args,
             )
             APP_LOG.info("Loading %s OK", self.args.environment)
             return addons_factory
