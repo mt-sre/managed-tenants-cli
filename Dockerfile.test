@@ -1,3 +1,4 @@
+# vi:set ft=dockerfile:
 FROM registry.access.redhat.com/ubi8/python-39:latest
 
 USER root

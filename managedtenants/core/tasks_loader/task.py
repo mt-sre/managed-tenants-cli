@@ -1,5 +1,6 @@
-import logging
 from abc import ABC, abstractmethod
+
+from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.core.tasks_loader.environment import Environment
 from managedtenants.core.tasks_loader.exceptions import TaskFail, TaskSkip
@@ -15,7 +16,7 @@ class Task(ABC):
 
         self.path = path
 
-        self.log = logging.getLogger("task")
+        self.log = get_text_logger("task")
 
     @abstractmethod
     def run(self):

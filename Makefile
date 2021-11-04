@@ -1,3 +1,6 @@
+TARGETS := prepare install develop check test generate release clean docker-build docker-run
+.PHONY: $(TARGETS)
+
 all:
 	@echo
 	@echo "Targets:"
@@ -7,6 +10,7 @@ all:
 	@echo "check:        Runs linters and formatters."
 	@echo "test:         Runs the tests."
 	@echo "generate:     Generates a Markdown doc from the addon json schema."
+	@echo "release:      Release the python package to pypi."
 	@echo "clean:        Clean the working repository."
 	@echo "docker-build: Builds the docker image locally."
 	@echo "docker-run:   Run commands inside the docker image. (usage: '$ [CMD=<command>] make docker-run')"
@@ -47,6 +51,11 @@ check: pylint
 
 test:
 	pipenv run pytest --cache-clear -v tests/
+
+release:
+	python -m pip install twine wheel
+	python setup.py bdist_wheel
+	python -m twine upload dist/*
 
 generate: generate-md-schema pre-commit-autoupdate
 

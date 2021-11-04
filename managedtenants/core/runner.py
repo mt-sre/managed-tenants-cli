@@ -1,10 +1,11 @@
-import logging
 import sys
+
+from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.core import tasks_loader
 from managedtenants.core.status import Status
 
-APP_LOG = logging.getLogger("app")
+APP_LOG = get_text_logger("app")
 
 
 def run(tasks_factory):

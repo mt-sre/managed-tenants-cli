@@ -1,14 +1,15 @@
-import logging
 import os
 import subprocess
 from pathlib import Path
+
+from sretoolbox.utils.logger import get_text_logger
 
 
 class ChangeDetector:
     def __init__(self, addons_dir, dry_run=True):
         self.dry_run = dry_run
         self.addons_dir = addons_dir
-        self.log = logging.getLogger("app")
+        self.log = get_text_logger("app")
 
     def get_changed_addons(self):
         """

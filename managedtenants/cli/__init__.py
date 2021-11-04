@@ -3,6 +3,8 @@ import logging
 import sys
 from pathlib import Path
 
+from sretoolbox.utils.logger import get_text_logger
+
 from managedtenants import PostTask, PreTask, Task
 from managedtenants.core import runner
 from managedtenants.core.addons_loader import load_addons
@@ -12,11 +14,7 @@ from managedtenants.core.tasks_loader import load_tasks
 from managedtenants.core.version import VERSION
 from managedtenants.data.environments import ENVIRONMENTS
 
-APP_LOG = logging.getLogger("app")
-APP_LOG_HANDLER = logging.StreamHandler(sys.stdout)
-APP_LOG_HANDLER.setFormatter(logging.Formatter(fmt="%(message)s"))
-APP_LOG.addHandler(APP_LOG_HANDLER)
-APP_LOG.setLevel(logging.INFO)
+APP_LOG = get_text_logger("name")
 
 
 class Cli:
@@ -131,13 +129,9 @@ class Cli:
                 path = self.args.tasks_reference
             self.tasks_path = Path(path)
 
-            if self.args.debug:
-                fmt = " -> %(message)s"
-                task_log = logging.getLogger("task")
-                task_log_handler = logging.StreamHandler(sys.stdout)
-                task_log_handler.setFormatter(logging.Formatter(fmt=fmt))
-                task_log.addHandler(task_log_handler)
-                task_log.setLevel(logging.INFO)
+            # init task logger /w appropriate log_level
+            log_level = logging.INFO if self.args.debug else logging.WARN
+            _ = get_text_logger(name="task", level=log_level)
             self._run()
 
     def _load_addons(self):
