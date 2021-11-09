@@ -44,6 +44,13 @@ class OcmCli:
         "subOperators": "sub_operators",
     }
 
+    IMAGESET_KEYS = {
+        "indexImage": "source_image",
+        "addOnParameters": "parameters",
+        "addOnRequirements": "requirements",
+        "subOperators": "sub_operators",
+    }
+
     def __init__(self, offline_token, api=API, api_insecure=False):
         self.offline_token = offline_token
         self._token = None
@@ -93,6 +100,13 @@ class OcmCli:
         addon = self._addon_from_metadata(metadata)
         return self._post("/api/clusters_mgmt/v1/addons", json=addon)
 
+    def add_addon_version(self, metadata):
+        imageset = self._imageset_from_metadata(metadata)
+        return self._post(
+            f'/api/clusters_mgmt/v1/addons/{metadata.get("id")}/versions',
+            json=imageset,
+        )
+
     def update_addon(self, metadata):
         addon = self._addon_from_metadata(metadata)
         addon_id = addon.pop("id")
@@ -117,6 +131,11 @@ class OcmCli:
         )
 
     def upsert_addon(self, metadata):
+        if metadata.get("addonImageSetVersion"):
+            try:
+                addon = self.add_addon_version(metadata)
+            except OCMAPIError as exception:
+                raise exception
         try:
             addon = self.add_addon(metadata)
         except OCMAPIError as exception:
@@ -127,12 +146,31 @@ class OcmCli:
 
         return addon
 
+    def _imageset_from_metadata(self, metadata):
+        imageset = {
+            "id": metadata.get("addonImageSetVersion"),
+            "enabled": metadata.get("enabled"),
+        }
+
+        for key, val in metadata.get("imageset").items():
+            if key in self.IMAGESET_KEYS:
+                imageset[self.IMAGESET_KEYS[key]] = val
+        return imageset
+
     def _addon_from_metadata(self, metadata):
         addon = {}
         metadata["addOnParameters"] = metadata.get("addOnParameters", [])
         metadata["addOnRequirements"] = metadata.get("addOnRequirements", [])
         for key, val in metadata.items():
             if key in self.ADDON_KEYS:
+                # Skip adding these parameters as they're present
+                # in the ImageSet (versions endpoint)
+                if metadata.get("addonImageSetVersion") and key in [
+                    "addOnParameters",
+                    "addOnRequirements",
+                    "subOperators",
+                ]:
+                    continue
                 if key == "installMode":
                     val = _camel_to_snake_case(val)
                 if key == "addOnParameters":
