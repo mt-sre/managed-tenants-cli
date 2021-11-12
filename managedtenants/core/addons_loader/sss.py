@@ -1,5 +1,4 @@
 import json
-import logging
 import re
 from collections import ChainMap, defaultdict
 from copy import deepcopy
@@ -7,12 +6,13 @@ from copy import deepcopy
 import yaml
 from jinja2 import ChoiceLoader, Environment, FileSystemLoader, StrictUndefined
 from jinja2.exceptions import UndefinedError
+from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.core.addon_manager import AddonManager
 from managedtenants.core.addons_loader.exceptions import SssLoadError
 from managedtenants.data.paths import DATA_DIR
 
-APP_LOG = logging.getLogger("app")
+APP_LOG = get_text_logger("app")
 
 
 class Sss:
