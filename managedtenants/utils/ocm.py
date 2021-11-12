@@ -114,6 +114,15 @@ class OcmCli:
             f"/api/clusters_mgmt/v1/addons/{addon_id}", json=addon
         )
 
+    def update_addon_version(self, metadata):
+        imageset = self._imageset_from_metadata(metadata)
+        version_id = imageset.get("id")
+        addon_id = metadata.get("id")
+        return self._patch(
+            f"/api/clusters_mgmt/v1/addons/{addon_id}/versions/{version_id}",
+            json=imageset,
+        )
+
     def get_addon(self, addon_id):
         return self._get(f"/api/clusters_mgmt/v1/addons/{addon_id}")
 
@@ -131,20 +140,18 @@ class OcmCli:
         )
 
     def upsert_addon(self, metadata):
-        if metadata.get("addonImageSetVersion"):
+        def post_addon(post_fn, update_fn):
             try:
-                addon = self.add_addon_version(metadata)
+                addon = post_fn(metadata)
             except OCMAPIError as exception:
+                if exception.response.status_code == 409:
+                    return update_fn(metadata)
                 raise exception
-        try:
-            addon = self.add_addon(metadata)
-        except OCMAPIError as exception:
-            if exception.response.status_code == 409:
-                return self.update_addon(metadata)
+            return addon
 
-            raise exception
-
-        return addon
+        if metadata.get("addonImageSetVersion"):
+            post_addon(self.add_addon_version, self.update_addon_version)
+        return post_addon(self.add_addon, self.update_addon)
 
     def _imageset_from_metadata(self, metadata):
         imageset = {
