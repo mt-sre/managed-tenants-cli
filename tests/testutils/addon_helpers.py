@@ -71,3 +71,12 @@ def addon_metadata_with_imageset_version(imageset_version):
 
     metadata["addonImageSetVersion"] = imageset_version
     return metadata
+
+
+def addon_metadata_with_imageset():
+    addon_path = addon_with_imageset_path()
+    addon_imagesets_metadata_path = addon_path / "metadata/stage/addon.yaml"
+    with open(addon_imagesets_metadata_path) as file_obj:
+        metadata = yaml.safe_load(file_obj.read())
+
+    return metadata
