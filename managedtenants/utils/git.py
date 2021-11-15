@@ -62,16 +62,27 @@ class ChangeDetector:
             "--name-only",
             f"{commit_range}",
         ]
-        result = self._run(cmd).stdout.decode().strip()
+        result = _run(cmd, self.log).stdout.decode().strip()
         for diff in result.splitlines():
             changed_files.add(Path(diff).resolve())
         return changed_files
 
-    def _run(self, cmd):
-        """
-        Calls subprocess.run with select options.
-        """
-        self.log.debug("Running %s", cmd)
-        return subprocess.run(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False
-        )
+
+def _run(cmd, logger=None):
+    """
+    Calls subprocess.run with select options.
+    """
+    if logger:
+        logger.debug("Running %s", cmd)
+    return subprocess.run(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False
+    )
+
+def get_short_hash(size=7):
+    """
+    TODO
+    :param size:
+    :return:
+    """
+    cmd = ["git", "rev-parse", f"--short={size}", "HEAD"]
+    return _run(cmd=cmd).stdout.decode().strip()
