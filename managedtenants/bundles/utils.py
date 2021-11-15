@@ -1,6 +1,7 @@
-
-from managedtenants.utils.quay_api import QuayApi
 import subprocess
+
+from managedtenants.bundles.exceptions import BundleUtilsError
+from managedtenants.utils.quay_api import QuayApi
 
 
 def run(cmd, logger=None):
@@ -33,11 +34,29 @@ def quay_repo_exists(dry_run, org, repo_name, quay_token):
     return quay_api.repo_exists(repo_name)
 
 
+def quay_repo_create(org, repo_name, quay_token):
+    """
+    Creates the passed repo under the passed org in quay.
+    :return: true if repo exists
+    :rtype: bool
+    """
+    quay_api = QuayApi(organization=org, token=quay_token)
+    if quay_api.repo_exists(repo_name):
+        return True
+    return quay_api.repo_create(repo_name)
+
+
 def push_image(dry_run, image, logger=None, docker_conf_path=None):
     # return early if we are in dry-run mode
     if dry_run:
         return image
 
+    size = check_image_size(image.url_tag)
+    if (size is None) and logger:
+        logger.error("Failed to check the image size!")
+
+    if size == 0:
+        raise BundleUtilsError("Received a zero byte image!")
     if logger:
         logger.info('Pushing image "%s"', image.url_tag)
 
@@ -59,3 +78,11 @@ def push_image(dry_run, image, logger=None, docker_conf_path=None):
             logger.error(result.stdout.decode())
 
     return image
+
+
+def check_image_size(image_url_tag):
+    cmd = ["docker", "image", "inspect", image_url_tag, "--format='{{.Size}}'"]
+    result = run(cmd=cmd)
+    if not result.returncode:
+        return int(result.stdout.decode().strip("'\n"))
+    return None

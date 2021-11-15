@@ -1,12 +1,11 @@
-# Adapted from: https://github.com/app-sre/qontract-reconcile/blob/master/reconcile/utils/quay_api.py
+# Adapted from: https://github.com/app-sre/qontract-reconcile/blob/master/reconcile/utils/quay_api.py # pylint: disable=C0301 # noqa: E501
 # qontract-reconcile takes a long time to install because it has so many
 # dependencies. Pipelines will be faster if we simply redefine QuayApi here.
 import os
 
 import requests
 from sretoolbox.utils import retry
-
-from managedtenants.utils.logger import get_text_logger
+from sretoolbox.utils.logger import get_text_logger
 
 
 class QuayApiError(Exception):

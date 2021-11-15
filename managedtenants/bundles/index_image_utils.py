@@ -1,18 +1,23 @@
 import subprocess
-from managedtenants.bundles.exceptions import BundleUtilsError
-from managedtenants.bundles.binary_deps import OPM
-from managedtenants.bundles.utils import quay_repo_exists, push_image
-from managedtenants.utils.logger import get_text_logger
+
 from sretoolbox.container import Image
+from sretoolbox.utils.logger import get_text_logger
+
+from managedtenants.bundles.binary_deps import OPM
+from managedtenants.bundles.exceptions import BundleUtilsError
+from managedtenants.bundles.utils import push_image, quay_repo_exists
+
 
 class IndexImageBuilder:
     def __init__(
-            self,
-            addon_dir,
-            dry_run,
-            quay_token=None,
-            docker_conf_path=None,
-            logger=None):
+        self,
+        addon_dir,
+        dry_run,
+        quay_token=None,
+        docker_conf_path=None,
+        logger=None,
+    ):
+        # pylint: disable=R0913
         self.addon_dir = addon_dir
         self.dry_run = dry_run
         self.quay_token = quay_token
@@ -35,13 +40,15 @@ class IndexImageBuilder:
         addon = self.addon_dir
         repo_name = f"{addon.name}-index"
         if not quay_repo_exists(
-                dry_run=self.dry_run,
-                org=quay_org,
-                repo_name=repo_name,
-                quay_token=self.quay_token):
+            dry_run=self.dry_run,
+            org=quay_org,
+            repo_name=repo_name,
+            quay_token=self.quay_token,
+        ):
             raise BundleUtilsError(
-                f"Quay repo:{repo_name} for the addon:\
-                {addon.name} doesnt exist!")
+                f"Quay repo:{repo_name} for the addon:               "
+                f" {addon.name} doesnt exist!"
+            )
 
         image = Image(str(quay_org / f"{repo_name}:{hash_string}"))
 
@@ -50,9 +57,8 @@ class IndexImageBuilder:
             return image
 
         self.logger.info(
-            'Building index image "%s" with %s',
-            image.url_tag,
-            bundle_images)
+            'Building index image "%s" with %s', image.url_tag, bundle_images
+        )
 
         cmd = [
             "index",
@@ -71,7 +77,8 @@ class IndexImageBuilder:
                 OPM.run(*cmd)
             except subprocess.CalledProcessError as e:
                 self.logger.error(
-                    "Failed to build and push index image. opm output:")
+                    "Failed to build and push index image. opm output:"
+                )
                 self.logger.error(e.stdout.decode())
                 # reraise the error to stop execution
                 raise e
@@ -80,5 +87,5 @@ class IndexImageBuilder:
             dry_run=dry_run,
             image=image,
             docker_conf_path=self.docker_conf,
-            logger=self.logger
+            logger=self.logger,
         )
