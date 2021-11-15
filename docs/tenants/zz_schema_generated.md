@@ -223,3 +223,13 @@
     - **`operator_namespace`** *(string)*
 
     - **`enabled`** *(boolean)*
+
+- **`config`** *(object)*: Cannot contain additional properties.
+
+  - **`env`** *(array)*
+
+    - **Items** *(object)*: Cannot contain additional properties.
+
+      - **`name`** *(string)*
+
+      - **`value`** *(string)*
