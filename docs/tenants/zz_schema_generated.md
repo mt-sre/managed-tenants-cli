@@ -230,15 +230,15 @@
 
     - **`enabled`** *(boolean)*
 
-- **`subOperators`** *(array)*
+- **`subOperators`** *(array)*: Representation of an add-on sub operator. A sub operator is an operator who's life cycle is controlled by the add-on umbrella operator.
 
   - **Items** *(object)*: Cannot contain additional properties.
 
-    - **`operator_name`** *(string)*
+    - **`operator_name`** *(string)*: Name of the add-on sub operator.
 
-    - **`operator_namespace`** *(string)*
+    - **`operator_namespace`** *(string)*: Namespace of the add-on sub operator.
 
-    - **`enabled`** *(boolean)*
+    - **`enabled`** *(boolean)*: Indicates if the sub operator is enabled for the add-on.
 
 - **`subscriptionConfig`** *(object)*: Configs to be passed to the subscription OLM object. Cannot contain additional properties.
 

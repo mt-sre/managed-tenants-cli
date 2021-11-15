@@ -215,10 +215,10 @@ properties:
     additionalProperties: false
     description: "Denotes the Deadmans Snitch Configuration which is supposed to be setup alongside the Addon."
     required:
-    - tags
+      - tags
     properties:
       clusterDeploymentSelector:
-        type: object  ## should we go as granular as describing properties for matchExpressions/matchLabels?
+        type: object ## should we go as granular as describing properties for matchExpressions/matchLabels?
         description: "Default: check selectorsyncset.yaml.j2 - line 260"
       snitchNamePostFix:
         type: string
@@ -419,24 +419,28 @@ properties:
           type: boolean
   subOperators:
     type: array
+    description: "Representation of an add-on sub operator. A sub operator is an operator who's life cycle is controlled by the add-on umbrella operator."
     items:
       type: object
       additionalProperties: false
       required:
-        - operatorName
-        - operatorNamespace
+        - operator_name
+        - operator_namespace
         - enabled
       properties:
         operator_name:
           type: string
           format: printable
+          description: "Name of the add-on sub operator"
         operator_namespace:
           type: string
           format: printable
+          description: "Namespace of the add-on sub operator"
         enabled:
           type: boolean
-# Default subscriptionConfig to be applied to the addon. If subscriptionConfig is present
-# in an imageset file, that will take precedence over this.
+          description: "Indicates if the sub operator is enabled for the add-on"
+  # Default subscriptionConfig to be applied to the addon. If subscriptionConfig is present
+  # in an imageset file, that will take precedence over this.
   subscriptionConfig:
     type: object
     description: "Configs to be passed to the subscription OLM object"
@@ -460,7 +464,6 @@ properties:
             value:
               type: string
               format: printable
-
 required:
   - id
   - name
