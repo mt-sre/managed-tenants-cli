@@ -94,6 +94,15 @@ items:
         name: {{ADDON.metadata['id']}}
         source: addon-{{ADDON.metadata['id']}}-catalog
         sourceNamespace: openshift-marketplace
+        {% if ADDON.metadata.get('config') %}
+        config:
+          env:
+          {% for env_obj in ADDON.metadata['config'].get('env', []) %}
+          - name: {{env_obj['name']}}
+            value: {{env_obj['value']}}
+          {% endfor %}
+        {% endif %}
+
 {% if ADDON.metadata['manualInstallPlanApproval'] is defined and ADDON.metadata['manualInstallPlanApproval'] %}
         installPlanApproval: Manual
 {% endif %}

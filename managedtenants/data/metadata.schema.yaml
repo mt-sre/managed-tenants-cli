@@ -404,6 +404,28 @@ properties:
           format: printable
         enabled:
           type: boolean
+  config:
+    type: object
+    additionalProperties: false
+    required:
+      - env
+    properties:
+      env:
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required:
+            - name
+            - value
+          properties:
+            name:
+              type: string
+              format: printable
+            value:
+              type: string
+              format: printable
+
 required:
   - id
   - name

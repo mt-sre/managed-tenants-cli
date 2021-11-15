@@ -11,6 +11,7 @@ from tests.testutils.addon_helpers import (  # flake8: noqa: F401
     ADDON_WITH_IMAGESET_TYPE,
     addon_metadata_with_imageset_version,
     addon_with_imageset_path,
+    addon_with_indeximage_path,
     load_yaml,
     setup_addon_class_with_stubbed_metadata,
 )
@@ -126,3 +127,18 @@ def test_raises_imageset_missing_error():
     addon.imagesets_path = addon.path / "addonimagesets/prod"
     with pytest.raises(AddonLoadError):
         addon.load_imageset(addon.imageset_version)
+
+
+def test_addon_subscription_config():
+    addon = Addon(addon_with_indeximage_path(), "stage")
+    res = addon.metadata["config"].get("env")
+    assert res is not None
+    assert res == [
+        {"name": "LOCATION", "value": "Black Mesa Research Facility"},
+        {"name": "USER", "value": "Gordon Freeman"},
+    ]
+
+    updated_metadata = addon.metadata
+    updated_metadata["config"]["unsupportedAttr"] = "present"
+    with pytest.raises(AddonLoadError):
+        addon._validate_subscription_config(updated_metadata)
