@@ -132,7 +132,6 @@ def test_raises_imageset_missing_error():
 def test_addon_subscription_config():
     addon = Addon(addon_with_indeximage_path(), "stage")
     res = addon.metadata["config"].get("env")
-    assert res is not None
     assert res == [
         {"name": "LOCATION", "value": "Black Mesa Research Facility"},
         {"name": "USER", "value": "Gordon Freeman"},

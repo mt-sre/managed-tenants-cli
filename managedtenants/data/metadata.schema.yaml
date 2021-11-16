@@ -406,12 +406,14 @@ properties:
           type: boolean
   config:
     type: object
+    description: "Configs to be passed to the subscription OLM object"
     additionalProperties: false
     required:
       - env
     properties:
       env:
         type: array
+        description: "Array of environment variables (name, value pair) to be created as part of the subscription object"
         items:
           type: object
           additionalProperties: false

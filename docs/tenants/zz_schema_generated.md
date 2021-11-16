@@ -224,9 +224,9 @@
 
     - **`enabled`** *(boolean)*
 
-- **`config`** *(object)*: Cannot contain additional properties.
+- **`config`** *(object)*: Configs to be passed to the subscription OLM object. Cannot contain additional properties.
 
-  - **`env`** *(array)*
+  - **`env`** *(array)*: Array of environment variables (name, value pair) to be created as part of the subscription object.
 
     - **Items** *(object)*: Cannot contain additional properties.
 

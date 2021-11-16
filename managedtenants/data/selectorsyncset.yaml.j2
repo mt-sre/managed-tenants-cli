@@ -94,10 +94,10 @@ items:
         name: {{ADDON.metadata['id']}}
         source: addon-{{ADDON.metadata['id']}}-catalog
         sourceNamespace: openshift-marketplace
-        {% if ADDON.metadata.get('config') %}
+        {% if ADDON.subscription_config_present() %}
         config:
           env:
-          {% for env_obj in ADDON.metadata['config'].get('env', []) %}
+          {% for env_obj in ADDON.metadata['config']['env'] %}
           - name: {{env_obj['name']}}
             value: {{env_obj['value']}}
           {% endfor %}

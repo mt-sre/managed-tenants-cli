@@ -21,7 +21,7 @@ from managedtenants.utils.schema import (
 # These addon IDs _MUST_ be stable and not changed or bad things will happen
 # (this applies to addon IDs in general, but it's worth pointing out here, too)
 _ADDON_OPERATOR_ADDON_IDS = ["reference-addon"]
-_PERMITTED_SUBSCRIPTION_CONFIGS = {"env"}
+_PERMITTED_SUBSCRIPTION_CONFIGS = ["env"]
 
 
 class Addon:
@@ -107,9 +107,11 @@ class Addon:
     def _validate_subscription_config(self, metadata):
         if not metadata.get("config"):
             return
-        configs_present = set(metadata["config"].keys())
+        configs_present = metadata["config"]
         # configs_present should be a subset of _PERMITTED_SUBSCRIPTION_CONFIGS
-        if not configs_present <= _PERMITTED_SUBSCRIPTION_CONFIGS:
+        for item in configs_present:
+            if item in _PERMITTED_SUBSCRIPTION_CONFIGS:
+                continue
             raise AddonLoadError(
                 f"{self.path} validation error: "
                 "Unsupported subscription config objects"
