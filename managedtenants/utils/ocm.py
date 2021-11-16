@@ -44,6 +44,13 @@ class OcmCli:
         "subOperators": "sub_operators",
     }
 
+    IMAGESET_KEYS = {
+        "indexImage": "source_image",
+        "addOnParameters": "parameters",
+        "addOnRequirements": "requirements",
+        "subOperators": "sub_operators",
+    }
+
     def __init__(self, offline_token, api=API, api_insecure=False):
         self.offline_token = offline_token
         self._token = None
@@ -93,11 +100,27 @@ class OcmCli:
         addon = self._addon_from_metadata(metadata)
         return self._post("/api/clusters_mgmt/v1/addons", json=addon)
 
+    def add_addon_version(self, imageset, metadata):
+        addon = self._addon_from_imageset(imageset, metadata)
+        return self._post(
+            f'/api/clusters_mgmt/v1/addons/{metadata.get("id")}/versions',
+            json=addon,
+        )
+
     def update_addon(self, metadata):
         addon = self._addon_from_metadata(metadata)
         addon_id = addon.pop("id")
         return self._patch(
             f"/api/clusters_mgmt/v1/addons/{addon_id}", json=addon
+        )
+
+    def update_addon_version(self, imageset, metadata):
+        addon = self._addon_from_imageset(imageset, metadata)
+        version_id = addon.get("id")
+        addon_name = metadata.get("id")
+        return self._patch(
+            f"/api/clusters_mgmt/v1/addons/{addon_name}/versions/{version_id}",
+            json=addon,
         )
 
     def get_addon(self, addon_id):
@@ -124,7 +147,29 @@ class OcmCli:
                 return self.update_addon(metadata)
 
             raise exception
+        return addon
 
+    # Post Addon version data to versions endpoint
+    def upsert_addon_version(self, imageset, metadata):
+        try:
+            addon = self.add_addon_version(imageset, metadata)
+        except OCMAPIError as exception:
+            if exception.response.status_code == 409:
+                return self.update_addon_version(imageset, metadata)
+            raise exception
+        return addon
+
+    # Returns a versioned addon payload that corresponds
+    # to an ImageSet
+    def _addon_from_imageset(self, imageset, metadata):
+        addon = {
+            "id": metadata.get("addonImageSetVersion"),
+            "enabled": metadata.get("enabled"),
+        }
+
+        for key, val in imageset.items():
+            if key in self.IMAGESET_KEYS:
+                addon[self.IMAGESET_KEYS[key]] = val
         return addon
 
     def _addon_from_metadata(self, metadata):
@@ -133,6 +178,14 @@ class OcmCli:
         metadata["addOnRequirements"] = metadata.get("addOnRequirements", [])
         for key, val in metadata.items():
             if key in self.ADDON_KEYS:
+                # Skip adding these parameters as they're present
+                # in the ImageSet (versions endpoint)
+                if metadata.get("addonImageSetVersion") and key in [
+                    "addOnParameters",
+                    "addOnRequirements",
+                    "subOperators",
+                ]:
+                    continue
                 if key == "installMode":
                     val = _camel_to_snake_case(val)
                 if key == "addOnParameters":
