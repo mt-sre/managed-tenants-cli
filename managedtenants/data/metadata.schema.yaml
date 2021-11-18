@@ -210,6 +210,30 @@ properties:
       secretNamespace:
         type: string
         pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+  deadmanssnitch:
+    type: object
+    additionalProperties: false
+    properties:
+      clusterDeploymentSelector: ## default: check selectorsyncset.yaml.j2 - line 260
+        type: object  ## should we go as granular as describing properties for matchExpressions/matchLabels?
+      snitchNamePostFix: ## default: {{ADDON.metadata['id']}}
+        type: string
+        pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+      targetSecretRef:
+        type: object
+        additionalProperties: false
+        properties:
+          name: ## default: {{ADDON.metadata['id']}}-deadmanssnitch
+            type: string
+            pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+          namespace: ## default: {{ADDON.metadata['targetNamespace']}}
+            type: string
+            pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+      tags: ## TODO(ykukreja): should the tags be enforced to be required?
+        type: array
+        items:
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
   extraResources:
     type: array
     items:
