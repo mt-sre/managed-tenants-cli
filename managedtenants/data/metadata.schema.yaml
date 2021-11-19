@@ -404,7 +404,9 @@ properties:
           format: printable
         enabled:
           type: boolean
-  config:
+# Default subscriptionConfig to be applied to the addon. If subscriptionConfig is present
+# in an imageset file, that will take precedence over this.
+  subscriptionConfig:
     type: object
     description: "Configs to be passed to the subscription OLM object"
     additionalProperties: false

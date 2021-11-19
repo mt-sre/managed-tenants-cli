@@ -4,3 +4,9 @@ relatedImages:
  - quay.io/osd-addons/mock-operator@sha256:...
  - quay.io/osd-addons/mock-operator@sha256:...
  - quay.io/osd-addons/mock-operator@sha256:...
+subscriptionConfig:
+  env:
+  - name: LOCATION
+    value: Black Mesa Research Facility
+  - name: USER
+    value: Gordon Freeman

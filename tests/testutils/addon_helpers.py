@@ -10,6 +10,7 @@ from managedtenants.core.addons_loader.sss import Sss
 
 ADDON_WITH_BUNDLES_TYPE = "with_bundles"
 ADDON_WITH_IMAGESET_TYPE = "with_imageset"
+ADDON_WITH_INDEXIMAGE_TYPE = "with_indeximage"
 
 
 def addon_with_imageset_path():
