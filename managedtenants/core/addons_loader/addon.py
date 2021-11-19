@@ -66,7 +66,20 @@ class Addon:
         return self.path.name
 
     def subscription_config_present(self):
-        return self.metadata.get("config") is not None
+        # If imageset is present, always check for subscriptionConfig
+        # in the imageset file.
+        if self.imageset:
+            if self.imageset.get("subscriptionConfig"):
+                return True
+            return False
+        return self.metadata.get("subscriptionConfig") is not None
+
+    def get_subscription_config(self):
+        if self.subscription_config_present():
+            if self.imageset:
+                return self.imageset.get("subscriptionConfig")
+            return self.metadata.get("subscriptionConfig")
+        return None
 
     def get_image_name(self, environment):
         """
@@ -97,17 +110,17 @@ class Addon:
 
         self._validate_schema(metadata)
         self._validate_extra_resources(environment, metadata)
-        self._validate_subscription_config(metadata)
+        self._validate_subscription_config(src=metadata)
 
         if "extraResources" in metadata:
             self.extra_resources_loader = FileSystemLoader(str(metadata_dir))
 
         return metadata
 
-    def _validate_subscription_config(self, metadata):
-        if not metadata.get("config"):
+    def _validate_subscription_config(self, src):
+        if not src.get("subscriptionConfig"):
             return
-        configs_present = metadata["config"]
+        configs_present = src.get("subscriptionConfig")
         # configs_present should be a subset of _PERMITTED_SUBSCRIPTION_CONFIGS
         for item in configs_present:
             if item in _PERMITTED_SUBSCRIPTION_CONFIGS:
@@ -138,6 +151,7 @@ class Addon:
             imagesets_iter=valid_imagesets
         )
         self._validate_imageset_schema(imageset=concerned_imageset)
+        self._validate_subscription_config(src=concerned_imageset)
         return concerned_imageset
 
     def get_available_imagesets(self):

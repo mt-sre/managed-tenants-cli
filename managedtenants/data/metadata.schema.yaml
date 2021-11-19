@@ -404,7 +404,8 @@ properties:
           format: printable
         enabled:
           type: boolean
-  config:
+# Will be removed the metadata schema once all addons are migrated to imagesets
+  subscriptionConfig:
     type: object
     description: "Configs to be passed to the subscription OLM object"
     additionalProperties: false
