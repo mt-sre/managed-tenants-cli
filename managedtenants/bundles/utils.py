@@ -22,7 +22,7 @@ def get_subdirs(path):
     return (item for item in path.iterdir() if item.is_dir())
 
 
-def quay_repo_exists(dry_run, org, repo_name, quay_token):
+def quay_repo_exists(dry_run, org_path, repo_name, quay_token):
     """
     Checks if the required quay repository exists.
     :return: true if repo exists
@@ -30,6 +30,7 @@ def quay_repo_exists(dry_run, org, repo_name, quay_token):
     """
     if dry_run:
         return True
+    org = quay_org_from_path(org_path)
     quay_api = QuayApi(organization=org, token=quay_token)
     return quay_api.repo_exists(repo_name)
 
@@ -86,3 +87,15 @@ def check_image_size(image_url_tag):
     if not result.returncode:
         return int(result.stdout.decode().strip("'\n"))
     return None
+
+
+def quay_org_from_path(quay_org_path, base_path="quay.io/"):
+    # "quay.io/osd-addons/" -> osd-addons
+    # "quay.io/osd-addons" -> osd-addons
+    split_res = quay_org_path.split(base_path)
+    if split_res:
+        return split_res[-1].strip("/")
+    raise BundleUtilsError(
+        f"Unable to parse:{quay_org_path}."
+        "Tried extracting quay org from quay org path"
+    )

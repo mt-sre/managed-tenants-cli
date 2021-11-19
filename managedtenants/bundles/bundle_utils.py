@@ -64,11 +64,11 @@ class BundleUtils:
         return max([item.name for item in get_subdirs(main_addon_path)])
 
     def build_push_bundle_images_with_deps(
-        self, quay_org, versions, hash_string, docker_file_path
+        self, quay_org_path, versions, hash_string, docker_file_path
     ):
         """
         Builds and pushes bundle images in the given addon directory.
-        :param quay_org: Quay org to which images should be pushed.
+        :param quay_org_path: Quay org to which images should be pushed.
         :param versions: A list versions to consider
         :param hash_string: A string to be used in the created
         image tag.
@@ -77,13 +77,13 @@ class BundleUtils:
         :return: A list of pushed bundle images
         """
         all_inner_addons = get_subdirs(path=self.addon_dir)
-        self.logger.info(f"quay org: {quay_org}")
+        self.logger.info(f"quay org: {quay_org_path}")
         addon_images = []
         for inner_addon in all_inner_addons:
             addon_images.extend(
                 self._build_push_bundle_images(
                     addon=inner_addon,
-                    quay_org=quay_org,
+                    quay_org_path=quay_org_path,
                     versions=versions,
                     hash_string=hash_string,
                     dockerfile_path=docker_file_path,
@@ -117,14 +117,14 @@ class BundleUtils:
         return image
 
     def _build_push_bundle_images(
-        self, addon, quay_org, hash_string, dockerfile_path, versions=None
+        self, addon, quay_org_path, hash_string, dockerfile_path, versions=None
     ):
         # pylint: disable=R0913
         """
         :param addon: A Posix directory path
         :param main_addon: A boolean to indicate if the passed addon
         is the "main" addon.
-        :param quay_org: Quay org to which images should be pushed.
+        :param quay_org_path: Quay org to which images should be pushed.
         :param versions: A list versions to consider
         :param hash_string: A string to be used in the created image tag.
         :param docker_file_path: Path to the dockerfile to be used to create
@@ -148,7 +148,7 @@ class BundleUtils:
                 continue
             bundle_image = self._build_push_bundle_image(
                 bundle=bundle,
-                quay_org=quay_org,
+                quay_org_path=quay_org_path,
                 hash_string=hash_string,
                 docker_file_path=dockerfile_path,
                 addon_name=addon_name,
@@ -161,13 +161,13 @@ class BundleUtils:
         return images
 
     def _build_push_bundle_image(
-        self, bundle, quay_org, hash_string, docker_file_path, addon_name
+        self, bundle, quay_org_path, hash_string, docker_file_path, addon_name
     ):
         # pylint: disable=R0913
         repo_name = f"{addon_name}-bundle"
         if not quay_repo_exists(
             dry_run=self.dry_run,
-            org=quay_org,
+            org_path=quay_org_path,
             repo_name=repo_name,
             quay_token=self.quay_token,
         ):
@@ -176,7 +176,7 @@ class BundleUtils:
                 f" {addon_name} doesnt exist!"
             )
         image = Image(
-            str(quay_org / f"{repo_name}:{bundle.name}-{hash_string}")
+            str(quay_org_path / f"{repo_name}:{bundle.name}-{hash_string}")
         )
         if not self.dry_run and image:
             self.logger.info('Image exists "%s"', image.url_tag)

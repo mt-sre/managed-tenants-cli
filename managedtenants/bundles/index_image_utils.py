@@ -27,10 +27,10 @@ class IndexImageBuilder:
         else:
             self.logger = get_text_logger("managedtenants-indeximage-builder")
 
-    def build_push_index_image(self, bundle_images, quay_org, hash_string):
+    def build_push_index_image(self, bundle_images, quay_org_path, hash_string):
         """
         Returns an index image which points to the passed bundle_images.
-        :param quay_org: Quay org to which images should be pushed.
+        :param quay_org_path: Quay org to which images should be pushed.
         :param hash_string: A string to be used in the created image's tag.
         :param bundle_images: A list of bundle images to be added
         to the index image.
@@ -41,7 +41,7 @@ class IndexImageBuilder:
         repo_name = f"{addon.name}-index"
         if not quay_repo_exists(
             dry_run=self.dry_run,
-            org=quay_org,
+            org_path=quay_org_path,
             repo_name=repo_name,
             quay_token=self.quay_token,
         ):
@@ -50,7 +50,7 @@ class IndexImageBuilder:
                 f" {addon.name} doesnt exist!"
             )
 
-        image = Image(str(quay_org / f"{repo_name}:{hash_string}"))
+        image = Image(str(quay_org_path / f"{repo_name}:{hash_string}"))
 
         if not dry_run and image:
             self.logger.info('Image exists "%s"', image.url_tag)
