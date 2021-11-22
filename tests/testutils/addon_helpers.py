@@ -23,6 +23,11 @@ def addon_with_bundles_path():
 def addon_with_indeximage_path():
     return Path("tests/testdata/addons/test-operator")
 
+def addon_with_deadmanssnitch_path():
+    return Path("tests/testdata/addons/test-operator")
+
+def addon_with_pagerduty_path():
+    return Path("tests/testdata/addons/test-operator")
 
 @pytest.fixture
 def addon_with_indeximage():
@@ -53,6 +58,15 @@ def addon_with_bundles():
     addon_path = addon_with_bundles_path()
     return Addon(addon_path, "stage")
 
+@pytest.fixture
+def addon_with_deadmanssnitch():
+    addon_path = addon_with_deadmanssnitch_path()
+    return Addon(addon_path, "stage")
+
+@pytest.fixture
+def addon_with_pagerduty():
+    addon_path = addon_with_pagerduty_path()
+    return Addon(addon_path, "stage")
 
 def setup_addon_class_with_stubbed_metadata(required_metadata):
     Addon.load_metadata = mock.Mock(return_value=required_metadata)

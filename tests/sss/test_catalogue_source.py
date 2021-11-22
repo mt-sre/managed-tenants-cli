@@ -4,6 +4,8 @@ from tests.testutils.addon_helpers import addon_with_imageset  # noqa: F401
 from tests.testutils.addon_helpers import addon_with_indeximage  # noqa: F401
 from tests.testutils.addon_helpers import (  # noqa: F401
     addons_managed_by_addon_cr,
+    addon_with_deadmanssnitch,
+    addon_with_pagerduty,
 )
 
 
@@ -13,6 +15,8 @@ from tests.testutils.addon_helpers import (  # noqa: F401
         "addon_with_indeximage",
         "addon_with_imageset",
         "addons_managed_by_addon_cr",
+        "addon_with_deadmanssnitch",
+        "addon_with_pagerduty",
     ],
 )
 def test_addon_sss_object(addon_str, request):
