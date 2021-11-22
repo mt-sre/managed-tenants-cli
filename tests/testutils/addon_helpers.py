@@ -26,6 +26,21 @@ def addon_with_indeximage_path():
 
 
 @pytest.fixture
+def addon_with_imageset_and_no_config():
+    addon_path = addon_with_imageset_path()
+    addon = Addon(addon_path, "stage")
+    updated_metadata = addon.metadata
+    # Set imageset to a version that doesnt have
+    # subscription config
+    updated_metadata["addonImageSetVersion"] = "1.0.2"
+    addon.metadata = updated_metadata
+    addon.imageset_version = "1.0.2"
+    # Reload imageset
+    addon.imageset = addon.load_imageset("1.0.2")
+    return addon
+
+
+@pytest.fixture
 def addon_with_indeximage():
     addon_path = addon_with_indeximage_path()
     return Addon(addon_path, "stage")

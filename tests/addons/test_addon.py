@@ -7,11 +7,12 @@ from managedtenants.core.addons_loader.exceptions import AddonLoadError
 from tests.testutils.addon_helpers import addon_with_bundles  # noqa: F401
 from tests.testutils.addon_helpers import addon_with_imageset  # noqa: F401
 from tests.testutils.addon_helpers import addon_with_indeximage  # noqa: F401
-from tests.testutils.addon_helpers import (  # flake8: noqa: F401
+from tests.testutils.addon_helpers import (  # noqa: F401; flake8: noqa: F401
     ADDON_WITH_BUNDLES_TYPE,
     ADDON_WITH_IMAGESET_TYPE,
     ADDON_WITH_INDEXIMAGE_TYPE,
     addon_metadata_with_imageset_version,
+    addon_with_imageset_and_no_config,
     addon_with_imageset_path,
     load_yaml,
     setup_addon_class_with_stubbed_metadata,
@@ -131,19 +132,26 @@ def test_raises_imageset_missing_error():
 
 
 @pytest.mark.parametrize(
-    "addon",
-    ["addon_with_indeximage", "addon_with_imageset"],
+    "addon_str",
+    [
+        "addon_with_indeximage",
+        "addon_with_imageset",
+        "addon_with_imageset_and_no_config",
+    ],
 )
-def test_addon_subscription_config(addon, request):
+def test_addon_subscription_config(addon_str, request):
     expected_result = [
         {"name": "LOCATION", "value": "Black Mesa Research Facility"},
         {"name": "USER", "value": "Gordon Freeman"},
     ]
-    addon = request.getfixturevalue(addon)
-    res = addon.get_subscription_config()["env"]
+    addon = request.getfixturevalue(addon_str)
     # For addon's with imagesets, subscription config is always looked
     # up in the imageset file.
-    assert res == expected_result
+    if addon_str == "addon_with_imageset_and_no_config":
+        assert addon.subscription_config_present() is False
+    else:
+        res = addon.get_subscription_config()["env"]
+        assert res == expected_result
 
 
 @pytest.mark.parametrize(
@@ -156,9 +164,12 @@ def test_addon_subscription_config(addon, request):
 def test_addon_subscription_config_validations(addon, addon_type, request):
     addon = request.getfixturevalue(addon)
     if addon_type == ADDON_WITH_INDEXIMAGE_TYPE:
-        updated_config_src = addon.metadata
+        updated_metdata = addon.metadata
+        updated_metdata["subscriptionConfig"]["unsupportedAttr"] = "present"
+        with pytest.raises(AddonLoadError):
+            addon._validate_schema(updated_metdata)
     else:
-        updated_config_src = addon.imageset
-    updated_config_src["subscriptionConfig"]["unsupportedAttr"] = "present"
-    with pytest.raises(AddonLoadError):
-        addon._validate_subscription_config(updated_config_src)
+        updated_imageset = addon.imageset
+        updated_imageset["subscriptionConfig"]["unsupportedAttr"] = "present"
+        with pytest.raises(AddonLoadError):
+            addon._validate_imageset_schema(updated_imageset)
