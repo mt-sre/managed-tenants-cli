@@ -113,27 +113,11 @@ class Addon:
 
         self._validate_schema(metadata)
         self._validate_extra_resources(environment, metadata)
-        self._validate_subscription_config(src=metadata)
 
         if "extraResources" in metadata:
             self.extra_resources_loader = FileSystemLoader(str(metadata_dir))
 
         return metadata
-
-    def _validate_subscription_config(self, src):
-        if not src.get("subscriptionConfig"):
-            return
-        configs_present = src.get("subscriptionConfig")
-        # configs_present should be a subset of _PERMITTED_SUBSCRIPTION_CONFIGS
-        for item in configs_present:
-            if item in _PERMITTED_SUBSCRIPTION_CONFIGS:
-                continue
-            raise AddonLoadError(
-                f"{self.path} validation error: "
-                "Unsupported subscription config objects"
-                "present!. Supported values are:"
-                f"{_PERMITTED_SUBSCRIPTION_CONFIGS}"
-            )
 
     def load_imageset(self, imageset_version):
         if not version_parsable(imageset_version):
@@ -154,7 +138,6 @@ class Addon:
             imagesets_iter=valid_imagesets
         )
         self._validate_imageset_schema(imageset=concerned_imageset)
-        self._validate_subscription_config(src=concerned_imageset)
         return concerned_imageset
 
     def get_available_imagesets(self):
