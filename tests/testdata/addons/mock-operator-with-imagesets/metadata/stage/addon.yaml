@@ -26,10 +26,9 @@ defaultChannel: alpha
 bundleParameters:
   useClusterStorage: "true"
 addonImageSetVersion: 1.0.0
-# These values will never be used, since the loader
-# always looks for subscriptionConfig in the imageset file.
+# Default values for subscriptionConfig
 subscriptionConfig:
   env:
-  - name: USED
-    value: Never
+  - name: DEFAULT
+    value: "TRUE"
 

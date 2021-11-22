@@ -7,12 +7,16 @@ from managedtenants.core.addons_loader.exceptions import AddonLoadError
 from tests.testutils.addon_helpers import addon_with_bundles  # noqa: F401
 from tests.testutils.addon_helpers import addon_with_imageset  # noqa: F401
 from tests.testutils.addon_helpers import addon_with_indeximage  # noqa: F401
-from tests.testutils.addon_helpers import (  # flake8: noqa: F401
+from tests.testutils.addon_helpers import (  # noqa: F401; flake8: noqa: F401
     ADDON_WITH_BUNDLES_TYPE,
     ADDON_WITH_IMAGESET_TYPE,
     ADDON_WITH_INDEXIMAGE_TYPE,
     addon_metadata_with_imageset_version,
+    addon_with_imageset_and_default_config,
+    addon_with_imageset_and_multiple_config,
+    addon_with_imageset_and_no_config,
     addon_with_imageset_path,
+    addon_with_only_imageset_config,
     load_yaml,
     setup_addon_class_with_stubbed_metadata,
 )
@@ -131,34 +135,62 @@ def test_raises_imageset_missing_error():
 
 
 @pytest.mark.parametrize(
-    "addon",
-    ["addon_with_indeximage", "addon_with_imageset"],
+    "addon_str,expected_result",
+    [
+        (
+            "addon_with_imageset_and_default_config",
+            [{"name": "DEFAULT", "value": "TRUE"}],
+        ),
+        (
+            "addon_with_imageset_and_multiple_config",
+            [
+                {"name": "LOCATION", "value": "Black Mesa Research Facility"},
+                {"name": "USER", "value": "Gordon Freeman"},
+            ],
+        ),
+        ("addon_with_imageset_and_no_config", None),
+        (
+            "addon_with_only_imageset_config",
+            [
+                {"name": "LOCATION", "value": "Black Mesa Research Facility"},
+                {"name": "USER", "value": "Gordon Freeman"},
+            ],
+        ),
+        (
+            "addon_with_indeximage",
+            [
+                {"name": "LOCATION", "value": "Black Mesa Research Facility"},
+                {"name": "USER", "value": "Gordon Freeman"},
+            ],
+        ),
+    ],
 )
-def test_addon_subscription_config(addon, request):
-    expected_result = [
-        {"name": "LOCATION", "value": "Black Mesa Research Facility"},
-        {"name": "USER", "value": "Gordon Freeman"},
-    ]
-    addon = request.getfixturevalue(addon)
-    res = addon.get_subscription_config()["env"]
-    # For addon's with imagesets, subscription config is always looked
-    # up in the imageset file.
-    assert res == expected_result
+def test_addon_subscription_config(addon_str, expected_result, request):
+
+    addon = request.getfixturevalue(addon_str)
+    if expected_result:
+        res = addon.get_subscription_config().get("env")
+        assert res == expected_result
+    else:
+        assert addon.get_subscription_config() == expected_result
 
 
 @pytest.mark.parametrize(
     "addon,addon_type",
     [
         ("addon_with_indeximage", ADDON_WITH_INDEXIMAGE_TYPE),
-        ("addon_with_imageset", ADDON_WITH_IMAGESET_TYPE),
+        ("addon_with_only_imageset_config", ADDON_WITH_IMAGESET_TYPE),
     ],
 )
 def test_addon_subscription_config_validations(addon, addon_type, request):
     addon = request.getfixturevalue(addon)
     if addon_type == ADDON_WITH_INDEXIMAGE_TYPE:
-        updated_config_src = addon.metadata
+        updated_metdata = addon.metadata
+        updated_metdata["subscriptionConfig"]["unsupportedAttr"] = "present"
+        with pytest.raises(AddonLoadError):
+            addon._validate_schema(updated_metdata)
     else:
-        updated_config_src = addon.imageset
-    updated_config_src["subscriptionConfig"]["unsupportedAttr"] = "present"
-    with pytest.raises(AddonLoadError):
-        addon._validate_subscription_config(updated_config_src)
+        updated_imageset = addon.imageset
+        updated_imageset["subscriptionConfig"]["unsupportedAttr"] = "present"
+        with pytest.raises(AddonLoadError):
+            addon._validate_imageset_schema(updated_imageset)
