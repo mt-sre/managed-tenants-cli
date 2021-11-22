@@ -1,8 +1,9 @@
 import os
-import subprocess
 from pathlib import Path
 
 from sretoolbox.utils.logger import get_text_logger
+
+from managedtenants.utils.general_utils import run
 
 
 class ChangeDetector:
@@ -62,16 +63,17 @@ class ChangeDetector:
             "--name-only",
             f"{commit_range}",
         ]
-        result = self._run(cmd).stdout.decode().strip()
+        result = run(cmd, self.log).stdout.decode().strip()
         for diff in result.splitlines():
             changed_files.add(Path(diff).resolve())
         return changed_files
 
-    def _run(self, cmd):
-        """
-        Calls subprocess.run with select options.
-        """
-        self.log.debug("Running %s", cmd)
-        return subprocess.run(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False
-        )
+
+def get_short_hash(size=7):
+    """
+    TODO
+    :param size:
+    :return:
+    """
+    cmd = ["git", "rev-parse", f"--short={size}", "HEAD"]
+    return run(cmd=cmd).stdout.decode().strip()
