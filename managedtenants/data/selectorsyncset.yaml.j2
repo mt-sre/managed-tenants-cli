@@ -275,9 +275,7 @@ items:
     snitchNamePostFix: {{ADDON.metadata['id']}} {# Ref: https://gitlab.cee.redhat.com/service/managed-tenants/-/blob/main/addons/ocs-converged-qe/metadata/stage/deadmanssnitch.yaml.j2#L16 and https://gitlab.cee.redhat.com/service/managed-tenants/-/blob/main/addons/ocs-converged/metadata/stage/deadmanssnitch.yaml.j2#L16 #}
     {% endif %}
     
-    {% if ADDON.metadata['deadmanssnitch']['tags'] is defined %}
     tags: {{ADDON.metadata['deadmanssnitch']['tags']}}
-    {% endif %}
     
     targetSecretRef:
     {% if ADDON.metadata['deadmanssnitch']['targetSecretRef'] is defined and ADDON.metadata['deadmanssnitch']['targetSecretRef']['name'] is defined %}
