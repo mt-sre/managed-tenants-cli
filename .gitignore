@@ -1,6 +1,3 @@
-addons/*/.dockerignore
-selectorsyncsets
-
 ##
 ## IDE
 ##
@@ -27,8 +24,7 @@ __pycache__/
 pyproject.toml
 Pipfile.lock
 
-
-# Jenkins adds those files during build phase, and it makes `git status --porcelain`
-# detect the repo as dirty, let's gitignore them
-.docker
-tmp.*/
+##
+## general
+##
+.envrc

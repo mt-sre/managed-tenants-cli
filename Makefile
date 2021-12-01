@@ -55,7 +55,7 @@ test:
 release:
 	python -m pip install twine wheel
 	python setup.py bdist_wheel
-	python -m twine upload dist/*
+	python -m twine upload --skip-existing --verbose dist/*
 
 generate: generate-md-schema pre-commit-autoupdate
 
