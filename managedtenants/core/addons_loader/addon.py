@@ -65,24 +65,13 @@ class Addon:
     def name(self):
         return self.path.name
 
-    def subscription_config_present(self):
-        # If imageset is present, check for subscriptionConfig in the
-        # imageset file, otherwise check for the default subscription config
-        # in the addon metadata file.
-        if self.imageset:
-            if self.imageset.get("subscriptionConfig"):
-                return True
-        return self.metadata.get("subscriptionConfig") is not None
-
     def get_subscription_config(self):
         # If imageset is present, check for subscriptionConfig in the
         # imageset file, otherwise check for the default subscription config
         # in the addon metadata file.
-        if self.subscription_config_present():
-            if self.imageset and self.imageset.get("subscriptionConfig"):
-                return self.imageset.get("subscriptionConfig")
-            return self.metadata.get("subscriptionConfig")
-        return None
+        if self.imageset and self.imageset.get("subscriptionConfig"):
+            return self.imageset.get("subscriptionConfig")
+        return self.metadata.get("subscriptionConfig")
 
     def get_image_name(self, environment):
         """
