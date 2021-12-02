@@ -12,57 +12,59 @@
 
   - **Items** *(string)*
 
-- **`addOnParameters`** *(array)*
+- **`addOnParameters`** *(object)*: List of Addon Parameters. Cannot contain additional properties.
 
-  - **Items** *(object)*: Cannot contain additional properties.
+  - **`items`** *(array)*
 
-    - **`id`** *(string)*
+    - **Items** *(object)*: Cannot contain additional properties.
 
-    - **`name`** *(string)*
+      - **`id`** *(string)*
 
-    - **`description`** *(string)*
+      - **`name`** *(string)*
 
-    - **`value_type`** *(string)*: Must be one of: `['string', 'number', 'boolean', 'cidr', 'resource']`.
+      - **`description`** *(string)*
 
-    - **`validation`** *(string)*
+      - **`value_type`** *(string)*: Must be one of: `['string', 'number', 'boolean', 'cidr', 'resource']`.
 
-    - **`required`** *(boolean)*
+      - **`validation`** *(string)*
 
-    - **`editable`** *(boolean)*
+      - **`required`** *(boolean)*
 
-    - **`enabled`** *(boolean)*
+      - **`editable`** *(boolean)*
 
-    - **`default_value`** *(string)*
+      - **`enabled`** *(boolean)*
 
-    - **`options`** *(array)*
+      - **`default_value`** *(string)*
 
-      - **Items** *(object)*: Cannot contain additional properties.
+      - **`options`** *(array)*
 
-        - **`name`** *(string)*
+        - **Items** *(object)*: Cannot contain additional properties.
 
-        - **`value`** *(string)*
+          - **`name`** *(string)*
 
-    - **`conditions`** *(array)*
+          - **`value`** *(string)*
 
-      - **Items** *(object)*: Cannot contain additional properties.
+      - **`conditions`** *(array)*
 
-        - **`resource`** *(string)*: Must be one of: `['cluster']`.
+        - **Items** *(object)*: Cannot contain additional properties.
 
-        - **`data`** *(object)*: Cannot contain additional properties.
+          - **`resource`** *(string)*: Must be one of: `['cluster']`.
 
-          - **`aws.sts.enabled`** *(boolean)*
+          - **`data`** *(object)*: Cannot contain additional properties.
 
-          - **`ccs.enabled`** *(boolean)*
+            - **`aws.sts.enabled`** *(boolean)*
 
-          - **`cloud_provider.id`** *(['array', 'string'])*
+            - **`ccs.enabled`** *(boolean)*
 
-            - **Items** *(string)*
+            - **`cloud_provider.id`** *(['array', 'string'])*
 
-          - **`product.id`** *(['array', 'string'])*
+              - **Items** *(string)*
 
-            - **Items** *(string)*
+            - **`product.id`** *(['array', 'string'])*
 
-          - **`version.raw_id`** *(string)*
+              - **Items** *(string)*
+
+            - **`version.raw_id`** *(string)*
 
 - **`addOnRequirements`** *(array)*
 
