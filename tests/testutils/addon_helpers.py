@@ -10,6 +10,7 @@ from managedtenants.core.addons_loader.sss import Sss
 
 ADDON_WITH_BUNDLES_TYPE = "with_bundles"
 ADDON_WITH_IMAGESET_TYPE = "with_imageset"
+ADDON_WITH_INDEXIMAGE_TYPE = "with_indeximage"
 
 
 def addon_with_imageset_path():
@@ -46,6 +47,55 @@ def addons_managed_by_addon_cr():
 def addon_with_imageset():
     addon_path = addon_with_imageset_path()
     return Addon(addon_path, "stage")
+
+
+@pytest.fixture
+def addon_with_imageset_and_multiple_config():
+    addon_path = addon_with_imageset_path()
+    return Addon(addon_path, "stage")
+
+
+@pytest.fixture
+def addon_with_imageset_and_no_config():
+    addon_path = addon_with_imageset_path()
+    addon = Addon(addon_path, "stage")
+    updated_metadata = addon.metadata
+    # Remove the default subscriptionConfig
+    del updated_metadata["subscriptionConfig"]
+    # Set imageset to a version that doesnt have
+    # subscription config
+    updated_metadata["addonImageSetVersion"] = "1.0.2"
+    addon.metadata = updated_metadata
+    addon.imageset_version = "1.0.2"
+    # Reload imageset
+    addon.imageset = addon.load_imageset("1.0.2")
+    return addon
+
+
+@pytest.fixture
+def addon_with_only_imageset_config():
+    addon_path = addon_with_imageset_path()
+    addon = Addon(addon_path, "stage")
+    updated_metadata = addon.metadata
+    # Remove the default subscriptionConfig
+    del updated_metadata["subscriptionConfig"]
+    addon.metadata = updated_metadata
+    return addon
+
+
+@pytest.fixture
+def addon_with_imageset_and_default_config():
+    addon_path = addon_with_imageset_path()
+    addon = Addon(addon_path, "stage")
+    updated_metadata = addon.metadata
+    # Set imageset to a version that doesnt have
+    # subscription config
+    updated_metadata["addonImageSetVersion"] = "1.0.2"
+    addon.metadata = updated_metadata
+    addon.imageset_version = "1.0.2"
+    # Reload imageset
+    addon.imageset = addon.load_imageset("1.0.2")
+    return addon
 
 
 @pytest.fixture
