@@ -180,6 +180,14 @@ items:
             packageName: {{ADDON.metadata['operatorName']}}
             channel: {{ADDON.metadata['defaultChannel']}}
             catalogSourceImage: {{ADDON.metadata.get('indexImage') or ADDON.imageset['indexImage']}}
+            {% if ADDON.get_subscription_config() %}
+            config:
+              env:
+              {% for env_obj in ADDON.get_subscription_config().get("env") %}
+              - name: {{env_obj['name']}}
+                value: {{env_obj['value']}}
+              {% endfor %}
+            {% endif %}
 {% endif %}
 {# TODO: move pullsecret management into the addon-operator #}
 {% for namespace in ADDON.metadata['namespaces'] %}
