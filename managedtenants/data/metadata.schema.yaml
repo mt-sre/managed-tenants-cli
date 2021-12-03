@@ -210,6 +210,37 @@ properties:
       secretNamespace:
         type: string
         pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+  deadmanssnitch:
+    type: object
+    additionalProperties: false
+    description: "Denotes the Deadmans Snitch Configuration which is supposed to be setup alongside the Addon."
+    required:
+    - tags
+    properties:
+      clusterDeploymentSelector:
+        type: object  ## should we go as granular as describing properties for matchExpressions/matchLabels?
+        description: "Default: check selectorsyncset.yaml.j2 - line 260"
+      snitchNamePostFix:
+        type: string
+        pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+        description: "Default: {{ADDON.metadata['id']}}"
+      targetSecretRef:
+        type: object
+        additionalProperties: false
+        properties:
+          name:
+            type: string
+            pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+            description: "Default: {{ADDON.metadata['id']}}-deadmanssnitch"
+          namespace:
+            type: string
+            pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+            description: "Default: {{ADDON.metadata['targetNamespace']}}"
+      tags:
+        type: array
+        items:
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
   extraResources:
     type: array
     items:

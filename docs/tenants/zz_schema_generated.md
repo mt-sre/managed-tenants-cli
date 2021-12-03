@@ -116,6 +116,22 @@
 
   - **`secretNamespace`** *(string)*
 
+- **`deadmanssnitch`** *(object)*: Denotes the Deadmans Snitch Configuration which is supposed to be setup alongside the Addon. Cannot contain additional properties.
+
+  - **`clusterDeploymentSelector`** *(object)*: Default: check selectorsyncset.yaml.j2 - line 260.
+
+  - **`snitchNamePostFix`** *(string)*: Default: {{ADDON.metadata['id']}}.
+
+  - **`targetSecretRef`** *(object)*: Cannot contain additional properties.
+
+    - **`name`** *(string)*: Default: {{ADDON.metadata['id']}}-deadmanssnitch.
+
+    - **`namespace`** *(string)*: Default: {{ADDON.metadata['targetNamespace']}}.
+
+  - **`tags`** *(array)*
+
+    - **Items** *(string)*
+
 - **`extraResources`** *(array)*: Extra Resources to be applied to the Hive cluster.
 
   - **Items** *(string)*
