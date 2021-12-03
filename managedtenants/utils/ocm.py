@@ -116,7 +116,7 @@ class OcmCli:
 
     def update_addon_version(self, imageset, metadata):
         addon = self._addon_from_imageset(imageset, metadata)
-        version_id = addon.get("id")
+        version_id = addon.pop("id")
         addon_name = metadata.get("id")
         return self._patch(
             f"/api/clusters_mgmt/v1/addons/{addon_name}/versions/{version_id}",
