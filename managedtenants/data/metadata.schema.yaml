@@ -217,21 +217,25 @@ properties:
     required:
     - tags
     properties:
-      clusterDeploymentSelector: ## default: check selectorsyncset.yaml.j2 - line 260
+      clusterDeploymentSelector:
         type: object  ## should we go as granular as describing properties for matchExpressions/matchLabels?
-      snitchNamePostFix: ## default: {{ADDON.metadata['id']}}
+        description: "Default: check selectorsyncset.yaml.j2 - line 260"
+      snitchNamePostFix:
         type: string
         pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+        description: "Default: {{ADDON.metadata['id']}}"
       targetSecretRef:
         type: object
         additionalProperties: false
         properties:
-          name: ## default: {{ADDON.metadata['id']}}-deadmanssnitch
+          name:
             type: string
             pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
-          namespace: ## default: {{ADDON.metadata['targetNamespace']}}
+            description: "Default: {{ADDON.metadata['id']}}-deadmanssnitch"
+          namespace:
             type: string
             pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+            description: "Default: {{ADDON.metadata['targetNamespace']}}"
       tags:
         type: array
         items:
