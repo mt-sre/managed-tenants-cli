@@ -30,9 +30,26 @@ class Addon:
         self.extra_resources_loader = None
         self.metadata = self.load_metadata(environment=environment)
         self.imageset_version = self.metadata.get("addonImageSetVersion")
-        # If imagebundles are provided
+
+        # All available ImageSets should be parsed regardless of the
+        # `metadata.addonImageSetVersion` field:
+        # - `self.all_imagesets` is used for posting addon versions to OCM.
+        #   This was done so that ImageSets are posted anytime they're made
+        #   available in managed-tenants, without depending on the version
+        #   pinned within the metadata. This means that the versions endpoint
+        #   will hold data for a version even before it is being used in
+        #   the metadata.
+        # - `self.all_imagesets` is later used for getting the current imageset
+        # in use.
+        self.imagesets_path = self.path / f"addonimagesets/{environment}"
+        self.all_imagesets = self.get_all_imagesets(
+            imageset_dir=self.imagesets_path
+        )
+
+        # If imagebundles are provided and at least one imageset exists
         if self.imageset_version is not None:
-            self.imagesets_path = self.path / f"addonimagesets/{environment}"
+            # Load the current imageset according to
+            # metadata.addonImageSetVersion
             self.imageset = self.load_imageset(self.imageset_version)
             self.package = None
             self.bundles = None
@@ -64,6 +81,24 @@ class Addon:
     @property
     def name(self):
         return self.path.name
+
+    def get_all_imagesets(self, imageset_dir):
+        def is_not_none(arg):
+            return arg is not None
+
+        def get_available_imagesets(path):
+            imageset_files = (p for p in path.iterdir() if p.is_file())
+            return imageset_files
+
+        # Parse imagesets only if the ImageSet directory exists
+        if self.imagesets_path.is_dir():
+            imageset_yamls = map(
+                self.load_yaml, get_available_imagesets(imageset_dir)
+            )
+            all_imagesets = list(filter(is_not_none, imageset_yamls))
+            for imageset in all_imagesets:
+                self._validate_imageset_schema(imageset)
+            return all_imagesets
 
     def get_subscription_config(self):
         # If imageset is present, check for subscriptionConfig in the
@@ -112,28 +147,16 @@ class Addon:
         if not version_parsable(imageset_version):
             raise AddonLoadError("Addon imageset must be in semantic version")
 
-        if not self.imagesets_path.is_dir():
+        if not self.all_imagesets:
             raise AddonLoadError(
-                "imagesets directory missing at the path:"
-                f" {self.imagesets_path}"
+                f"No imagesets found at path: {self.imagesets_path}"
             )
 
-        def is_not_none(arg):
-            return arg is not None
-
-        imageset_yamls = map(self.load_yaml, self.get_available_imagesets())
-        valid_imagesets = filter(is_not_none, imageset_yamls)
         concerned_imageset = self.get_target_imageset(
-            imagesets_iter=valid_imagesets
+            # self.all_imagesets is a list, so convert it to an iter
+            imagesets_iter=iter(self.all_imagesets)
         )
-        self._validate_imageset_schema(imageset=concerned_imageset)
         return concerned_imageset
-
-    def get_available_imagesets(self):
-        imageset_files = (
-            p for p in self.imagesets_path.iterdir() if p.is_file()
-        )
-        return imageset_files
 
     def get_target_imageset(self, imagesets_iter):
         target_version = self.imageset_version

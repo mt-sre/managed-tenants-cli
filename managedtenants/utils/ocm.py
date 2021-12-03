@@ -100,11 +100,11 @@ class OcmCli:
         addon = self._addon_from_metadata(metadata)
         return self._post("/api/clusters_mgmt/v1/addons", json=addon)
 
-    def add_addon_version(self, imageset, metadata):
-        addon = self._addon_from_imageset(imageset, metadata)
+    def add_addon_version(self, imageset, addon_id, enabled):
+        payload = self._payload_from_imageset(imageset, enabled)
         return self._post(
-            f'/api/clusters_mgmt/v1/addons/{metadata.get("id")}/versions',
-            json=addon,
+            f"/api/clusters_mgmt/v1/addons/{addon_id}/versions",
+            json=payload,
         )
 
     def update_addon(self, metadata):
@@ -114,13 +114,12 @@ class OcmCli:
             f"/api/clusters_mgmt/v1/addons/{addon_id}", json=addon
         )
 
-    def update_addon_version(self, imageset, metadata):
-        addon = self._addon_from_imageset(imageset, metadata)
-        version_id = addon.pop("id")
-        addon_name = metadata.get("id")
+    def update_addon_version(self, imageset, addon_id, enabled):
+        payload = self._payload_from_imageset(imageset, enabled)
+        version_id = payload.pop("id")
         return self._patch(
-            f"/api/clusters_mgmt/v1/addons/{addon_name}/versions/{version_id}",
-            json=addon,
+            f"/api/clusters_mgmt/v1/addons/{addon_id}/versions/{version_id}",
+            json=payload,
         )
 
     def get_addon(self, addon_id):
@@ -150,27 +149,32 @@ class OcmCli:
         return addon
 
     # Post Addon version data to versions endpoint
-    def upsert_addon_version(self, imageset, metadata):
+    def upsert_addon_version(self, imageset, addon_id, enabled):
         try:
-            addon = self.add_addon_version(imageset, metadata)
+            addon = self.add_addon_version(imageset, addon_id, enabled)
         except OCMAPIError as exception:
             if exception.response.status_code == 409:
-                return self.update_addon_version(imageset, metadata)
+                return self.update_addon_version(imageset, addon_id, enabled)
             raise exception
         return addon
 
-    # Returns a versioned addon payload that corresponds
-    # to an ImageSet
-    def _addon_from_imageset(self, imageset, metadata):
-        addon = {
-            "id": metadata.get("addonImageSetVersion"),
-            "enabled": metadata.get("enabled"),
-        }
+    def _payload_from_imageset(self, imageset, enabled):
+        def get_id_from_imageset_name(imageset_name):
+            # Example: extracts ".v1.5.0" from reference-addon.v1.5.0
+            regex_pattern = r"\.v(\d)+\.(\d)+\.(\d)+$"
+            matching = re.search(regex_pattern, imageset_name)
 
+            # return only "1.5.0" from ".v1.5.0"
+            return matching.group(0)[2:]
+
+        payload = {
+            "id": get_id_from_imageset_name(imageset.get("name", "")),
+            "enabled": enabled,
+        }
         for key, val in imageset.items():
             if key in self.IMAGESET_KEYS:
-                addon[self.IMAGESET_KEYS[key]] = val
-        return addon
+                payload[self.IMAGESET_KEYS[key]] = val
+        return payload
 
     def _addon_from_metadata(self, metadata):
         addon = {}
