@@ -11,6 +11,7 @@ from managedtenants.core.addons_loader.bundle import Bundle
 from managedtenants.core.addons_loader.exceptions import AddonLoadError
 from managedtenants.core.addons_loader.package import Package
 from managedtenants.core.addons_loader.sss import Sss
+from managedtenants.utils.general_utils import parse_version_from_imageset_name
 from managedtenants.utils.hash import hash_dir_sha256, hash_sha256
 from managedtenants.utils.schema import (
     load_addon_imageset_schema,
@@ -139,7 +140,7 @@ class Addon:
         target_version = self.imageset_version
 
         def get_version(imageset_yaml):
-            return parse_image_version_from_name(
+            return parse_version_from_imageset_name(
                 name=imageset_yaml.get("name", "")
             )
 
@@ -258,17 +259,6 @@ def find(iterator, item, key_func=None):
         return arg == item
 
     return next(filter(predicate, iterator), None)
-
-
-def parse_image_version_from_name(name):
-    """Returns the image version from the name.
-    Ex: mock-operator.v1.0.0 -> 1.0.0"""
-    version_str = name.split(".v")[-1]
-    try:
-        result = semver.VersionInfo.parse(version_str)
-        return result
-    except ValueError:
-        return None
 
 
 def version_parsable(imageset_version):

@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 import requests
 from sretoolbox.utils import retry
 
+from managedtenants.utils.general_utils import parse_version_from_imageset_name
+
 
 class OCMAPIError(Exception):
     """Used when there are errors with the OCM API"""
@@ -163,7 +165,7 @@ class OcmCli:
     # to an ImageSet
     def _addon_from_imageset(self, imageset, metadata):
         addon = {
-            "id": metadata.get("addonImageSetVersion"),
+            "id": str(parse_version_from_imageset_name(imageset.get("name"))),
             "enabled": metadata.get("enabled"),
         }
 

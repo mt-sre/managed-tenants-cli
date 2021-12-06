@@ -30,7 +30,7 @@ repos:
       - id: trailing-whitespace
   # Black
   - repo: https://github.com/psf/black
-    rev: 21.11b1
+    rev: 21.12b0
     hooks:
       - id: black
         args: ["--config", ".linters/black", "--experimental-string-processing"]
