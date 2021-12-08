@@ -327,16 +327,12 @@ properties:
                   ccs.enabled:
                     type: boolean
                   cloud_provider.id:
-                    type:
-                      - array
-                      - string
+                    type: array
                     items:
                       type: string
                       format: printable
                   product.id:
-                    type:
-                      - array
-                      - string
+                    type: array
                     items:
                       type: string
                       format: printable
@@ -378,16 +374,12 @@ properties:
             aws.sts.enabled:
               type: boolean
             cloud_provider.id:
-              type:
-                - array
-                - string
+              type: array
               items:
                 type: string
                 format: printable
             product.id:
-              type:
-                - array
-                - string
+              type: array
               items:
                 type: string
                 format: printable
@@ -400,19 +392,19 @@ properties:
             nodes.compute:
               type: integer
             nodes.compute_machine_type.id:
-              type:
-                - array
-                - string
-              format: printable
+              type: array
+              items:
+                type: string
+                format: printable
             version.raw_id:
               type: string
               format: printable
             #MachinePool
             instance_type:
-              type:
-                - array
-                - string
-              format: printable
+              type: array
+              items:
+                type: string
+                format: printable
             replicas:
               type: integer
         enabled:

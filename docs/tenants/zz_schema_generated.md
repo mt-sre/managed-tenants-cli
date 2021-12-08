@@ -178,11 +178,11 @@
 
           - **`ccs.enabled`** *(boolean)*
 
-          - **`cloud_provider.id`** *(['array', 'string'])*
+          - **`cloud_provider.id`** *(array)*
 
             - **Items** *(string)*
 
-          - **`product.id`** *(['array', 'string'])*
+          - **`product.id`** *(array)*
 
             - **Items** *(string)*
 
@@ -204,11 +204,11 @@
 
       - **`aws.sts.enabled`** *(boolean)*
 
-      - **`cloud_provider.id`** *(['array', 'string'])*
+      - **`cloud_provider.id`** *(array)*
 
         - **Items** *(string)*
 
-      - **`product.id`** *(['array', 'string'])*
+      - **`product.id`** *(array)*
 
         - **Items** *(string)*
 
@@ -220,11 +220,15 @@
 
       - **`nodes.compute`** *(integer)*
 
-      - **`nodes.compute_machine_type.id`** *(['array', 'string'])*
+      - **`nodes.compute_machine_type.id`** *(array)*
+
+        - **Items** *(string)*
 
       - **`version.raw_id`** *(string)*
 
-      - **`instance_type`** *(['array', 'string'])*
+      - **`instance_type`** *(array)*
+
+        - **Items** *(string)*
 
       - **`replicas`** *(integer)*
 
