@@ -25,7 +25,7 @@ class Cli:
             "-v",
             "--version",
             action="version",
-            version="managedtenants v%s" % VERSION,
+            version=f"managedtenants v{VERSION}",
         )
         parser.add_argument(
             "--environment",
@@ -116,7 +116,7 @@ class Cli:
         tasks_path = Path(path)
         if tasks_path.is_dir() or tasks_path.is_file():
             return value
-        raise argparse.ArgumentTypeError("not found: %s" % path)
+        raise argparse.ArgumentTypeError(f"not found: {path}")
 
     def run(self):
         if self.args.subcommand == "load":

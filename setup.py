@@ -20,12 +20,16 @@ BASE_PATH = os.path.dirname(__file__)
 
 
 def get_readme_content():
-    with open(os.path.join(BASE_PATH, "README.md"), "r") as readme:
+    with open(
+        os.path.join(BASE_PATH, "README.md"), "r", encoding="utf8"
+    ) as readme:
         return readme.read()
 
 
 def get_version():
-    with open(os.path.join(BASE_PATH, "VERSION"), "r") as version:
+    with open(
+        os.path.join(BASE_PATH, "VERSION"), "r", encoding="utf8"
+    ) as version:
         return version.read().strip()
 
 

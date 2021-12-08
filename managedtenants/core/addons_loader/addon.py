@@ -96,7 +96,7 @@ class Addon:
         metadata_dir = self.path / "metadata" / environment
 
         try:
-            with open(metadata_path) as file_obj:
+            with open(metadata_path, encoding="utf8") as file_obj:
                 metadata = yaml.load(file_obj.read(), Loader=yaml.CSafeLoader)
         except yaml.error.MarkedYAMLError as details:
             raise AddonLoadError(f"{metadata_path}: {details}")
@@ -212,7 +212,7 @@ class Addon:
     @staticmethod
     def load_yaml(path):
         try:
-            with open(path) as file_obj:
+            with open(path, encoding="utf8") as file_obj:
                 data = yaml.load(file_obj.read(), Loader=yaml.CSafeLoader)
                 return data
         except yaml.YAMLError:
