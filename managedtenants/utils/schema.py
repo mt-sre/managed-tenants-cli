@@ -35,7 +35,7 @@ def load_draft7_schema(path_or_file):
     """
     if isinstance(path_or_file, Path):
         f = file_to_close = open(  # pylint: disable=consider-using-with
-            path_or_file, encoding="utf8"
+            path_or_file, "r", encoding="utf8"
         )
     else:
         f = path_or_file
