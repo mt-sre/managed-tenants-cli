@@ -15,6 +15,20 @@ class GitLab:
     def delete_branch(self, branch):
         self.project.branches.delete(branch)
 
+    def file_exists(self, file_path, target_branch):
+        try:
+            _ = self.project.files.get(file_path=file_path, ref=target_branch)
+            return True
+
+        except gitlab.exceptions.GitlabGetError as err:
+
+            # file not found
+            if err.response_code == 404:
+                return False
+
+            # unknown error
+            raise err
+
     def create_mr(self, source_branch, target_branch, title):
         data = {
             "source_branch": source_branch,
