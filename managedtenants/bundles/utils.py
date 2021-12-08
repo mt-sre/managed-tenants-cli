@@ -133,7 +133,7 @@ def quay_org_from_path(quay_org_path, base_path="quay.io/"):
 
 def load_yaml(path):
     try:
-        with open(path) as file_obj:
+        with open(path, "r", encoding="utf8") as file_obj:
             data = yaml.load(file_obj.read(), Loader=yaml.CSafeLoader)
             return data
     except yaml.YAMLError:
