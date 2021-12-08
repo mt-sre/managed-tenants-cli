@@ -12,6 +12,7 @@ A CLI tool commonly used by MT-SRE projects at Red Hat.
 | `run`            | Runs the task                                                                      |
 | `tasks_reference` | [path:search] "path" for the directory or file and "search" string to filter tasks |
 
+
 ### Available flags
 
 | Flag                 | Description                            |
