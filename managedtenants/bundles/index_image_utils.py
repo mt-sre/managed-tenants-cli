@@ -3,9 +3,9 @@ import subprocess
 from sretoolbox.container import Image
 from sretoolbox.utils.logger import get_text_logger
 
-from managedtenants.bundles.binary_deps import OPM
+from managedtenants.bundles.binary_deps import MTCLI, OPM
 from managedtenants.bundles.exceptions import BundleUtilsError
-from managedtenants.bundles.utils import push_image, quay_repo_exists
+from managedtenants.bundles.utils import ensure_quay_repo, push_image
 
 
 class IndexImageBuilder:
@@ -89,3 +89,14 @@ class IndexImageBuilder:
             docker_conf_path=self.docker_conf,
             logger=self.logger,
         )
+
+
+def list_bundles(index_image_url, logger=None):
+    cmd = ["list-bundles", index_image_url]
+    try:
+        res = MTCLI.run(*cmd).rstrip()
+        return [i for i in res.split("\n") if i != ""]
+    except subprocess.CalledProcessError:
+        if logger:
+            logger.info(f"Failed to extract bundles from {index_image_url}")
+        return None
