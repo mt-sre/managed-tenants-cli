@@ -167,6 +167,7 @@ class OcmCli:
         addon = {
             "id": str(parse_version_from_imageset_name(imageset.get("name"))),
             "enabled": metadata.get("enabled"),
+            "channel": metadata.get("defaultChannel"),
         }
 
         for key, val in imageset.items():
