@@ -1,5 +1,16 @@
+# These shell flags are REQUIRED for an early exit in case any program called by make errors!
+.SHELLFLAGS=-euo pipefail -c
+SHELL := /bin/bash
+
 TARGETS := prepare install develop check test generate release clean docker-build docker-run
 .PHONY: $(TARGETS)
+
+# Required because the image sets up a venv in Dockerfile
+# https://catalog.redhat.com/software/containers/ubi8/python-39/6065b24eb92fbda3a4c65d8f?container-tabs=dockerfile
+export PIPENV_VENV_IN_PROJECT=1
+export PIPENV_IGNORE_VIRTUALENVS=1
+
+CI ?= false
 
 all:
 	@echo
@@ -19,7 +30,7 @@ all:
 
 prepare:
 	# Can't use --user inside container
-	if [ "$(shell whoami)" == "root" ]; then \
+	if [ "${CI}" == "true" ]; then \
 		pip install pipenv --upgrade; \
 	else \
 		pip install pipenv --user --upgrade; \
