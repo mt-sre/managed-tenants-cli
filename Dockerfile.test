@@ -1,16 +1,13 @@
 # vi:set ft=dockerfile:
 FROM registry.access.redhat.com/ubi8/python-39:latest
 
+ENV CI=true
 USER root
 
 WORKDIR /managedtenant-cli
 
 COPY . ./
 
-RUN pip install pipenv
-
-RUN pipenv install --dev
+RUN make develop
 
 ENTRYPOINT ["make"]
-
-CMD ["check", "test"]
