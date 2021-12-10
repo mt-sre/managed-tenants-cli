@@ -172,6 +172,13 @@ class OcmCli:
 
         for key, val in imageset.items():
             if key in self.IMAGESET_KEYS:
+                if key == "addOnParameters":
+                    # Enforce a sort order field on addon parameters
+                    # so that they can be shown in the same order as
+                    # the imageset file.
+                    for index, param in enumerate(val):
+                        param["order"] = index
+                    val = {"items": val}
                 addon[self.IMAGESET_KEYS[key]] = val
         return addon
 
