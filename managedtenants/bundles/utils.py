@@ -1,5 +1,7 @@
 import subprocess
 
+import yaml
+
 from managedtenants.bundles.exceptions import BundleUtilsError
 from managedtenants.utils.quay_api import QuayApi
 
@@ -20,6 +22,34 @@ def get_subdirs(path):
     Returns all the sub-directories under `path`.
     """
     return (item for item in path.iterdir() if item.is_dir())
+
+
+def ensure_quay_repo(
+    repo_name, org_path, quay_token, create_quay_repo=True, dry_run=False
+):
+    """
+    Validates that the required quay repository exists.
+
+    Robot accounts are configured to get automatic write access on new
+    repositories so we do not need to modify the permissions.
+
+    :return: true if repo exists or was created successfully
+    :rtype: bool
+    """
+    if dry_run:
+        return True
+    org = quay_org_from_path(org_path)
+    quay_api = QuayApi(organization=org, token=quay_token)
+    # If repo exists return true
+    if quay_api.repo_exists(repo_name):
+        return True
+    # If repo doesn't exist and `create_quay_repo` is true,
+    # try to create the repo
+    if create_quay_repo:
+        return quay_api.repo_create(repo_name)
+    # If `create_quay_repo` is false and repo doesnt exist,
+    # return false
+    return False
 
 
 def quay_repo_exists(dry_run, org_path, repo_name, quay_token):
@@ -99,3 +129,12 @@ def quay_org_from_path(quay_org_path, base_path="quay.io/"):
         f"Unable to parse:{quay_org_path}."
         "Tried extracting quay org from quay org path"
     )
+
+
+def load_yaml(path):
+    try:
+        with open(path, "r", encoding="utf8") as file_obj:
+            data = yaml.load(file_obj.read(), Loader=yaml.CSafeLoader)
+            return data
+    except yaml.YAMLError:
+        return None
