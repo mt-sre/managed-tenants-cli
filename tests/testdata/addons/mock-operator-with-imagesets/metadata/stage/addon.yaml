@@ -7,7 +7,7 @@ label: "api.openshift.com/addon-mock-operator"
 enabled: true
 addonOwner: Mock <mock@redhat.com>
 quayRepo: quay.io/osd-addons/mock-operator
-installMode: SingleNamespace
+installMode: OwnNamespace
 targetNamespace: mock-operator
 namespaces:
   - mock-operator
@@ -31,4 +31,3 @@ subscriptionConfig:
   env:
   - name: DEFAULT
     value: "TRUE"
-

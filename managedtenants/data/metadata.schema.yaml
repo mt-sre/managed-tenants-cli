@@ -55,7 +55,6 @@ properties:
     type: string
     enum:
       - AllNamespaces
-      - SingleNamespace
       - OwnNamespace
     description: "OLM InstallMode for the addon operator."
   manualInstallPlanApproval:

@@ -30,7 +30,7 @@
 
 - **`testHarness`** *(string)*: Quay repository for the testHarness image. Needs to match: 'quay.io/<my-repo>/<my-test-harness>:<my-tag>'.
 
-- **`installMode`** *(string)*: OLM InstallMode for the addon operator. Must be one of: `['AllNamespaces', 'SingleNamespace', 'OwnNamespace']`.
+- **`installMode`** *(string)*: OLM InstallMode for the addon operator. Must be one of: `['AllNamespaces', 'OwnNamespace']`.
 
 - **`manualInstallPlanApproval`** *(boolean)*
 
