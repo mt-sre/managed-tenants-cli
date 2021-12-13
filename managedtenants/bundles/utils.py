@@ -122,7 +122,7 @@ def check_image_size(image_url_tag):
 def quay_org_from_path(quay_org_path, base_path="quay.io/"):
     # "quay.io/osd-addons/" -> osd-addons
     # "quay.io/osd-addons" -> osd-addons
-    split_res = quay_org_path.split(base_path)
+    split_res = str(quay_org_path).split(base_path)
     if split_res:
         return split_res[-1].strip("/")
     raise BundleUtilsError(
@@ -134,7 +134,7 @@ def quay_org_from_path(quay_org_path, base_path="quay.io/"):
 def load_yaml(path):
     try:
         with open(path, "r", encoding="utf8") as file_obj:
-            data = yaml.load(file_obj.read(), Loader=yaml.CSafeLoader)
+            data = yaml.load(file_obj.read(), Loader=yaml.SafeLoader)
             return data
     except yaml.YAMLError:
         return None
