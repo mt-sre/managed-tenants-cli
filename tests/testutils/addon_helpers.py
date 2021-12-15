@@ -1,9 +1,13 @@
+import subprocess
 from pathlib import Path
 from unittest import mock
 
 import pytest
 import yaml
+from conftest import REGISTRY_URL
+from sretoolbox.container.image import Image
 
+from managedtenants.bundles.utils import run
 from managedtenants.core.addon_manager import AddonManager
 from managedtenants.core.addons_loader.addon import Addon
 from managedtenants.core.addons_loader.sss import Sss
@@ -15,6 +19,10 @@ ADDON_WITH_INDEXIMAGE_TYPE = "with_indeximage"
 
 def addon_with_imageset_path():
     return Path("tests/testdata/addons/mock-operator-with-imagesets")
+
+
+def zero_size_image_docker_file_path():
+    return Path("tests/testdata/zero_size_image_dockerfile")
 
 
 def addon_with_bundles_path():
@@ -31,6 +39,25 @@ def addon_with_deadmanssnitch_path():
 
 def addon_with_pagerduty_path():
     return Path("tests/testdata/addons/test-operator")
+
+
+def bundles_dockerfile_path():
+    return Path("tests/testdata/bundles_dockerfile")
+
+
+@pytest.fixture
+def mt_bundles_with_invalid_dir_structure_path():
+    return Path("tests/testdata/addons/mock-operator-with-bundles")
+
+
+@pytest.fixture
+def mt_bundles_addon_path():
+    return Path("tests/testdata/addons/reference-addon")
+
+
+@pytest.fixture
+def mt_bundles_addon_with_invalid_version_path():
+    return Path("tests/testdata/addons/reference-addon-invalid-versions")
 
 
 @pytest.fixture
@@ -141,3 +168,26 @@ def addon_metadata_with_imageset_version(imageset_version):
 
     metadata["addonImageSetVersion"] = imageset_version
     return metadata
+
+
+def create_zero_size_docker_image():
+    url_tag = f"{REGISTRY_URL}/zerosize:latest"
+    cmd = [
+        "docker",
+        "build",
+        "-f",
+        str(zero_size_image_docker_file_path()),
+        "-t",
+        url_tag,
+        ".",
+    ]
+    try:
+        res = run(cmd)
+        res.check_returncode()
+        return Image(url_tag)
+    except subprocess.CalledProcessError:
+        return None
+
+
+def return_false(_):
+    return False
