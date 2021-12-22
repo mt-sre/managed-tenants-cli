@@ -86,4 +86,4 @@ docker-build:
 
 CMD := check
 docker-run: docker-build
-	docker run --rm -it --name managedtenants_cli-dev $(DEV_IMAGE) $(CMD)
+	docker run --rm -it --name managedtenants_cli-dev -v "/var/run/docker.sock:/var/run/docker.sock" $(DEV_IMAGE) $(CMD)
