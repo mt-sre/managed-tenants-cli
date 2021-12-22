@@ -4,6 +4,12 @@ FROM registry.access.redhat.com/ubi8/python-39:latest
 ENV CI=true
 USER root
 
+# Install docker-ce for RHEL8
+RUN dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo \
+    && dnf install -y docker-ce \
+    && dnf clean all
+
+
 WORKDIR /managedtenant-cli
 
 COPY . ./
