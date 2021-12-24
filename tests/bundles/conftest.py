@@ -27,7 +27,7 @@ def setup_image_registry():
         "--restart=always",
         "--name",
         LOCAL_REGISTRY_NAME,
-        "registry:2",
+        "quay.io/asnaraya/registry:2",
     ]
     try:
         res = run(cmd)
