@@ -31,4 +31,3 @@ subscriptionConfig:
   env:
   - name: DEFAULT
     value: "TRUE"
-
