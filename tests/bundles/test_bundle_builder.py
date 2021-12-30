@@ -2,20 +2,21 @@ from pathlib import Path
 
 import pytest
 import sretoolbox
-from conftest import LOCAL_REGISTRY_PORT
+from conftest import QUAY_API, REGISTRY_URL
 from mock import patch
 
-from managedtenants.bundles.bundle_utils import BundleUtils
-from managedtenants.bundles.exceptions import BundleUtilsError
+from managedtenants.bundles.bundle_builder import BundleBuilder
+from managedtenants.bundles.exceptions import BundleBuilderError
+from managedtenants.utils.quay_api import QuayApi
 from tests.testutils.addon_helpers import (
     bundles_dockerfile_path,
     mt_bundles_addon_path,
     mt_bundles_addon_with_invalid_version_path,
     mt_bundles_with_invalid_dir_structure_path,
     return_false,
+    return_true,
 )
 
-REGISTRY_URL = Path(f"127.0.0.1:{LOCAL_REGISTRY_PORT}/")
 HASH_STRING = "int08h"
 
 
@@ -73,14 +74,14 @@ def test_class_initialization_validation(
     """Tests initial BundleUtils class initialization validation"""
     addon_dir = request.getfixturevalue(path)
     if error_prefix:
-        with pytest.raises(BundleUtilsError) as err:
-            BundleUtils(addon_dir=addon_dir, dry_run=True)
+        with pytest.raises(BundleBuilderError) as err:
+            BundleBuilder(addon_dir=addon_dir, dry_run=True, quay_api=QUAY_API)
         assert error_prefix in str(err)
     else:
         try:
-            BundleUtils(addon_dir=addon_dir, dry_run=True)
-        except BundleUtilsError:
-            pytest.fail("Raised BundleUtilsError when it was not expected!")
+            BundleBuilder(addon_dir=addon_dir, dry_run=True, quay_api=QUAY_API)
+        except BundleBuilderError:
+            pytest.fail("Raised BundleBuilderError when it was not expected!")
 
 
 @pytest.mark.parametrize(
@@ -95,29 +96,26 @@ def test_class_initialization_validation(
     ],
 )
 @patch.object(sretoolbox.container.Image, "__bool__", return_false)
+@patch.object(QuayApi, "ensure_repo", return_true)
 def test_build_push_bundle_images_with_deps(
     addon_dir, versions, expected_image_urls, request
 ):
     mt_bundles_path = request.getfixturevalue(addon_dir)
-    bundle_builder = BundleUtils(addon_dir=mt_bundles_path, dry_run=False)
-    with patch(
-        "managedtenants.bundles.bundle_utils.ensure_quay_repo",
-        return_value=True,
-    ):
-        images = bundle_builder.build_push_bundle_images_with_deps(
-            quay_org_path=REGISTRY_URL,
-            versions=versions,
-            hash_string=HASH_STRING,
-            docker_file_path=bundles_dockerfile_path(),
-            create_quay_repo=False,
-        )
-        returned_image_urls = set(map(lambda image: image.url_tag, images))
-        assert returned_image_urls == set(expected_image_urls)
+    bundle_builder = BundleBuilder(
+        addon_dir=mt_bundles_path, dry_run=False, quay_api=QUAY_API
+    )
+    images = bundle_builder.build_push_bundle_images_with_deps(
+        versions=versions,
+        hash_string=HASH_STRING,
+        docker_file_path=bundles_dockerfile_path(),
+    )
+    returned_image_urls = set(map(lambda image: image.url_tag, images))
+    assert returned_image_urls == set(expected_image_urls)
 
 
 def test_get_all_operator_names(mt_bundles_addon_path):
-    bundle_util_obj = BundleUtils(
-        addon_dir=mt_bundles_addon_path, dry_run=False
+    bundle_builder = BundleBuilder(
+        addon_dir=mt_bundles_addon_path, dry_run=False, quay_api=QUAY_API
     )
     expected_operator_names = [
         "addon-operator.v0.1.0",
@@ -131,14 +129,14 @@ def test_get_all_operator_names(mt_bundles_addon_path):
         "reference-addon.v0.1.5",
         "reference-addon.v0.1.6",
     ]
-    res = bundle_util_obj.get_all_operator_names()
+    res = bundle_builder.get_all_operator_names()
     assert set(expected_operator_names) == set(res)
 
 
 def test_get_latest_version(mt_bundles_addon_path):
-    bundle_util_obj = BundleUtils(
-        addon_dir=mt_bundles_addon_path, dry_run=False
+    bundle_builder = BundleBuilder(
+        addon_dir=mt_bundles_addon_path, dry_run=False, quay_api=QUAY_API
     )
-    returned_max = bundle_util_obj.get_latest_version()
+    returned_max = bundle_builder.get_latest_version()
     expected_max = "0.1.6"
     assert returned_max == expected_max

@@ -8,37 +8,27 @@ from sretoolbox.container import Image
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.binary_deps import OPERATOR_SDK
-from managedtenants.bundles.exceptions import BundleUtilsError
-from managedtenants.bundles.utils import (
-    ensure_quay_repo,
-    get_subdirs,
-    load_yaml,
-    push_image,
-)
+from managedtenants.bundles.exceptions import BundleBuilderError
+from managedtenants.bundles.utils import get_subdirs, load_yaml, push_image
 from managedtenants.utils.general_utils import run
 
 
-class BundleUtils:
+class BundleBuilder:
     def __init__(
         self,
         addon_dir,
         dry_run,
-        quay_token=None,
+        quay_api=None,
         docker_conf_path=None,
-        logger=None,
     ):
-        # pylint: disable=R0913
-        err = self._validate_dir_structure(addon_dir)
-        if err:
-            raise BundleUtilsError(err)
+        if quay_api is None:
+            raise BundleBuilderError("Please provide a valid quay_api object.")
         self.addon_dir = addon_dir
         self.dry_run = dry_run
-        self.quay_token = quay_token
+        self.quay_api = quay_api
         self.docker_conf = docker_conf_path
-        if logger:
-            self.logger = logger
-        else:
-            self.logger = get_text_logger("managedtenants-bundles")
+        self.logger = get_text_logger("managedtenants-bundle-builder")
+        self._validate_dir_structure()
 
     def validate_local_bundles(self):
         """
@@ -88,38 +78,30 @@ class BundleUtils:
 
     def build_push_bundle_images_with_deps(
         self,
-        quay_org_path,
         versions,
         hash_string,
         docker_file_path,
-        create_quay_repo,
     ):
         # pylint: disable=R0913
         """
         Builds and pushes bundle images in the given addon directory.
-        :param quay_org_path: Quay org to which images should be pushed.
         :param versions: A list versions to consider
         :param hash_string: A string to be used in the created
         image tag.
         :param docker_file_path: Path to the dockerfile to be
         used to create the bundle image.
-        :create_quay_repo: A boolean flag to indicate whether to create
-        quay repos for the bundles. If set to `false`, repos are
-        expected to be created before-hand.
         :return: A list of pushed bundle images
         """
         all_inner_addons = get_subdirs(path=self.addon_dir)
-        self.logger.info(f"quay org: {quay_org_path}")
+        self.logger.info(f"quay org: {self.quay_api.org}")
         addon_images = []
         for inner_addon in all_inner_addons:
             addon_images.extend(
                 self._build_push_bundle_images(
                     addon=inner_addon,
-                    quay_org_path=quay_org_path,
                     versions=versions,
                     hash_string=hash_string,
                     dockerfile_path=docker_file_path,
-                    create_quay_repo=create_quay_repo,
                 )
             )
         return addon_images
@@ -152,10 +134,8 @@ class BundleUtils:
     def _build_push_bundle_images(
         self,
         addon,
-        quay_org_path,
         hash_string,
         dockerfile_path,
-        create_quay_repo,
         versions=None,
     ):
         # pylint: disable=R0913
@@ -163,7 +143,6 @@ class BundleUtils:
         :param addon: A Posix directory path
         :param main_addon: A boolean to indicate if the passed addon
         is the "main" addon.
-        :param quay_org_path: Quay org to which images should be pushed.
         :param versions: A list versions to consider
         :param hash_string: A string to be used in the created image tag.
         :param docker_file_path: Path to the dockerfile to be used to create
@@ -187,11 +166,9 @@ class BundleUtils:
                 continue
             bundle_image = self._build_push_bundle_image(
                 bundle=bundle,
-                quay_org_path=quay_org_path,
                 hash_string=hash_string,
                 docker_file_path=dockerfile_path,
                 addon_name=addon_name,
-                create_quay_repo=create_quay_repo,
             )
             images.append(
                 self.validate_bundle_image(
@@ -203,28 +180,21 @@ class BundleUtils:
     def _build_push_bundle_image(
         self,
         bundle,
-        quay_org_path,
         hash_string,
         docker_file_path,
         addon_name,
-        create_quay_repo,
     ):
         # pylint: disable=R0913
         repo_name = f"{addon_name}-bundle"
-        if not ensure_quay_repo(
-            dry_run=self.dry_run,
-            org_path=quay_org_path,
-            repo_name=repo_name,
-            quay_token=self.quay_token,
-            create_quay_repo=create_quay_repo,
-        ):
-            raise BundleUtilsError(
+        if not self.quay_api.ensure_repo(repo_name, dry_run=self.dry_run):
+            raise BundleBuilderError(
                 f"Failed to create/find quay repo:{repo_name} for the addon:"
                 f" {addon_name}"
             )
         image = Image(
-            str(quay_org_path / f"{repo_name}:{bundle.name}-{hash_string}")
+            f"{self.quay_api.org}/{repo_name}:{bundle.name}-{hash_string}"
         )
+
         if not self.dry_run and image:
             self.logger.info('Image exists "%s"', image.url_tag)
             return image
@@ -267,8 +237,13 @@ class BundleUtils:
         ]
         return map(str, result)
 
-    def _validate_dir_structure(self, addon_dir):
-        main_addon_path, deps_paths = self._get_addon_and_deps_path(addon_dir)
+    def _validate_dir_structure(self):
+        """
+        Validates dir structure for self.addon_dir.
+
+        :raises BundleBuilderError:
+        """
+        main_addon_path, deps_paths = self._get_addon_and_deps_path()
         invalid_bundle_version_paths = []
 
         # validate main addon subdirs
@@ -280,9 +255,9 @@ class BundleUtils:
             ]
             invalid_bundle_version_paths.extend(invalid_main_bundles)
         else:
-            return (
+            raise BundleBuilderError(
                 "Main addon directory not present for the addon:"
-                f" {addon_dir.name}"
+                f" {self.addon_dir.name}"
             )
 
         # Validate the dependency addon subdirs
@@ -302,19 +277,17 @@ class BundleUtils:
             err_prefix = (
                 "Unable to parse the version number in the followingbundles: \n"
             )
-            err_msg = err_prefix + "\n".join(invalid_bundle_version_paths)
-            return err_msg
+            raise BundleBuilderError(
+                err_prefix + "\n".join(invalid_bundle_version_paths)
+            )
 
-        return ""
-
-    @staticmethod
-    def _get_addon_and_deps_path(addon):
-        main_addon_path = addon.joinpath("main")
+    def _get_addon_and_deps_path(self):
+        main_addon_path = self.addon_dir.joinpath("main")
         # Everything in the addon directory except the main addon
         # is considered as a "dependent" addon.
         deps_paths = (
             path
-            for path in get_subdirs(addon)
+            for path in get_subdirs(self.addon_dir)
             if str(path) != str(main_addon_path)
         )
         return (main_addon_path, deps_paths)

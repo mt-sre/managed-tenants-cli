@@ -5,10 +5,13 @@ from pathlib import Path
 import pytest
 
 from managedtenants.bundles.utils import run
+from managedtenants.utils.quay_api import QuayApi
 
 LOCAL_REGISTRY_NAME = "mt-bundles-test-registry"
 LOCAL_REGISTRY_PORT = 5000
 REGISTRY_URL = Path(f"127.0.0.1:{LOCAL_REGISTRY_PORT}")
+QUAY_API = QuayApi(org=REGISTRY_URL, token="dummy")
+HASH_STRING = "int08h"
 
 
 class RegistryTearDownError(Exception):

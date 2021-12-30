@@ -189,5 +189,9 @@ def create_zero_size_docker_image():
         return None
 
 
-def return_false(_):
+def return_false(*args, **kwargs):
     return False
+
+
+def return_true(*args, **kwargs):
+    return True
