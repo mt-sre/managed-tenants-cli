@@ -34,7 +34,7 @@ class QuayApi:
     View swagger docs here: https://docs.quay.io/api/swagger/.
     """
 
-    def __init__(self, organization, token=None, base_url="quay.io"):
+    def __init__(self, org, token=None, base_url="quay.io"):
         """
         Creates a Quay API abstraction.
 
@@ -49,7 +49,7 @@ class QuayApi:
         """
 
         self.token = _get_token_or_fail(token)
-        self.organization = organization
+        self.org = org
         self.headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.token}",
@@ -57,6 +57,32 @@ class QuayApi:
         self.team_members = {}
         self.api_url = f"https://{base_url}/api/v1"
         self.log = get_text_logger("app")
+
+    def ensure_repo(self, repo_name, dry_run=False):
+        """
+        Validates that the required quay repository exists.
+
+        Robot accounts are configured to get automatic write access on new
+        repositories so we do not need to modify the permissions.
+
+        :return: true if repo exists or was created successfully
+        :rtype: bool
+        """
+        if dry_run:
+            return True
+
+        if not self.repo_exists(repo_name):
+            self.log.info(
+                "Creating Quay repository %s",
+                f"{self.org}/{repo_name}",
+            )
+            return self.repo_create(repo_name)
+
+        self.log.info(
+            "Quay repository %s already exists.",
+            f"{self.org}/{repo_name}",
+        )
+        return True
 
     def repo_exists(self, repo_name):
         """
@@ -68,7 +94,7 @@ class QuayApi:
         :rtype: bool
         :raise QuayApiError: the operation failed
         """
-        url = f"{self.api_url}/repository/{self.organization}/{repo_name}"
+        url = f"{self.api_url}/repository/{self.org}/{repo_name}"
         params = {
             "includeTags": False,
             "includeStats": False,
@@ -91,7 +117,7 @@ class QuayApi:
         url = f"{self.api_url}/repository"
         params = {
             "repo_kind": "image",
-            "namespace": self.organization,
+            "namespace": self.org,
             "visibility": "public",
             "repository": repo_name,
             "description": "",

@@ -4,59 +4,44 @@ from sretoolbox.container import Image
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.binary_deps import MTCLI, OPM
-from managedtenants.bundles.exceptions import BundleUtilsError
-from managedtenants.bundles.utils import ensure_quay_repo, push_image
+from managedtenants.bundles.exceptions import IndexBuilderError
+from managedtenants.bundles.utils import push_image
 
 
-class IndexImageBuilder:
+class IndexBuilder:
     def __init__(
         self,
         addon_dir,
         dry_run,
-        quay_token=None,
+        quay_api=None,
         docker_conf_path=None,
-        logger=None,
     ):
-        # pylint: disable=R0913
+        if quay_api is None:
+            raise IndexBuilderError("Please provide a valid quay_api object.")
         self.addon_dir = addon_dir
         self.dry_run = dry_run
-        self.quay_token = quay_token
+        self.quay_api = quay_api
         self.docker_conf = docker_conf_path
-        if logger:
-            self.logger = logger
-        else:
-            self.logger = get_text_logger("managedtenants-indeximage-builder")
+        self.logger = get_text_logger("managedtenants-catalog-builder")
 
-    def build_push_index_image(
-        self, bundle_images, quay_org_path, hash_string, create_quay_repo
-    ):
+    def build_push_index_image(self, bundle_images, hash_string):
         """
         Returns an index image which points to the passed bundle_images.
-        :param quay_org_path: Quay org to which images should be pushed.
         :param hash_string: A string to be used in the created image's tag.
         :param bundle_images: A list of bundle images to be added
         to the index image.
-        :create_quay_repo: A boolean flag to indicate whether to create
-        a quay repo for the index image. If set to `false`, the repo is
-        expected to be created before-hand.
-        :return: An Index image that has been pushed to the passed quay_org.
+        :return: An Index image that has been pushed.
         """
         dry_run = self.dry_run
         addon = self.addon_dir
         repo_name = f"{addon.name}-index"
-        if not ensure_quay_repo(
-            dry_run=self.dry_run,
-            org_path=quay_org_path,
-            repo_name=repo_name,
-            quay_token=self.quay_token,
-            create_quay_repo=create_quay_repo,
-        ):
-            raise BundleUtilsError(
+        if not self.quay_api.ensure_repo(repo_name, dry_run=self.dry_run):
+            raise IndexBuilderError(
                 f"Failed to create/find quay repo:{repo_name} for the addon:"
                 f" {addon.name}"
             )
 
-        image = Image(str(quay_org_path / f"{repo_name}:{hash_string}"))
+        image = Image(f"{self.quay_api.org}/{repo_name}:{hash_string}")
 
         if not dry_run and image:
             self.logger.info('Image exists "%s"', image.url_tag)

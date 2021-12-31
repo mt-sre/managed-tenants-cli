@@ -2,8 +2,7 @@ import subprocess
 
 import yaml
 
-from managedtenants.bundles.exceptions import BundleUtilsError
-from managedtenants.utils.quay_api import QuayApi
+from managedtenants.bundles.exceptions import BundleBuilderError
 
 
 def run(cmd, logger=None):
@@ -24,59 +23,6 @@ def get_subdirs(path):
     return (item for item in path.iterdir() if item.is_dir())
 
 
-def ensure_quay_repo(
-    repo_name, org_path, quay_token, create_quay_repo=True, dry_run=False
-):
-    """
-    Validates that the required quay repository exists.
-
-    Robot accounts are configured to get automatic write access on new
-    repositories so we do not need to modify the permissions.
-
-    :return: true if repo exists or was created successfully
-    :rtype: bool
-    """
-    if dry_run:
-        return True
-    org = quay_org_from_path(org_path)
-    quay_api = QuayApi(organization=org, token=quay_token)
-    # If repo exists return true
-    if quay_api.repo_exists(repo_name):
-        return True
-    # If repo doesn't exist and `create_quay_repo` is true,
-    # try to create the repo
-    if create_quay_repo:
-        return quay_api.repo_create(repo_name)
-    # If `create_quay_repo` is false and repo doesnt exist,
-    # return false
-    return False
-
-
-def quay_repo_exists(dry_run, org_path, repo_name, quay_token):
-    """
-    Checks if the required quay repository exists.
-    :return: true if repo exists
-    :rtype: bool
-    """
-    if dry_run:
-        return True
-    org = quay_org_from_path(org_path)
-    quay_api = QuayApi(organization=org, token=quay_token)
-    return quay_api.repo_exists(repo_name)
-
-
-def quay_repo_create(org, repo_name, quay_token):
-    """
-    Creates the passed repo under the passed org in quay.
-    :return: true if repo exists
-    :rtype: bool
-    """
-    quay_api = QuayApi(organization=org, token=quay_token)
-    if quay_api.repo_exists(repo_name):
-        return True
-    return quay_api.repo_create(repo_name)
-
-
 def push_image(dry_run, image, logger=None, docker_conf_path=None):
     # return early if we are in dry-run mode
     if dry_run:
@@ -87,7 +33,7 @@ def push_image(dry_run, image, logger=None, docker_conf_path=None):
         logger.error("Failed to check the image size!")
 
     if size == 0:
-        raise BundleUtilsError("Received a zero byte image!")
+        raise BundleBuilderError("Received a zero byte image!")
     if logger:
         logger.info('Pushing image "%s"', image.url_tag)
 
@@ -117,18 +63,6 @@ def check_image_size(image_url_tag):
     if not result.returncode:
         return int(result.stdout.decode().strip("'\n"))
     return None
-
-
-def quay_org_from_path(quay_org_path, base_path="quay.io/"):
-    # "quay.io/osd-addons/" -> osd-addons
-    # "quay.io/osd-addons" -> osd-addons
-    split_res = str(quay_org_path).split(base_path)
-    if split_res:
-        return split_res[-1].strip("/")
-    raise BundleUtilsError(
-        f"Unable to parse:{quay_org_path}."
-        "Tried extracting quay org from quay org path"
-    )
 
 
 def load_yaml(path):
