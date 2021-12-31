@@ -1,8 +1,10 @@
 import subprocess
 
+import semver
 import yaml
 
 from managedtenants.bundles.exceptions import BundleBuilderError
+from managedtenants.utils.general_utils import parse_version_from_imageset_name
 
 
 def run(cmd, logger=None):
@@ -72,3 +74,25 @@ def load_yaml(path):
             return data
     except yaml.YAMLError:
         return None
+
+
+def parse_version(version_str):
+    """Returns the image version from the name.
+    Ex: mock-operator.v1.0.0 -> 1.0.0"""
+    try:
+        result = semver.VersionInfo.parse(version_str)
+        return result
+    except ValueError:
+        return None
+
+
+def present(items, store):
+    return all(bool(store.get(item)) for item in items)
+
+
+def csvs_older(older_versions, current):
+    current_version = parse_version_from_imageset_name(
+        current["metadata"]["name"]
+    )
+    older_versions = list(map(parse_version_from_imageset_name, older_versions))
+    return all(version < current_version for version in older_versions)

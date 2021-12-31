@@ -9,7 +9,14 @@ from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.binary_deps import OPERATOR_SDK
 from managedtenants.bundles.exceptions import BundleBuilderError
-from managedtenants.bundles.utils import get_subdirs, load_yaml, push_image
+from managedtenants.bundles.utils import (
+    csvs_older,
+    get_subdirs,
+    load_yaml,
+    parse_version,
+    present,
+    push_image,
+)
 from managedtenants.utils.general_utils import run
 
 
@@ -28,6 +35,7 @@ class BundleBuilder:
         self.quay_api = quay_api
         self.docker_conf = docker_conf_path
         self.logger = get_text_logger("managedtenants-bundle-builder")
+        self.csv_objects = self._get_all_csv_objects()
         self._validate_dir_structure()
 
     def validate_local_bundles(self):
@@ -48,6 +56,41 @@ class BundleBuilder:
         err_msg = err_prefix + "\n".join(invalid_bundles)
         return err_msg
 
+    def validate_csv_versions(self):
+        invalid_csv_versions = self._invalid_csv_versions()
+        if invalid_csv_versions:
+            err_prefix = "Invaid csv versions found: \n"
+            errors = []
+            for operator_name, invalid_versions in invalid_csv_versions.items():
+                local_error_prefix = (
+                    f"Invalid csv.spec.versions for {operator_name}'s following"
+                    " versions: \n"
+                )
+                error_str = "\n".join(invalid_versions)
+                errors.append(local_error_prefix + error_str)
+            final_error_str = "\n".join(errors)
+            raise BundleBuilderError(err_prefix + final_error_str)
+
+    def validate_csv_replaces_attr(self):
+        invalid_csvs_hash = self._csvs_with_invalid_replaces_attr()
+        errors = []
+        for operator_name, csv_err_objs in invalid_csvs_hash.items():
+            if csv_err_objs:
+                current_errors = []
+                err_prefix = (
+                    f"Encountered the following errors in {operator_name}'s"
+                    " csv's: \n"
+                )
+                current_errors.append(err_prefix)
+                for csv_err in csv_err_objs:
+                    # Format: "<csv_name>: <error_msg>"
+                    err_msg = f"{csv_err[0]}: {csv_err[1]}"
+                    current_errors.append(err_msg)
+                errors.append(current_errors)
+        if errors:
+            final_err = "_____\n".join("\n".join(error) for error in errors)
+            raise BundleBuilderError(final_err)
+
     def get_latest_version(self):
         """
         Returns the latest bundle in the given addon directory
@@ -65,15 +108,12 @@ class BundleBuilder:
 
         return operator_names
 
-    @staticmethod
-    def get_operator_name_from_bundle(bundle_dir):
-        manifests_dir = Path(bundle_dir) / "manifests"
-        csv_file_pattern = r".+\.(csv|clusterserviceversion)\..+$"
-        for file in manifests_dir.iterdir():
-            if re.search(csv_file_pattern, file.name):
-                contents = load_yaml(file)
-                if contents:
-                    return contents.get("metadata", {}).get("name")
+    def get_operator_name_from_bundle(self, bundle_dir):
+        csv_file = self._get_csv_file(bundle_dir)
+        if csv_file:
+            contents = load_yaml(csv_file)
+            if contents:
+                return contents.get("metadata", {}).get("name")
         return None
 
     def build_push_bundle_images_with_deps(
@@ -280,6 +320,117 @@ class BundleBuilder:
             raise BundleBuilderError(
                 err_prefix + "\n".join(invalid_bundle_version_paths)
             )
+        
+    def _invalid_csv_versions(self):
+        invalid_csv_versions = {}
+        for operator_name, csvs in self.csv_objects.items():
+            curr_invalid_csv_versions = [
+                self._csv_version(csv)
+                for csv in csvs
+                if not self._version_parsable(self._csv_version(csv))
+            ]
+            if curr_invalid_csv_versions:
+                invalid_csv_versions[operator_name] = curr_invalid_csv_versions
+        return invalid_csv_versions
+
+    def _csvs_with_invalid_replaces_attr(self):
+        invalid_csvs = {}
+        for operator_name, csvs in self.csv_objects.items():
+            invalid_csvs[operator_name] = []
+            indexed_csvs = self._create_csvs_indexed_on_name(csvs)
+            # First csv shouldn't have a replaces attr
+            first_csv = csvs[0]
+            if first_csv["spec"]["replaces"]:
+                msg = "replaces attr not expected for the first csv"
+                invalid_csvs[operator_name].append(
+                    [self._csv_name(first_csv), msg]
+                )
+            for index, current_csv in enumerate(csvs):
+                # Skip for the first csv
+                if index == 0:
+                    continue
+
+                replaces = current_csv["spec"]["replaces"]
+                # If spec.replaces points to a csv which is not present
+                if not indexed_csvs.get(replaces):
+                    msg = "replaces attr refers to a csv thats not present"
+                    invalid_csvs[operator_name].append(
+                        [self._csv_name(current_csv), msg]
+                    )
+                # If spec.skips is present
+                skipped_csv_names = current_csv["spec"]["skips"]
+                if skipped_csv_names:
+                    # if csv's in spec.skips are not present in the list of csvs
+                    if not present(items=skipped_csv_names, store=indexed_csvs):
+                        msg = (
+                            "skipped csv/csvs are not present in the list of"
+                            " bundles"
+                        )
+                        invalid_csvs[operator_name].append(
+                            [self._csv_name(current_csv), msg]
+                        )
+                    # if csv's in spec.skips are newer than the current csv
+                    if not csvs_older(
+                        older_versions=skipped_csv_names, current=current_csv
+                    ):
+                        msg = (
+                            "skipped csv version/s are newer than the"
+                            " current csv"
+                        )
+                        invalid_csvs[operator_name].append(
+                            [self._csv_name(current_csv), msg]
+                        )
+                else:
+                    # previous csv
+                    prev_csv_name = self._csv_name(csvs[index - 1])
+                    if current_csv["spec"]["replaces"] != prev_csv_name:
+                        msg = "replaces attr doesnt point to the previous csv"
+                        invalid_csvs[operator_name].append(
+                            [self._csv_name(current_csv), msg]
+                        )
+        return invalid_csvs
+
+    def _get_all_csv_objects(self):
+        # Key: operator name, Value: List of csv's for the operator
+        csv_objects = {}
+        main_addon_path, deps_paths = self._get_addon_and_deps_path()
+        main_addon_name = self.addon_dir.name
+        # Main operator's CSVs
+        csv_objects[main_addon_name] = self._get_csv_objects_for(
+            main_addon_path
+        )
+
+        # Dependent operator's CSVs
+        for dep in deps_paths:
+            csv_objects[dep.name] = self._get_csv_objects_for(dep)
+        return csv_objects
+
+    def _get_csv_objects_for(self, addon):
+        result = []
+        for bundle in get_subdirs(addon):
+            csv_file = self._get_csv_file(bundle)
+            if csv_file:
+                csv_contents = load_yaml(csv_file)
+                if csv_contents:
+                    result.append(csv_contents)
+        result = sorted(
+            result, key=lambda obj: parse_version(obj["spec"]["version"])
+        )
+        return result
+
+    def _create_csvs_indexed_on_name(self, csvs):
+        name_indexed_csvs = {}
+        for csv in csvs:
+            name_indexed_csvs[self._csv_name(csv)] = csv
+        return name_indexed_csvs
+
+    @staticmethod
+    def _csv_version(csv):
+        return csv["spec"]["version"]
+
+    @staticmethod
+    def _csv_name(csv):
+        return csv["metadata"]["name"]
 
     def _get_addon_and_deps_path(self):
         main_addon_path = self.addon_dir.joinpath("main")
@@ -293,12 +444,23 @@ class BundleBuilder:
         return (main_addon_path, deps_paths)
 
     @staticmethod
-    def _version_parsable(path_name):
+    def _version_parsable(value):
         try:
-            semver.VersionInfo.parse(path_name.name)
+            if isinstance(value, Path):
+                value = value.name
+            semver.VersionInfo.parse(value)
             return True
         except ValueError:
             return False
+
+    @staticmethod
+    def _get_csv_file(bundle_dir):
+        manifests_dir = Path(bundle_dir) / "manifests"
+        csv_file_pattern = r".+\.(csv|clusterserviceversion)\..+$"
+        for file in manifests_dir.iterdir():
+            if re.search(csv_file_pattern, file.name):
+                return file
+        return None
 
     @staticmethod
     def _is_main_addon(inner_addon):
