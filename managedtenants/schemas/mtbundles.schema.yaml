@@ -1,0 +1,29 @@
+"$schema": "http://json-schema.org/draft-07/schema#"
+description: "managed-tenants-bundles configuration schema for the 'config.yaml' file."
+type: object
+additionalProperties: false
+properties:
+  environments:
+    type: array
+    description: "List of all environments in managed-tenants to be upgraded by automated MRs. Production has to be upgraded manually."
+    items:
+      type: string
+      enum:
+        - integration
+        - stage
+  ocm:
+    type: object
+    description: "Required OCM data for valid imagesets to be constructed by automated MRs to managed-tenants."
+    additionalProperties: false
+    properties:
+      addOnParameters:
+        $ref: "shared/addon_parameters.yaml"
+      addOnRequirements:
+        $ref: "shared/addon_requirements.yaml"
+      subOperators:
+        $ref: "shared/sub_operators.yaml"
+      subscriptionConfig:
+        $ref: "shared/subscription_config.json"
+required:
+  - environments
+  - ocm

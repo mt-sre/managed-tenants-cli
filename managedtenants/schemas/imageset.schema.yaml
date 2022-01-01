@@ -1,0 +1,29 @@
+"$schema": "http://json-schema.org/draft-07/schema#"
+description: "Addon imageset schema for the files found under the addonimagesets/ dir."
+type: object
+additionalProperties: false
+properties:
+  name:
+    type: string
+    description: "The name of the imageset along with the version"
+  indexImage:
+    type: string
+    pattern: ^quay\.io/osd-addons/[a-z-]+
+    description: "The url for the index image"
+  relatedImages:
+    type: array
+    description: "A list of image urls of related operators"
+    items:
+      type: string
+  addOnParameters:
+    $ref: "shared/addon_parameters.json"
+  addOnRequirements:
+    $ref: "shared/addon_requirements.json"
+  subOperators:
+    $ref: "shared/sub_operators.json"
+  subscriptionConfig:
+    $ref: "shared/subscription_config.json"
+required:
+  - name
+  - indexImage
+  - relatedImages

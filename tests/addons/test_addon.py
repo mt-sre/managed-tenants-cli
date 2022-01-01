@@ -185,12 +185,12 @@ def test_addon_subscription_config(addon_str, expected_result, request):
 def test_addon_subscription_config_validations(addon, addon_type, request):
     addon = request.getfixturevalue(addon)
     if addon_type == ADDON_WITH_INDEXIMAGE_TYPE:
-        updated_metdata = addon.metadata
-        updated_metdata["subscriptionConfig"]["unsupportedAttr"] = "present"
+        updated_metadata = addon.metadata
+        updated_metadata["subscriptionConfig"]["unsupportedAttr"] = "present"
         with pytest.raises(AddonLoadError):
-            addon._validate_schema(updated_metdata)
+            addon._validate_schema_instance(updated_metadata, "metadata")
     else:
         updated_imageset = addon.imageset
         updated_imageset["subscriptionConfig"]["unsupportedAttr"] = "present"
         with pytest.raises(AddonLoadError):
-            addon._validate_imageset_schema(updated_imageset)
+            addon._validate_schema_instance(updated_imageset, "imageset")

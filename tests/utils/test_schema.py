@@ -3,11 +3,11 @@ from io import StringIO
 import pytest
 from jsonschema.exceptions import SchemaError
 
-from managedtenants.data.paths import DATA_DIR
+from managedtenants.data.paths import SCHEMAS_DIR
 from managedtenants.utils.schema import (
     SchemaLoader,
-    load_addon_metadata_schema,
     load_draft7_schema,
+    load_schema,
 )
 
 invalid_type_value = """
@@ -22,7 +22,7 @@ type: invalid
     [
         {"path_or_file": invalid_type_value, "raises": True},
         {
-            "path_or_file": DATA_DIR / "metadata.schema.yaml",
+            "path_or_file": SCHEMAS_DIR / "metadata.schema.yaml",
             "raises": False,
         },
     ],
@@ -37,13 +37,9 @@ def test_load_draft7_schema(case):
         )
 
 
-def test_load_addon_metadata_schema():
-    assert isinstance(load_addon_metadata_schema(), dict)
-
-
 def test_singleton_AddonMetadataSchema():
-    assert id(SchemaLoader("metadata")) == id(SchemaLoader("metadata"))
+    assert id(load_schema("metadata")) == id(load_schema("metadata"))
 
 
 def test_singleton_AddonImageSetSchema():
-    assert id(SchemaLoader("imageset")) == id(SchemaLoader("imageset"))
+    assert id(load_schema("imageset")) == id(load_schema("imageset"))

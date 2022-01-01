@@ -4,19 +4,22 @@ import yaml
 from jsonschema import Draft7Validator
 from jsonschema.exceptions import SchemaError
 
-from managedtenants.data.paths import DATA_DIR
+from managedtenants.data.paths import SCHEMAS_DIR
 
 
-def load_addon_metadata_schema():
+def load_schema(name):
     """
-    Wrapper that returns the addon metadata schema and utilizes
-    Singleton pattern for optimization.
+    Load schema from a recognized name.
+
+    Acceptable names: metadata, imageset and mtbundles.
     """
-    return SchemaLoader("metadata")
-
-
-def load_addon_imageset_schema():
-    return SchemaLoader("imageset")
+    valid_schema_names = ("metadata", "imageset", "mtbundles")
+    if name not in valid_schema_names:
+        raise ValueError(
+            f"Invalid schema name '{name}' provided. Please use a valid schema"
+            f" name: {','.join(valid_schema_names)}"
+        )
+    return SchemaLoader(name)
 
 
 # Accept path or file for easier testing
@@ -61,7 +64,7 @@ class SchemaLoader:
         if schema_type in cls._SUPPORTED_SCHEMAS:
             if cls._instances.get(schema_type) is None:
                 cls._instances[schema_type] = load_draft7_schema(
-                    path_or_file=DATA_DIR / f"{schema_type}.schema.yaml"
+                    path_or_file=SCHEMAS_DIR / f"{schema_type}.schema.yaml"
                 )
         else:
             raise SchemaError(f"{schema_type} schema is not supported")
