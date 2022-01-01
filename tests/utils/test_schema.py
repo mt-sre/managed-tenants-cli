@@ -37,9 +37,9 @@ def test_load_draft7_schema(case):
         )
 
 
-def test_singleton_AddonMetadataSchema():
-    assert id(load_schema("metadata")) == id(load_schema("metadata"))
-
-
-def test_singleton_AddonImageSetSchema():
-    assert id(load_schema("imageset")) == id(load_schema("imageset"))
+@pytest.mark.parametrize(
+    "schema_name",
+    ["metadata", "imageset", "mtbundles"],
+)
+def test_schemas_are_singletons(schema_name):
+    assert id(load_schema(schema_name)) == id(load_schema(schema_name))

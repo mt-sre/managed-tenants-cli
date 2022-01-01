@@ -1,6 +1,4 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "subOperators",
   "type": "array",
   "description": "Representation of an add-on sub operator. A sub operator is an operator who's life cycle is controlled by the add-on umbrella operator.",
   "items": {

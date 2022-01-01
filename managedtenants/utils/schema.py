@@ -58,7 +58,7 @@ class SchemaLoader:
     """Singleton wrapper to load schemas only once."""
 
     _instances = {}
-    _SUPPORTED_SCHEMAS = ["metadata", "imageset"]
+    _SUPPORTED_SCHEMAS = ["metadata", "imageset", "mtbundles"]
 
     def __new__(cls, schema_type):
         if schema_type in cls._SUPPORTED_SCHEMAS:

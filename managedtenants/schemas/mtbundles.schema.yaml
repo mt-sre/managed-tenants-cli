@@ -17,13 +17,12 @@ properties:
     additionalProperties: false
     properties:
       addOnParameters:
-        $ref: "shared/addon_parameters.yaml"
+        $ref: "shared/addon_parameters.json"
       addOnRequirements:
-        $ref: "shared/addon_requirements.yaml"
+        $ref: "shared/addon_requirements.json"
       subOperators:
-        $ref: "shared/sub_operators.yaml"
+        $ref: "shared/sub_operators.json"
       subscriptionConfig:
         $ref: "shared/subscription_config.json"
 required:
   - environments
-  - ocm

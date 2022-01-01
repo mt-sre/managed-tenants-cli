@@ -13,10 +13,10 @@
 
 - **`ocm`** *(object)*: Required OCM data for valid imagesets to be constructed by automated MRs to managed-tenants. Cannot contain additional properties.
 
-  - **`addOnParameters`**: Refer to *shared/addon_parameters.yaml*.
+  - **`addOnParameters`**: Refer to *shared/addon_parameters.json*.
 
-  - **`addOnRequirements`**: Refer to *shared/addon_requirements.yaml*.
+  - **`addOnRequirements`**: Refer to *shared/addon_requirements.json*.
 
-  - **`subOperators`**: Refer to *shared/sub_operators.yaml*.
+  - **`subOperators`**: Refer to *shared/sub_operators.json*.
 
   - **`subscriptionConfig`**: Refer to *shared/subscription_config.json*.
