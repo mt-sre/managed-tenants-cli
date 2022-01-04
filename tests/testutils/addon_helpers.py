@@ -55,6 +55,10 @@ def mt_bundles_addon_path():
     return Path("tests/testdata/addons/reference-addon")
 
 
+def reference_addon_path():
+    return Path("tests/testdata/addons/reference-addon")
+
+
 @pytest.fixture
 def mt_bundles_addon_with_invalid_version_path():
     return Path("tests/testdata/addons/reference-addon-invalid-versions")

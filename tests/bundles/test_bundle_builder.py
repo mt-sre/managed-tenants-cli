@@ -13,6 +13,7 @@ from tests.testutils.addon_helpers import (
     mt_bundles_addon_path,
     mt_bundles_addon_with_invalid_version_path,
     mt_bundles_with_invalid_dir_structure_path,
+    reference_addon_path,
     return_false,
     return_true,
 )
@@ -82,6 +83,284 @@ def test_class_initialization_validation(
             BundleBuilder(addon_dir=addon_dir, dry_run=True, quay_api=QUAY_API)
         except BundleBuilderError:
             pytest.fail("Raised BundleBuilderError when it was not expected!")
+
+
+def test_csv_objects_instance_variable_initalization(mt_bundles_addon_path):
+    addon_dir = mt_bundles_addon_path
+    instance = BundleBuilder(addon_dir=addon_dir, dry_run=True, quay_api=QUAY_API)
+    expected_csv_versions = {
+        "reference-addon": [
+            "0.1.0",
+            "0.1.1",
+            "0.1.2",
+            "0.1.3",
+            "0.1.4",
+            "0.1.5",
+            "0.1.6",
+        ],
+        "addon-operator": ["0.1.0", "0.2.0", "0.3.0"],
+    }
+
+    for operator_name, csvs in instance.csv_objects.items():
+        expected_versions = expected_csv_versions.get(operator_name)
+        assert expected_versions is not None
+        received_versions = list(map(lambda obj: obj["spec"]["version"], csvs))
+        assert received_versions == expected_versions
+
+
+@pytest.mark.parametrize(
+    "versions, expected_res",
+    [
+        (
+            {
+                "reference-addon": [
+                    "0.1.0",
+                    "0.1.1",
+                    "0.1.2",
+                    "0.1.2-1",
+                    "0.1.2-2",
+                    "1.1.3-beta",
+                ],
+                "addon-operator": ["0.1.0", "0.2.0", "0.3.0"],
+            },
+            {},
+        ),
+        (
+            {
+                "reference-addon": ["1.0.0", "1.1.0", "1.2.0"],
+                "addon-operator": ["invalid", "0.1.0", "0.2.0"],
+            },
+            {"addon-operator": ["invalid"]},
+        ),
+        (
+            {
+                "reference-addon": ["1.0.0", "1.1.0", "1.2.0", "13"],
+                "addon-operator": ["invalid", "0.1.0", "0.2.0"],
+            },
+            {"addon-operator": ["invalid"], "reference-addon": ["13"]},
+        ),
+    ],
+)
+def test_invalid_csv_versions(versions, expected_res):
+    instance = BundleBuilder(
+        addon_dir=reference_addon_path(),
+        dry_run=True,
+        quay_api=QUAY_API
+    )
+    # Set the correct csv_objects
+    current_csv_objects = {}
+    for operator_name, verion_arr in versions.items():
+        csv_objects = []
+        for version in verion_arr:
+            curr_csv_object = {"spec": {"version": version}}
+            csv_objects.append(curr_csv_object)
+        current_csv_objects[operator_name] = csv_objects
+
+    instance.csv_objects = current_csv_objects
+
+    res = instance._invalid_csv_versions()
+    assert res == expected_res
+
+
+@pytest.mark.parametrize(
+    "replaces_data, expected_res",
+    [
+        (
+            {
+                "reference-addon": [
+                    ["0.1.0", {"name": "reference-addon.v0.1.0"}],
+                    [
+                        "0.2.0",
+                        {
+                            "replaces": "reference-addon.v0.1.0",
+                            "name": "reference-addon.v0.2.0",
+                        },
+                    ],
+                    [
+                        "0.3.0",
+                        {
+                            "replaces": "reference-addon.v0.2.0",
+                            "name": "reference-addon.v0.3.0",
+                        },
+                    ],
+                ],
+                "addon-operator": [
+                    ["0.1.0", {"name": "addon-operator.v.0.1.0"}],
+                    [
+                        "0.2.0",
+                        {
+                            "name": "addon-operator.v.0.2.0",
+                            "replaces": "addon-operator.v.0.1.0",
+                        },
+                    ],
+                    [
+                        "0.3.0",
+                        {
+                            "name": "addon-operator.v.0.3.0",
+                            "replaces": "addon-operator.v.0.2.0",
+                        },
+                    ],
+                ],
+            },
+            # invalid_objects
+            {"reference-addon": [], "addon-operator": []},
+        ),
+        (
+            {
+                "reference-addon": [
+                    [
+                        "0.1.0",
+                        {
+                            "name": "reference-addon.v0.1.0",
+                            "replaces": "reference-addon.v0.0.1",
+                        },
+                    ],
+                    [
+                        "0.2.0",
+                        {
+                            "replaces": "reference-addon.v0.1.0",
+                            "name": "reference-addon.v0.2.0",
+                        },
+                    ],
+                    [
+                        "0.3.0",
+                        {
+                            "replaces": "reference-addon.v0.2.0",
+                            "name": "reference-addon.v0.3.0",
+                        },
+                    ],
+                ]
+            },
+            # invalid_objects
+            {
+                "reference-addon": [
+                    [
+                        "reference-addon.v0.1.0",
+                        "replaces attr not expected for the first csv",
+                    ]
+                ]
+            },
+        ),
+        (
+            {
+                "reference-addon": [
+                    [
+                        "0.1.0",
+                        {
+                            "name": "reference-addon.v0.1.0",
+                        },
+                    ],
+                    [
+                        "0.2.0",
+                        {
+                            "replaces": "reference-addon.v0.3.0",
+                            "name": "reference-addon.v0.2.0",
+                        },
+                    ],
+                    [
+                        "0.3.0",
+                        {
+                            "replaces": "reference-addon.v0.7.0",
+                            "name": "reference-addon.v0.3.0",
+                        },
+                    ],
+                    [
+                        # No errors
+                        "0.4.0",
+                        {
+                            "replaces": "reference-addon.v0.1.0",
+                            "skips": [
+                                "reference-addon.v0.3.0",
+                                "reference-addon.v0.2.0",
+                            ],
+                            "name": "reference-addon.v0.4.0",
+                        },
+                    ],
+                    [
+                        "0.5.0",
+                        {
+                            "replaces": "reference-addon.v0.1.0",
+                            "skips": [
+                                "reference-addon.v0.3.0",
+                                "reference-addon.v0.2.0",
+                                "reference-addon.v0.5.0",
+                            ],
+                            "name": "reference-addon.v0.5.0",
+                        },
+                    ],
+                    [
+                        "0.6.0",
+                        {
+                            "replaces": "reference-addon.v0.1.0",
+                            "skips": [
+                                "reference-addon.v0.3.0",
+                                "reference-addon.v0.2.0",
+                                "reference-addon.v0.10.0",
+                            ],
+                            "name": "reference-addon.v0.6.0",
+                        },
+                    ],
+                ]
+            },
+            # errors
+            {
+                "reference-addon": [
+                    [
+                        "reference-addon.v0.2.0",
+                        "replaces attr doesnt point to the previous csv",
+                    ],
+                    [
+                        "reference-addon.v0.3.0",
+                        "replaces attr refers to a csv thats not present",
+                    ],
+                    [
+                        "reference-addon.v0.3.0",
+                        "replaces attr doesnt point to the previous csv",
+                    ],
+                    [
+                        "reference-addon.v0.5.0",
+                        "skipped csv version/s are newer than the current csv",
+                    ],
+                    [
+                        "reference-addon.v0.6.0",
+                        "skipped csv/csvs are not present in the list of"
+                        " bundles",
+                    ],
+                    [
+                        "reference-addon.v0.6.0",
+                        "skipped csv version/s are newer than the current csv",
+                    ],
+                ]
+            },
+        ),
+    ],
+)
+def test_csvs_with_invalid_replaces_attr(replaces_data, expected_res):
+    instance = BundleBuilder(
+        addon_dir=reference_addon_path(),
+        dry_run=True,
+        quay_api=QUAY_API
+    )
+    csv_objects = {}
+    for operator_name, data_objs in replaces_data.items():
+        curr_csv_objects = []
+        for data in data_objs:
+            version = data[0]
+            other_attrs = data[1]
+            csv = {
+                "metadata": {"name": other_attrs["name"]},
+                "spec": {
+                    "replaces": other_attrs.get("replaces"),
+                    "skips": other_attrs.get("skips", []),
+                    "version": version,
+                },
+            }
+            curr_csv_objects.append(csv)
+        csv_objects[operator_name] = curr_csv_objects
+    # Set the passed csv objects
+    instance.csv_objects = csv_objects
+    res = instance._csvs_with_invalid_replaces_attr()
+    assert res == expected_res
 
 
 @pytest.mark.parametrize(

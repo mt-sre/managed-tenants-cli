@@ -35,8 +35,8 @@ class BundleBuilder:
         self.quay_api = quay_api
         self.docker_conf = docker_conf_path
         self.logger = get_text_logger("managedtenants-bundle-builder")
-        self.csv_objects = self._get_all_csv_objects()
         self._validate_dir_structure()
+        self.csv_objects = self._get_all_csv_objects()
 
     def validate_local_bundles(self):
         """
@@ -320,7 +320,7 @@ class BundleBuilder:
             raise BundleBuilderError(
                 err_prefix + "\n".join(invalid_bundle_version_paths)
             )
-        
+
     def _invalid_csv_versions(self):
         invalid_csv_versions = {}
         for operator_name, csvs in self.csv_objects.items():
