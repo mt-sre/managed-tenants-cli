@@ -24,7 +24,9 @@ class IndexBuilder:
         self.docker_conf = docker_conf_path
         self.logger = get_text_logger("managedtenants-catalog-builder")
 
-    def build_push_index_image(self, bundle_images, hash_string):
+    def build_push_index_image(
+        self, bundle_images, hash_string, ensure_quay_repo=True
+    ):
         """
         Returns an index image which points to the passed bundle_images.
         :param hash_string: A string to be used in the created image's tag.
@@ -35,7 +37,9 @@ class IndexBuilder:
         dry_run = self.dry_run
         addon = self.addon_dir
         repo_name = f"{addon.name}-index"
-        if not self.quay_api.ensure_repo(repo_name, dry_run=self.dry_run):
+        if ensure_quay_repo and not self.quay_api.ensure_repo(
+            repo_name, dry_run=self.dry_run
+        ):
             raise IndexBuilderError(
                 f"Failed to create/find quay repo:{repo_name} for the addon:"
                 f" {addon.name}"
