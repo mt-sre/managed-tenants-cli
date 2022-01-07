@@ -1,0 +1,100 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "resource",
+      "data",
+      "enabled"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "format": "printable"
+      },
+      "resource": {
+        "type": "string",
+        "enum": [
+          "cluster",
+          "addon",
+          "machine_pool"
+        ]
+      },
+      "data": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "printable"
+          },
+          "state": {
+            "type": "string",
+            "format": "printable"
+          },
+          "aws.sts.enabled": {
+            "type": "boolean"
+          },
+          "cloud_provider.id": {
+            "type": [
+              "array",
+              "string"
+            ],
+            "items": {
+              "type": "string",
+              "format": "printable"
+            }
+          },
+          "product.id": {
+            "type": [
+              "array",
+              "string"
+            ],
+            "items": {
+              "type": "string",
+              "format": "printable"
+            }
+          },
+          "compute.memory": {
+            "type": "integer"
+          },
+          "compute.cpu": {
+            "type": "integer"
+          },
+          "ccs.enabled": {
+            "type": "boolean"
+          },
+          "nodes.compute": {
+            "type": "integer"
+          },
+          "nodes.compute_machine_type.id": {
+            "type": [
+              "array",
+              "string"
+            ],
+            "format": "printable"
+          },
+          "version.raw_id": {
+            "type": "string",
+            "format": "printable"
+          },
+          "instance_type": {
+            "type": [
+              "array",
+              "string"
+            ],
+            "format": "printable"
+          },
+          "replicas": {
+            "type": "integer"
+          }
+        }
+      },
+      "enabled": {
+        "type": "boolean"
+      }
+    }
+  }
+}

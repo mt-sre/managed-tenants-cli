@@ -11,12 +11,10 @@ from managedtenants.core.addons_loader.bundle import Bundle
 from managedtenants.core.addons_loader.exceptions import AddonLoadError
 from managedtenants.core.addons_loader.package import Package
 from managedtenants.core.addons_loader.sss import Sss
+from managedtenants.data.paths import SCHEMAS_DIR
 from managedtenants.utils.general_utils import parse_version_from_imageset_name
 from managedtenants.utils.hash import hash_dir_sha256, hash_sha256
-from managedtenants.utils.schema import (
-    load_addon_imageset_schema,
-    load_addon_metadata_schema,
-)
+from managedtenants.utils.schema import load_schema
 
 # IDs of addons that are managed by the addon-operator
 # These addon IDs _MUST_ be stable and not changed or bad things will happen
@@ -101,7 +99,7 @@ class Addon:
         except yaml.error.MarkedYAMLError as details:
             raise AddonLoadError(f"{metadata_path}: {details}")
 
-        self._validate_schema(metadata)
+        self._validate_schema_instance(metadata, "metadata")
         self._validate_extra_resources(environment, metadata)
 
         if "extraResources" in metadata:
@@ -124,11 +122,9 @@ class Addon:
 
         imageset_yamls = map(self.load_yaml, self.get_available_imagesets())
         valid_imagesets = filter(is_not_none, imageset_yamls)
-        concerned_imageset = self.get_target_imageset(
-            imagesets_iter=valid_imagesets
-        )
-        self._validate_imageset_schema(imageset=concerned_imageset)
-        return concerned_imageset
+        imageset = self.get_target_imageset(imagesets_iter=valid_imagesets)
+        self._validate_schema_instance(imageset, "imageset")
+        return imageset
 
     def get_available_imagesets(self):
         imageset_files = (
@@ -166,28 +162,23 @@ class Addon:
             )
         return result
 
-    def _validate_imageset_schema(self, imageset):
+    def _validate_schema_instance(self, instance, schema_name):
         try:
             jsonschema.validate(
-                instance=imageset, schema=load_addon_imageset_schema()
+                instance=instance,
+                schema=load_schema(schema_name),
+                resolver=jsonschema.RefResolver(
+                    base_uri=f"file://{SCHEMAS_DIR}/",
+                    referrer=f"{schema_name}.schema.yaml",
+                ),
             )
+        except ValueError as details:
+            raise AddonLoadError(
+                f"Invalid schema name error: {details}"
+            ) from details
         except jsonschema.exceptions.SchemaError as details:
             raise AddonLoadError(
-                f"imageset schema error: {details.message}"
-            ) from details
-        except jsonschema.exceptions.ValidationError as details:
-            raise AddonLoadError(
-                f"{self.path} validation error: {details.message}"
-            ) from details
-
-    def _validate_schema(self, metadata):
-        try:
-            jsonschema.validate(
-                instance=metadata, schema=load_addon_metadata_schema()
-            )
-        except jsonschema.exceptions.SchemaError as details:
-            raise AddonLoadError(
-                f"schema error: {details.message}"
+                f"{schema_name} schema error: {details.message}"
             ) from details
         except jsonschema.exceptions.ValidationError as details:
             raise AddonLoadError(

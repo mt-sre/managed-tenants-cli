@@ -7,7 +7,7 @@ from hypothesis_jsonschema import from_schema
 
 from managedtenants.core.addons_loader import Addon
 from managedtenants.data.environments import ENVIRONMENTS
-from managedtenants.utils.schema import load_addon_metadata_schema
+from managedtenants.utils.schema import load_schema
 from tests.testutils.paths import TEST_OPERATOR_PATH
 
 
@@ -122,7 +122,7 @@ def build_addon_strategy_for_env(env):
 
 def get_fast_schema():
     """Only generate required fields for fast testing."""
-    schema = load_addon_metadata_schema()
+    schema = load_schema("metadata")
     fast_schema = deepcopy(schema)
 
     all_fields = set(fast_schema.get("properties").keys())

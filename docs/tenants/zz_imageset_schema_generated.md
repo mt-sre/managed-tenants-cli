@@ -1,6 +1,9 @@
 # JSON Schema
 
 
+*Addon imageset schema for the files found under the addonimagesets/ dir.*
+
+
 ## Properties
 
 
@@ -12,116 +15,10 @@
 
   - **Items** *(string)*
 
-- **`addOnParameters`** *(array)*
+- **`addOnParameters`**: Refer to *shared/addon_parameters.json*.
 
-  - **Items** *(object)*: Cannot contain additional properties.
+- **`addOnRequirements`**: Refer to *shared/addon_requirements.json*.
 
-    - **`id`** *(string)*
+- **`subOperators`**: Refer to *shared/sub_operators.json*.
 
-    - **`name`** *(string)*
-
-    - **`description`** *(string)*
-
-    - **`value_type`** *(string)*: Must be one of: `['string', 'number', 'boolean', 'cidr', 'resource']`.
-
-    - **`validation`** *(string)*
-
-    - **`required`** *(boolean)*
-
-    - **`editable`** *(boolean)*
-
-    - **`enabled`** *(boolean)*
-
-    - **`default_value`** *(string)*
-
-    - **`options`** *(array)*
-
-      - **Items** *(object)*: Cannot contain additional properties.
-
-        - **`name`** *(string)*
-
-        - **`value`** *(string)*
-
-    - **`conditions`** *(array)*
-
-      - **Items** *(object)*: Cannot contain additional properties.
-
-        - **`resource`** *(string)*: Must be one of: `['cluster']`.
-
-        - **`data`** *(object)*: Cannot contain additional properties.
-
-          - **`aws.sts.enabled`** *(boolean)*
-
-          - **`ccs.enabled`** *(boolean)*
-
-          - **`cloud_provider.id`** *(['array', 'string'])*
-
-            - **Items** *(string)*
-
-          - **`product.id`** *(['array', 'string'])*
-
-            - **Items** *(string)*
-
-          - **`version.raw_id`** *(string)*
-
-- **`addOnRequirements`** *(array)*
-
-  - **Items** *(object)*: Cannot contain additional properties.
-
-    - **`id`** *(string)*
-
-    - **`resource`** *(string)*: Must be one of: `['cluster', 'addon', 'machine_pool']`.
-
-    - **`data`** *(object)*: Cannot contain additional properties.
-
-      - **`id`** *(string)*
-
-      - **`state`** *(string)*
-
-      - **`aws.sts.enabled`** *(boolean)*
-
-      - **`cloud_provider.id`** *(['array', 'string'])*
-
-        - **Items** *(string)*
-
-      - **`product.id`** *(['array', 'string'])*
-
-        - **Items** *(string)*
-
-      - **`compute.memory`** *(integer)*
-
-      - **`compute.cpu`** *(integer)*
-
-      - **`ccs.enabled`** *(boolean)*
-
-      - **`nodes.compute`** *(integer)*
-
-      - **`nodes.compute_machine_type.id`** *(['array', 'string'])*
-
-      - **`version.raw_id`** *(string)*
-
-      - **`instance_type`** *(['array', 'string'])*
-
-      - **`replicas`** *(integer)*
-
-    - **`enabled`** *(boolean)*
-
-- **`subOperators`** *(array)*: Representation of an add-on sub operator. A sub operator is an operator who's life cycle is controlled by the add-on umbrella operator.
-
-  - **Items** *(object)*: Cannot contain additional properties.
-
-    - **`operator_name`** *(string)*: Name of the add-on sub operator.
-
-    - **`operator_namespace`** *(string)*: Namespace of the add-on sub operator.
-
-    - **`enabled`** *(boolean)*: Indicates if the sub operator is enabled for the add-on.
-
-- **`subscriptionConfig`** *(object)*: Configs to be passed to the subscription OLM object. Cannot contain additional properties.
-
-  - **`env`** *(array)*: Array of environment variables (name, value pair) to be created as part of the subscription object.
-
-    - **Items** *(object)*: Cannot contain additional properties.
-
-      - **`name`** *(string)*
-
-      - **`value`** *(string)*
+- **`subscriptionConfig`**: Refer to *shared/subscription_config.json*.

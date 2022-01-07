@@ -1,0 +1,29 @@
+{
+  "type": "array",
+  "description": "Representation of an add-on sub operator. A sub operator is an operator who's life cycle is controlled by the add-on umbrella operator.",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "operator_name",
+      "operator_namespace",
+      "enabled"
+    ],
+    "properties": {
+      "operator_name": {
+        "type": "string",
+        "format": "printable",
+        "description": "Name of the add-on sub operator"
+      },
+      "operator_namespace": {
+        "type": "string",
+        "format": "printable",
+        "description": "Namespace of the add-on sub operator"
+      },
+      "enabled": {
+        "type": "boolean",
+        "description": "Indicates if the sub operator is enabled for the add-on"
+      }
+    }
+  }
+}

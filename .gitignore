@@ -23,6 +23,7 @@ __pycache__/
 .hypothesis/
 pyproject.toml
 Pipfile.lock
+.python-version
 
 # general
 .envrc
