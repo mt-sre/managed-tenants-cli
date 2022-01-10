@@ -81,6 +81,7 @@ class BundleBuilder:
         versions,
         hash_string,
         docker_file_path,
+        ensure_quay_repo=True,
     ):
         # pylint: disable=R0913
         """
@@ -102,6 +103,7 @@ class BundleBuilder:
                     versions=versions,
                     hash_string=hash_string,
                     dockerfile_path=docker_file_path,
+                    ensure_quay_repo=ensure_quay_repo,
                 )
             )
         return addon_images
@@ -136,6 +138,7 @@ class BundleBuilder:
         addon,
         hash_string,
         dockerfile_path,
+        ensure_quay_repo,
         versions=None,
     ):
         # pylint: disable=R0913
@@ -169,6 +172,7 @@ class BundleBuilder:
                 hash_string=hash_string,
                 docker_file_path=dockerfile_path,
                 addon_name=addon_name,
+                ensure_quay_repo=ensure_quay_repo,
             )
             images.append(
                 self.validate_bundle_image(
@@ -183,10 +187,13 @@ class BundleBuilder:
         hash_string,
         docker_file_path,
         addon_name,
+        ensure_quay_repo,
     ):
         # pylint: disable=R0913
         repo_name = f"{addon_name}-bundle"
-        if not self.quay_api.ensure_repo(repo_name, dry_run=self.dry_run):
+        if ensure_quay_repo and not self.quay_api.ensure_repo(
+            repo_name, dry_run=self.dry_run
+        ):
             raise BundleBuilderError(
                 f"Failed to create/find quay repo:{repo_name} for the addon:"
                 f" {addon_name}"
