@@ -133,6 +133,8 @@ properties:
       - stable
       - edge
       - rc
+      - fast
+      - candidate
     description: "OLM channel from which to install the addon-operator."
   ocmQuotaName:
     type: string
