@@ -39,6 +39,10 @@
         "type": "string",
         "format": "printable"
       },
+      "validation_err_msg": {
+        "type": "string",
+        "format": "printable"
+      },
       "required": {
         "type": "boolean"
       },
