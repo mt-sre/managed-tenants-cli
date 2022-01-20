@@ -24,5 +24,24 @@ properties:
         $ref: "shared/sub_operators.json"
       subscriptionConfig:
         $ref: "shared/subscription_config.json"
+  addons:
+    type: array
+    description: "List of addons that use these underlying bundles."
+    items:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          format: printable
+          description: "ID of the addon. (metadata.id)"
+        environments:
+          type: array
+          description: "List of all environments in managed-tenants to be upgraded by automated MRs. Production has to be upgraded manually."
+          items:
+            type: string
+            enum:
+              - integration
+              - stage
 required:
   - environments
