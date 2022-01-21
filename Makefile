@@ -69,7 +69,7 @@ release:
 
 generate: generate-md-schemas pre-commit-autoupdate
 
-SCHEMA_DIR := $(PWD)/managedtenants/data/schemas
+SCHEMA_DIR := $(PWD)/managedtenants/schemas
 SCHEMAS := metadata imageset mtbundles
 DOCS_DIR := $(PWD)/docs/tenants
 generate-md-schemas: develop
