@@ -1,1 +1,3 @@
 include managedtenants/data/*
+include managedtenants/schemas/*
+include managedtenants/schemas/shared/*
