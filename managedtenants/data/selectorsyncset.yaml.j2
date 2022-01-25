@@ -75,7 +75,7 @@ items:
         namespace: {{ADDON.metadata['targetNamespace']}}
         {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
         {{ maybe_labels(ADDON.metadata.get('commonLabels')) | indent(8) }}
-      {% if ADDON.metadata['installMode'] in ['OwnNamespace'] %}
+      {% if ADDON.metadata['installMode'] == 'OwnNamespace' %}
       spec:
         targetNamespaces:
           - {{ADDON.metadata['targetNamespace']}}
