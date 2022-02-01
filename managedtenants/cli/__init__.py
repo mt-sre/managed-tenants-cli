@@ -6,6 +6,7 @@ from pathlib import Path
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants import PostTask, PreTask, Task
+from managedtenants.bundles.ci import mtbundles_main
 from managedtenants.core import runner
 from managedtenants.core.addons_loader import load_addons
 from managedtenants.core.addons_loader.exceptions import AddonsLoaderError
@@ -29,8 +30,8 @@ class Cli:
         )
         parser.add_argument(
             "--environment",
-            required=True,
             choices=ENVIRONMENTS,
+            default="stage",
             help="Target environment",
         )
         parser.add_argument(
@@ -90,6 +91,15 @@ class Cli:
             help="Enable the debug messages",
         )
 
+        bundles_parser = subcommands.add_parser(
+            "bundles", help="Build addon bundles"
+        )
+        bundles_parser.add_argument(
+            "--quay-org",
+            default="osd-addons",
+            help="Quay org to push images to.",
+        )
+
         self.args = parser.parse_args()
 
         self.search = None
@@ -133,6 +143,9 @@ class Cli:
             log_level = logging.INFO if self.args.debug else logging.WARN
             _ = get_text_logger(name="task", level=log_level)
             self._run()
+
+        elif self.args.subcommand == "bundles":
+            self._build_bundles()
 
     def _load_addons(self):
         addons_path = Path(self.args.addons_dir)
@@ -189,6 +202,9 @@ class Cli:
         if tasks_factory:
             APP_LOG.info("== POSTTASKS ".ljust(80, "="))
             runner.run(tasks_factory=tasks_factory)
+
+    def _build_bundles(self):
+        mtbundles_main(self.args)
 
 
 def main():

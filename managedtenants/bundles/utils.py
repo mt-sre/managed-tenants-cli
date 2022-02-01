@@ -68,7 +68,7 @@ def check_image_size(image_url_tag):
 def load_yaml(path):
     try:
         with open(path, "r", encoding="utf8") as file_obj:
-            data = yaml.load(file_obj.read(), Loader=yaml.SafeLoader)
+            data = yaml.load(file_obj.read(), Loader=yaml.CSafeLoader)
             return data
     except yaml.YAMLError:
         return None
