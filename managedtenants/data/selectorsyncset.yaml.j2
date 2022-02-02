@@ -99,7 +99,8 @@ items:
           env:
           {% for env_obj in ADDON.get_subscription_config().get("env") %}
           - name: {{env_obj['name']}}
-            value: {{env_obj['value']}}
+            value: |-
+              {{env_obj['value']}}
           {% endfor %}
         {% endif %}
 
@@ -185,7 +186,8 @@ items:
               env:
               {% for env_obj in ADDON.get_subscription_config().get("env") %}
               - name: {{env_obj['name']}}
-                value: {{env_obj['value']}}
+                value: |-
+                  {{env_obj['value']}}
               {% endfor %}
             {% endif %}
 {% endif %}
