@@ -10,3 +10,5 @@ subscriptionConfig:
     value: Black Mesa Research Facility
   - name: USER
     value: Gordon Freeman
+  - name: HUMAN
+    value: 'true'
