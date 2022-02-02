@@ -24,7 +24,7 @@ _PERMITTED_SUBSCRIPTION_CONFIGS = ["env"]
 
 
 class Addon:
-    def __init__(self, path, environment):
+    def __init__(self, path, environment, override_manager=None):
         self.path = path
         self.extra_resources_loader = None
         self.metadata = self.load_metadata(environment=environment)
@@ -57,6 +57,9 @@ class Addon:
             self.manager = AddonManager.UKNOWN
         else:
             self.manager = AddonManager.ADDON_OPERATOR
+
+        if override_manager is not None:
+            self.manager = override_manager
 
         self.sss = Sss(addon=self)
 
