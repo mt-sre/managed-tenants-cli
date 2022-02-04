@@ -69,6 +69,16 @@ properties:
       type: string
       pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
     description: "Namespaces managed by the addon-operator. Need to include the TargetNamespace."
+  serviceAccount:
+    type: string
+    pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+    description: "Name of the service account created by the addon operator to authenticate to the API."
+  policyPermissions:
+    type: array
+    description: "List of permissions in an IAM policy that are required by the addon operator."
+    items:
+      type: string
+      pattern: ^[a-z0-9]{1,60}:[A-Za-z0-9]{1,60}$
   pullSecret:
     type: string
     format: printable

@@ -43,6 +43,12 @@
 
   - **Items** *(string)*
 
+- **`serviceAccount`** *(string)*: Name of the service account created by the addon operator to authenticate to the API.
+
+- **`policyPermissions`** *(array)*: List of permissions in an IAM policy that are required by the addon operator.
+
+  - **Items** *(string)*
+
 - **`pullSecret`** *(string)*
 
 - **`namespaceLabels`** *(object)*: Labels to be applied on all listed namespaces.
