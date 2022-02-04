@@ -29,5 +29,27 @@ addonImageSetVersion: 1.0.0
 # Default values for subscriptionConfig
 subscriptionConfig:
   env:
-  - name: DEFAULT
-    value: "TRUE"
+    - name: DEFAULT
+      value: "TRUE"
+# Test $ref references can be resolved in shared schemas
+addOnParameters:
+  - id: size
+    name: Managed StorageCluster size
+    description:
+      The size, in terabytes, of the Storage Cluster to be deployed. Currently
+      1 or 4 are supported.
+    value_type: resource_requirement
+    required: true
+    editable: true
+    enabled: true
+    default_value: '1'
+    options:
+      - name: 1 TiB
+        value: "1"
+        addOnRequirements:
+          - id: managed_svc_machine_pool_req
+            resource: machine_pool
+            data:
+              compute.cpu: 20
+              compute.memory: 1073741824
+            enabled: true
