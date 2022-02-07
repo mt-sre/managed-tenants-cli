@@ -43,7 +43,7 @@ def test_namespace_and_servicemonitor_v1(data):
     )
 
     for matchName in addon.metadata["monitoring"]["matchNames"]:
-        series_name = f"""'{{__name__="{matchName}"}}'"""
+        series_name = f"""{{__name__="{matchName}"}}"""
         assert series_name in sm["spec"]["endpoints"][0]["params"]["match[]"]
 
     for k, v in addon.metadata["monitoring"]["matchLabels"].items():

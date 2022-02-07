@@ -69,10 +69,9 @@ def addon_with_indeximage():
 @pytest.fixture
 def addons_managed_by_addon_cr():
     def create_addon_managed_by_addon_cr(path):
-        addon = Addon(path, "stage")
-        addon.manager = AddonManager.ADDON_OPERATOR
-        addon.sss = Sss(addon=addon)
-        return addon
+        return Addon(
+            path, "stage", override_manager=AddonManager.ADDON_OPERATOR
+        )
 
     addon_paths = [addon_with_imageset_path(), addon_with_indeximage_path()]
     return list(map(create_addon_managed_by_addon_cr, addon_paths))

@@ -146,6 +146,7 @@ def test_raises_imageset_missing_error():
             [
                 {"name": "LOCATION", "value": "Black Mesa Research Facility"},
                 {"name": "USER", "value": "Gordon Freeman"},
+                {"name": "HUMAN", "value": "true"},
             ],
         ),
         ("addon_with_imageset_and_no_config", None),
@@ -154,6 +155,7 @@ def test_raises_imageset_missing_error():
             [
                 {"name": "LOCATION", "value": "Black Mesa Research Facility"},
                 {"name": "USER", "value": "Gordon Freeman"},
+                {"name": "HUMAN", "value": "true"},
             ],
         ),
         (
@@ -161,6 +163,7 @@ def test_raises_imageset_missing_error():
             [
                 {"name": "LOCATION", "value": "Black Mesa Research Facility"},
                 {"name": "USER", "value": "Gordon Freeman"},
+                {"name": "HUMAN", "value": "true"},
             ],
         ),
     ],

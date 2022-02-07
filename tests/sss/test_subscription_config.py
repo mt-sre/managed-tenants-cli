@@ -19,6 +19,7 @@ def test_subscription_config(addon_str, request):
     expected_values = [
         {"name": "LOCATION", "value": "Black Mesa Research Facility"},
         {"name": "USER", "value": "Gordon Freeman"},
+        {"name": "HUMAN", "value": "true"},
     ]
 
     if addon_str == "addons_managed_by_addon_cr":
@@ -46,7 +47,7 @@ def test_subscription_config(addon_str, request):
         ][0]
         if addon.get_subscription_config():
             _, subscription_contents = subscription_obj
-            assert len(subscription_contents["spec"]["config"]["env"]) == 2
+            assert len(subscription_contents["spec"]["config"]["env"]) == 3
             for env_obj in subscription_contents["spec"]["config"]["env"]:
                 assert env_obj in expected_values
         else:
