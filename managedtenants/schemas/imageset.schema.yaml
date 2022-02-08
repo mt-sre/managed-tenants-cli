@@ -5,6 +5,7 @@ additionalProperties: false
 properties:
   name:
     type: string
+    pattern: ^[a-z-]+.v[0-9A-Za-z\.-]+$
     description: "The name of the imageset along with the version"
   indexImage:
     type: string
