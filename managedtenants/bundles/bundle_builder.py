@@ -4,7 +4,6 @@ import subprocess
 from pathlib import Path
 
 import semver
-from packaging.version import parse as ParseVersion
 from sretoolbox.container import Image
 from sretoolbox.utils.logger import get_text_logger
 
@@ -54,8 +53,10 @@ class BundleBuilder:
         Returns the latest bundle in the given addon directory
         """
         main_addon_path = self.addon_dir.joinpath("main")
-        addon_versions = [item.name for item in get_subdirs(main_addon_path)]
-        return sorted(addon_versions, key=ParseVersion)[-1]
+        return max(
+            [item.name for item in get_subdirs(main_addon_path)],
+            key=semver.VersionInfo.parse,
+        )
 
     def get_all_operator_names(self):
         all_bundles = self._get_all_bundles()
