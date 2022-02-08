@@ -8,7 +8,7 @@ from sretoolbox.utils import retry
 from sretoolbox.utils.logger import get_text_logger
 
 
-class QuayApiError(Exception):
+class QuayAPIError(Exception):
     """Used when there are errors with the Quay API."""
 
     def __init__(self, message, response):
@@ -19,7 +19,7 @@ class QuayApiError(Exception):
 def retry_hook(exception):
     """Retries on 5xx QuayApiError and all other requests exceptions."""
     if (
-        isinstance(exception, QuayApiError)
+        isinstance(exception, QuayAPIError)
         and exception.response.status_code < 500
     ):
         raise exception
@@ -27,25 +27,24 @@ def retry_hook(exception):
     # https://docs.python-requests.org/en/latest/api/#exceptions
 
 
-class QuayApi:
+class QuayAPI:
     """
     Abstraction around the Quay.io API.
 
     View swagger docs here: https://docs.quay.io/api/swagger/.
     """
 
-    def __init__(self, org, token=None, base_url="quay.io"):
+    def __init__(self, org="osd-addons", token=None, base_url="quay.io"):
         """
         Creates a Quay API abstraction.
 
-        :param organization: Name of your quay organization.
-        :type organization: str
-        :param token: Quay OAuth Application token (do not use robot account)
-        :type token: str, optional
-        :param base_url: Quay base API server url
-        :type base_url: str
-        :return: instance
-        :rtype: QuayApi
+        :param org: (optional) Name of your quay organization.
+                    Default: 'osd-addons'
+        :param token: (optional) Quay OAuth Application token (no robot account)
+                       Default: value of env QUAY_APITOKEN
+        :param base_url: (optional) Quay base API server url. Default: 'quay.io'
+
+        :raise ValueError: invalid empty token
         """
 
         self.token = _get_token_or_fail(token)
@@ -54,7 +53,6 @@ class QuayApi:
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.token}",
         }
-        self.team_members = {}
         self.api_url = f"https://{base_url}/api/v1"
         self.log = get_text_logger("app")
 
@@ -67,6 +65,7 @@ class QuayApi:
 
         :return: true if repo exists or was created successfully
         :rtype: bool
+        :raise QuayApiError: the operator failed
         """
         if dry_run:
             return True
@@ -161,4 +160,4 @@ def _raise_for_status(response, method, url, **kwargs):
         if kwargs.get("json"):
             error_message += f"json: {kwargs['json']}\n"
         error_message += f"original error: {response.text}"
-        raise QuayApiError(error_message, response)
+        raise QuayAPIError(error_message, response)

@@ -11,12 +11,15 @@ hypothesis_jsonschema = "0.20.1"
 jsonschema2md = "0.2.0.post1"
 PyYAML = "5.4.1"
 pre-commit = "2.13.0"
+docker = "~=5.0.3"
 # Please keep the following in-sync /w .pre-commit-config.yaml
 flake8 = "4.0.1"
 isort = "5.10.0"
 pylint = "2.9.3"
 black = "21.10b0"
 yamllint = "1.26.3"
+# vscode LSP
+jedi = "*"
 
 [packages]
 managedtenants_cli = {editable = true,path = "."}

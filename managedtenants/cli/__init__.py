@@ -6,7 +6,7 @@ from pathlib import Path
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants import PostTask, PreTask, Task
-from managedtenants.bundles.ci import mtbundles_main
+from managedtenants.bundles.ci import MtbundlesCLI
 from managedtenants.core import runner
 from managedtenants.core.addons_loader import load_addons
 from managedtenants.core.addons_loader.exceptions import AddonsLoaderError
@@ -67,6 +67,12 @@ class Cli:
             default=False,
             help="Flag to specify a non-invasive execution",
         )
+        parser.add_argument(
+            "--debug",
+            action="store_true",
+            default=False,
+            help="Enable the debug messages",
+        )
 
         subcommands = parser.add_subparsers(
             title="subcommands", help="subcommand help", dest="subcommand"
@@ -84,12 +90,6 @@ class Cli:
                 "tasks"
             ),
         )
-        run_parser.add_argument(
-            "--debug",
-            action="store_true",
-            default=False,
-            help="Enable the debug messages",
-        )
 
         bundles_parser = subcommands.add_parser(
             "bundles", help="Build addon bundles"
@@ -98,6 +98,12 @@ class Cli:
             "--quay-org",
             default="osd-addons",
             help="Quay org to push images to.",
+        )
+        bundles_parser.add_argument(
+            "--force-push",
+            action="store_true",
+            default=False,
+            help="Force push an existing image.",
         )
 
         self.args = parser.parse_args()
@@ -204,7 +210,8 @@ class Cli:
             runner.run(tasks_factory=tasks_factory)
 
     def _build_bundles(self):
-        mtbundles_main(self.args)
+        cli = MtbundlesCLI(args=self.args)
+        cli.run()
 
 
 def main():

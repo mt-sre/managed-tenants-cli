@@ -47,6 +47,8 @@ clean:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
+	find . -name 'bundle_tmp*' -exec rm -fr {} +
+	find . -name 'index_tmp*' -exec rm -fr {} +
 
 LINTERS := $(shell pwd)/.linters
 PY_SRCS := managedtenants/ hack/ tests/ setup.py

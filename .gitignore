@@ -27,3 +27,7 @@ Pipfile.lock
 
 # general
 .envrc
+
+# ignore opm stuff
+bundle_tmp*/
+index_tmp*/

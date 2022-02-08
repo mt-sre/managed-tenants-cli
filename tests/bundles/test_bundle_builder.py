@@ -2,19 +2,14 @@ from pathlib import Path
 
 import pytest
 import sretoolbox
-from conftest import QUAY_API, REGISTRY_URL
-from mock import patch
+from conftest import REGISTRY_URL, get_test_docker_api
 
 from managedtenants.bundles.bundle_builder import BundleBuilder
 from managedtenants.bundles.exceptions import BundleBuilderError
-from managedtenants.utils.quay_api import QuayApi
 from tests.testutils.addon_helpers import (
-    bundles_dockerfile_path,
     mt_bundles_addon_path,
     mt_bundles_addon_with_invalid_version_path,
     mt_bundles_with_invalid_dir_structure_path,
-    return_false,
-    return_true,
 )
 
 HASH_STRING = "int08h"
@@ -75,11 +70,17 @@ def test_class_initialization_validation(
     addon_dir = request.getfixturevalue(path)
     if error_prefix:
         with pytest.raises(BundleBuilderError) as err:
-            BundleBuilder(addon_dir=addon_dir, dry_run=True, quay_api=QUAY_API)
+            BundleBuilder(
+                addon_dir=addon_dir,
+                docker_api=get_test_docker_api(),
+            )
         assert error_prefix in str(err)
     else:
         try:
-            BundleBuilder(addon_dir=addon_dir, dry_run=True, quay_api=QUAY_API)
+            BundleBuilder(
+                addon_dir=addon_dir,
+                docker_api=get_test_docker_api(),
+            )
         except BundleBuilderError:
             pytest.fail("Raised BundleBuilderError when it was not expected!")
 
@@ -95,19 +96,17 @@ def test_class_initialization_validation(
         ),
     ],
 )
-@patch.object(sretoolbox.container.Image, "__bool__", return_false)
-@patch.object(QuayApi, "ensure_repo", return_true)
 def test_build_push_bundle_images_with_deps(
     addon_dir, versions, expected_image_urls, request
 ):
     mt_bundles_path = request.getfixturevalue(addon_dir)
     bundle_builder = BundleBuilder(
-        addon_dir=mt_bundles_path, dry_run=False, quay_api=QUAY_API
+        addon_dir=mt_bundles_path,
+        docker_api=get_test_docker_api(),
     )
     images = bundle_builder.build_push_bundle_images_with_deps(
         versions=versions,
         hash_string=HASH_STRING,
-        docker_file_path=bundles_dockerfile_path(),
     )
     returned_image_urls = set(map(lambda image: image.url_tag, images))
     assert returned_image_urls == set(expected_image_urls)
@@ -115,7 +114,8 @@ def test_build_push_bundle_images_with_deps(
 
 def test_get_all_operator_names(mt_bundles_addon_path):
     bundle_builder = BundleBuilder(
-        addon_dir=mt_bundles_addon_path, dry_run=False, quay_api=QUAY_API
+        addon_dir=mt_bundles_addon_path,
+        docker_api=get_test_docker_api(),
     )
     expected_operator_names = [
         "addon-operator.v0.1.0",
@@ -135,7 +135,8 @@ def test_get_all_operator_names(mt_bundles_addon_path):
 
 def test_get_latest_version(mt_bundles_addon_path):
     bundle_builder = BundleBuilder(
-        addon_dir=mt_bundles_addon_path, dry_run=False, quay_api=QUAY_API
+        addon_dir=mt_bundles_addon_path,
+        docker_api=get_test_docker_api(),
     )
     returned_max = bundle_builder.get_latest_version()
     expected_max = "0.1.6"
