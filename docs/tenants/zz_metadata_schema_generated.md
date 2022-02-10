@@ -73,7 +73,7 @@
 
     - **Items** *(string)*
 
-- **`defaultChannel`** *(string)*: OLM channel from which to install the addon-operator. Must be one of: `['alpha', 'beta', 'stable', 'edge', 'rc']`.
+- **`defaultChannel`** *(string)*: OLM channel from which to install the addon-operator. Must be one of: `['alpha', 'beta', 'stable', 'edge', 'rc', 'fast', 'candidate']`.
 
 - **`ocmQuotaName`** *(string)*: Refers to the SKU name for the addon.
 
