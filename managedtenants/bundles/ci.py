@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 from pathlib import Path
@@ -8,20 +9,19 @@ from gitlab.exceptions import GitlabError
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.bundle_builder import BundleBuilder
+from managedtenants.bundles.docker_api import DockerAPI
 from managedtenants.bundles.index_builder import IndexBuilder
 from managedtenants.utils.git import ChangeDetector, get_short_hash
 from managedtenants.utils.gitlab_client import GitLab
-from managedtenants.utils.quay_api import QuayApi
+from managedtenants.utils.quay_api import QuayAPI
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-LOG = get_text_logger("app")
 
 GITLAB_URL = os.environ.get("GITLAB_SERVER")
 GITLAB_TOKEN = os.environ.get("GITLAB_TOKEN")
 GITLAB_PROJECT = os.environ.get("GITLAB_PROJECT")
-
 DOCKER_CONF = os.environ.get("DOCKER_CONF")
+LOG = get_text_logger("app")
 
 
 def get_single_addon(addons_dir, addon_name):
@@ -269,21 +269,10 @@ def get_addon_environments(addon):
     return environments
 
 
-def build_and_push_addon_bundles(
-    addon,
-    dry_run,
-    quay_api,
-    bundle_docker_file_path,
-):
+def build_and_push_addon_bundles(bundle_builder):
     """
     Builds and pushes bundle images from the passed addon's directory.
     """
-    bundle_builder = BundleBuilder(
-        addon_dir=addon,
-        dry_run=dry_run,
-        quay_api=quay_api,
-        docker_conf_path=DOCKER_CONF,
-    )
     err = bundle_builder.validate_local_bundles()
     if err:
         exit_with_error(err)
@@ -291,109 +280,103 @@ def build_and_push_addon_bundles(
     bundle_images = bundle_builder.build_push_bundle_images_with_deps(
         versions=None,
         hash_string=get_short_hash(),
-        docker_file_path=bundle_docker_file_path,
     )
     latest_version = bundle_builder.get_latest_version()
     return (bundle_images, latest_version)
 
 
-def create_index_image(addon, dry_run, quay_api, bundle_images):
-    """
-    Builds and pushes an index image from the passed bundle images.
-    """
-
-    index_image_builder = IndexBuilder(
-        addon_dir=addon,
-        dry_run=dry_run,
-        quay_api=quay_api,
-        docker_conf_path=DOCKER_CONF,
-    )
-    index_image = index_image_builder.build_push_index_image(
-        bundle_images=bundle_images,
-        hash_string=get_short_hash(),
-    )
-    return index_image
-
-
-def mtbundles_main(args):
-    """
-    Entrypoint for anything related to managed-tenants-bundles.
-
-    Validates, builds and pushes both bundle images and index images.
-    """
-    dry_run = args.dry_run
-    quay_org = Path(f"quay.io/{args.quay_org}/")
-    quay_api = QuayApi(org=quay_org)
-
-    target_addons = get_target_addons(args)
-    for addon in target_addons:
-        index_image = f"{quay_org}/{addon.name}-index"
-        bundle_image = f"{quay_org}/{addon.name}-bundle"
-        LOG.info(f"Building {index_image} and {bundle_image}...")
-        if not dry_run:
-            LOG.info(f"Pushing {index_image} and {bundle_image}...")
-
-        bundle_images, latest_version = build_and_push_addon_bundles(
-            addon=addon,
-            dry_run=dry_run,
-            quay_api=quay_api,
-            bundle_docker_file_path=Path("Dockerfile"),
+# TODO (sblaisdo): continue OO refactoring in future PRs
+class MtbundlesCLI:
+    def __init__(self, args):
+        self.args = args
+        self.addons_dir = Path(args.addons_dir)
+        self.quay_org = args.quay_org
+        self.docker_api = DockerAPI(
+            quay_api=QuayAPI(org=args.quay_org),
+            dockercfg_path=DOCKER_CONF,
+            debug=args.debug,
+            force_push=args.force_push,
         )
-        index_image = create_index_image(
-            addon=addon,
-            dry_run=dry_run,
-            quay_api=quay_api,
-            bundle_images=bundle_images,
+
+        self.log = get_text_logger(
+            "mtbundles",
+            level=logging.DEBUG if args.debug else logging.INFO,
         )
-        if not dry_run:
-            LOG.info(f"Index image {index_image} pushed and ready for use")
 
-        if not dry_run:
-            environments = get_addon_environments(addon)
-            for env in environments:
-                if addon.name == "reference-addon":
-                    post_managed_tenants_mr(
-                        dry_run=dry_run,
-                        addon=addon,
-                        addon_env=env,
-                        version=latest_version,
-                        index_image=index_image,
-                    )
-                else:
-                    post_managed_tenants_mr_metadata(
-                        dry_run=dry_run,
-                        addon=addon,
-                        addon_env=env,
-                        version=latest_version,
-                        index_image=index_image,
-                    )
+    def run(self):
+        target_addons = self._get_target_addons()
 
+        for addon in target_addons:
+            bundle_images, latest_version = build_and_push_addon_bundles(
+                bundle_builder=self._bundle_builder(addon)
+            )
 
-def get_target_addons(args):
-    """
-    Returns a list of targeted addons. 3 use cases:
-        1. single addon
-        2. all addons that have a changed file (using git diff)
-        3. all addons
-    """
-    addons_dir = Path(args.addons_dir)
-    dry_run = args.dry_run
+            index_builder = self._index_builder(addon)
+            index_image = index_builder.build_push_index_image(
+                bundle_images=bundle_images,
+                hash_string=get_short_hash(),
+            )
 
-    if args.addon_name:
-        addon = get_single_addon(addons_dir, args.addon_name)
-        if not addon:
-            exit_with_error(f"Invalid addon name provided: {args.build_addon}")
-        LOG.info(f"Targeting single addon {addon.name}...")
-        return [addon]
+            if not self.args.dry_run:
+                environments = get_addon_environments(addon)
+                for env in environments:
+                    if addon.name == "reference-addon":
+                        post_managed_tenants_mr(
+                            dry_run=self.args.dry_run,
+                            addon=addon,
+                            addon_env=env,
+                            version=latest_version,
+                            index_image=index_image,
+                        )
+                    else:
+                        post_managed_tenants_mr_metadata(
+                            dry_run=self.args.dry_run,
+                            addon=addon,
+                            addon_env=env,
+                            version=latest_version,
+                            index_image=index_image,
+                        )
 
-    # TODO: (sblaisdo) deprecate the changed_addons workflow once the tooling is
-    # more stable, and supports concurrently building+deploying index/bundle
-    # images.
-    if args.only_changed:
-        LOG.info("Targeting changed addons as reported by git...")
-        return ChangeDetector(
-            addons_dir=addons_dir, dry_run=dry_run
-        ).get_changed_addons()
+    def _get_target_addons(self):
+        """
+        Returns a list of targeted addons. 3 use cases:
+            1. single addon
+            2. all addons that have a changed file (using git diff)
+            3. all addons
+        """
+        if self.args.addon_name is not None:
+            addon = get_single_addon(self.addons_dir, self.args.addon_name)
+            if not addon:
+                exit_with_error(
+                    f"Invalid addon name provided: {self.args.addon_name}."
+                )
+            self.log.info(f"Targeting single addon {addon.name}...")
+            return [addon]
 
-    LOG.info(f"Targeting all addons in {addons_dir}.")
-    return list(addons_dir.iterdir())
+        # TODO: (sblaisdo) deprecate the changed_addons workflow once the
+        # tooling is more stable, and supports concurrently building+deploying
+        # index/bundle images.
+        if self.args.only_changed:
+            self.log.info("Targeting changed addons as reported by git...")
+            return ChangeDetector(
+                addons_dir=self.addons_dir, dry_run=self.args.dry_run
+            ).get_changed_addons()
+
+        self.log.info(f"Targeting all addons in {self.addons_dir}.")
+        return list(self.addons_dir.iterdir())
+
+    def _bundle_builder(self, addon_dir):
+        return BundleBuilder(
+            addon_dir=addon_dir,
+            docker_api=self.docker_api,
+            dry_run=self.args.dry_run,
+            debug=self.args.debug,
+        )
+
+    def _index_builder(self, addon_dir):
+        return IndexBuilder(
+            addon_dir=addon_dir,
+            docker_api=self.docker_api,
+            dry_run=self.args.dry_run,
+            debug=self.args.debug,
+        )

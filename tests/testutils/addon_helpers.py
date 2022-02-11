@@ -41,10 +41,6 @@ def addon_with_pagerduty_path():
     return Path("tests/testdata/addons/test-operator")
 
 
-def bundles_dockerfile_path():
-    return Path("tests/testdata/bundles_dockerfile")
-
-
 @pytest.fixture
 def mt_bundles_with_invalid_dir_structure_path():
     return Path("tests/testdata/addons/mock-operator-with-bundles")

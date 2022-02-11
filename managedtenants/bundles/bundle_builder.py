@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import logging
 import re
 import subprocess
 from pathlib import Path
@@ -8,27 +9,120 @@ from sretoolbox.container import Image
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.binary_deps import OPERATOR_SDK
+from managedtenants.bundles.docker_api import DockerAPI
 from managedtenants.bundles.exceptions import BundleBuilderError
-from managedtenants.bundles.utils import get_subdirs, load_yaml, push_image
-from managedtenants.utils.general_utils import run
+from managedtenants.bundles.utils import get_subdirs, load_yaml
 
 
 class BundleBuilder:
+    """
+    Build and push bundle images.
+
+    :param addon_dir: Path to the addon bundle.
+    :param docker_api: DockerAPI object to be used to build and push.
+    :param dry_run: If True, skips pushing images.
+    :param debug: Enable debug logging.
+    """
+
     def __init__(
         self,
         addon_dir,
-        dry_run,
-        quay_api=None,
-        docker_conf_path=None,
+        docker_api=None,
+        dry_run=False,
+        debug=False,
     ):
-        if quay_api is None:
-            raise BundleBuilderError("Please provide a valid quay_api object.")
+
         self.addon_dir = addon_dir
         self.dry_run = dry_run
-        self.quay_api = quay_api
-        self.docker_conf = docker_conf_path
-        self.logger = get_text_logger("managedtenants-bundle-builder")
+        self.docker_api = (
+            docker_api if docker_api is not None else DockerAPI(debug=debug)
+        )
+        self.log = get_text_logger(
+            "managedtenants-bundle-builder",
+            level=logging.DEBUG if debug else logging.INFO,
+        )
         self._validate_dir_structure()
+
+    def build_push_bundle_images_with_deps(
+        self,
+        versions,
+        hash_string,
+    ):
+        """
+        Builds and pushes bundle images in the given addon directory.
+
+        :param versions: A list versions to consider
+        :param hash_string: A string to be used in the created image tag.
+
+        :return: A list of pushed bundle images
+        """
+        all_inner_addons = get_subdirs(path=self.addon_dir)
+        addon_images = []
+        for inner_addon in all_inner_addons:
+            addon_images.extend(
+                self._build_push_bundle_images(
+                    addon=inner_addon,
+                    versions=versions,
+                    hash_string=hash_string,
+                )
+            )
+        return addon_images
+
+    def _build_push_bundle_images(
+        self,
+        addon,
+        hash_string,
+        versions=None,
+    ):
+        """
+        :param addon: A Posix directory path
+        :param versions: A list versions to consider
+        :param hash_string: A string to be used in the created image tag.
+
+        :return: A list of pushed bundle images
+        """
+        images = []
+        main_addon = self._is_main_addon(addon)
+        # The main addon lives inside the "main" directory, so
+        # we look at its parents name to get the addon name.
+        # (sblaisdo) MTSRE-225: prepend deps /w addon_id to avoid quay
+        # collisions
+        addon_id = addon.parent.name
+        addon_name = addon_id if main_addon else f"{addon_id}-{addon.name}"
+
+        for bundle in filter(self._version_parsable, get_subdirs(addon)):
+            if main_addon and versions and bundle.name not in versions:
+                self.log.info(
+                    f"skipping version {bundle.name} for main operator"
+                )
+                continue
+            bundle_image = self._build_push_bundle_image(
+                bundle=bundle,
+                hash_string=hash_string,
+                addon_name=addon_name,
+            )
+            images.append(bundle_image)
+        return images
+
+    def _build_push_bundle_image(
+        self,
+        bundle,
+        addon_name,
+        hash_string,
+    ):
+        registry = self.docker_api.registry
+        repo_name = f"{addon_name}-bundle"
+        image = Image(f"{registry}/{repo_name}:{bundle.name}-{hash_string}")
+
+        self.log.info(f'Building bundle image "{image.url_tag}".')
+        _ = self.docker_api.build_bundle(path=bundle, tag=image.url_tag)
+
+        # don't push images on dry_run
+        if not self.dry_run:
+            self.log.info(f'Pushing bundle image "{image.url_tag}".')
+            self.docker_api.push(image)
+
+        return image
 
     def validate_local_bundles(self):
         """
@@ -78,158 +172,6 @@ class BundleBuilder:
                 if contents:
                     return contents.get("metadata", {}).get("name")
         return None
-
-    def build_push_bundle_images_with_deps(
-        self,
-        versions,
-        hash_string,
-        docker_file_path,
-        ensure_quay_repo=True,
-    ):
-        # pylint: disable=R0913
-        """
-        Builds and pushes bundle images in the given addon directory.
-        :param versions: A list versions to consider
-        :param hash_string: A string to be used in the created
-        image tag.
-        :param docker_file_path: Path to the dockerfile to be
-        used to create the bundle image.
-        :return: A list of pushed bundle images
-        """
-        all_inner_addons = get_subdirs(path=self.addon_dir)
-        self.logger.info(f"quay org: {self.quay_api.org}")
-        addon_images = []
-        for inner_addon in all_inner_addons:
-            addon_images.extend(
-                self._build_push_bundle_images(
-                    addon=inner_addon,
-                    versions=versions,
-                    hash_string=hash_string,
-                    dockerfile_path=docker_file_path,
-                    ensure_quay_repo=ensure_quay_repo,
-                )
-            )
-        return addon_images
-
-    def validate_bundle_image(self, image):
-        """
-        Validates the passed image using operator-sdk binary
-        """
-        self.logger.info('Validating bundle image "%s"', image.url_tag)
-
-        cmd = [
-            "bundle",
-            "validate",
-            image.url_tag,
-        ]
-
-        if not self.dry_run:
-            try:
-                OPERATOR_SDK.run(*cmd)
-            except subprocess.CalledProcessError as e:
-                self.logger.error(
-                    "Failed to validate bundle image. operator-sdk output:"
-                )
-                self.logger.error(e.stdout.decode())
-                # reraise the error to stop execution
-                raise e
-
-        return image
-
-    def _build_push_bundle_images(
-        self,
-        addon,
-        hash_string,
-        dockerfile_path,
-        ensure_quay_repo,
-        versions=None,
-    ):
-        # pylint: disable=R0913
-        """
-        :param addon: A Posix directory path
-        :param main_addon: A boolean to indicate if the passed addon
-        is the "main" addon.
-        :param versions: A list versions to consider
-        :param hash_string: A string to be used in the created image tag.
-        :param docker_file_path: Path to the dockerfile to be used to create
-        the bundle image.
-        :return: A list of pushed bundle images
-        """
-        images = []
-        main_addon = self._is_main_addon(addon)
-        # The main addon lives inside the "main" directory, so
-        # we look at its parents name to get the addon name.
-        # (sblaisdo) MTSRE-225: prepend deps /w addon_id to avoid quay
-        # collisions
-        addon_id = addon.parent.name
-        addon_name = addon_id if main_addon else f"{addon_id}-{addon.name}"
-
-        for bundle in filter(self._version_parsable, get_subdirs(addon)):
-            if main_addon and versions and bundle.name not in versions:
-                self.logger.info(
-                    f"skipping version {bundle.name} for main operator"
-                )
-                continue
-            bundle_image = self._build_push_bundle_image(
-                bundle=bundle,
-                hash_string=hash_string,
-                docker_file_path=dockerfile_path,
-                addon_name=addon_name,
-                ensure_quay_repo=ensure_quay_repo,
-            )
-            images.append(
-                self.validate_bundle_image(
-                    image=bundle_image,
-                )
-            )
-        return images
-
-    def _build_push_bundle_image(
-        self,
-        bundle,
-        hash_string,
-        docker_file_path,
-        addon_name,
-        ensure_quay_repo,
-    ):
-        # pylint: disable=R0913
-        repo_name = f"{addon_name}-bundle"
-        if ensure_quay_repo and not self.quay_api.ensure_repo(
-            repo_name, dry_run=self.dry_run
-        ):
-            raise BundleBuilderError(
-                f"Failed to create/find quay repo:{repo_name} for the addon:"
-                f" {addon_name}"
-            )
-        image = Image(
-            f"{self.quay_api.org}/{repo_name}:{bundle.name}-{hash_string}"
-        )
-
-        if not self.dry_run and image:
-            self.logger.info('Image exists "%s"', image.url_tag)
-            return image
-
-        self.logger.info('Building bundle image "%s"', image.url_tag)
-
-        dockerfile = Path(docker_file_path)
-        cmd = [
-            "docker",
-            "build",
-            "-f",
-            str(dockerfile),
-            "-t",
-            image.url_tag,
-            str(bundle),
-        ]
-
-        run(cmd=cmd, logger=self.logger)
-
-        return push_image(
-            dry_run=self.dry_run,
-            image=image,
-            logger=self.logger,
-            docker_conf_path=self.docker_conf,
-        )
 
     def _get_all_bundles(self):
         """
@@ -324,5 +266,8 @@ class BundleBuilder:
         try:
             OPERATOR_SDK.run(*cmd)
             return True
-        except subprocess.CalledProcessError:
-            return False
+        except subprocess.CalledProcessError as e:
+            raise BundleBuilderError(
+                f"Failed to validate bundle path '{bundle_path}', got"
+                f" {e.stdout.decode()}."
+            )

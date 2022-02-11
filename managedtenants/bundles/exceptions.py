@@ -4,3 +4,7 @@ class BundleBuilderError(Exception):
 
 class IndexBuilderError(Exception):
     pass
+
+
+class DockerError(Exception):
+    pass

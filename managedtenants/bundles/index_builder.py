@@ -1,60 +1,48 @@
+import logging
 import subprocess
 
 from sretoolbox.container import Image
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.binary_deps import MTCLI, OPM
+from managedtenants.bundles.docker_api import DockerAPI
 from managedtenants.bundles.exceptions import IndexBuilderError
-from managedtenants.bundles.utils import push_image
 
 
 class IndexBuilder:
     def __init__(
         self,
         addon_dir,
-        dry_run,
-        quay_api=None,
-        docker_conf_path=None,
+        docker_api=None,
+        dry_run=False,
+        debug=False,
     ):
-        if quay_api is None:
-            raise IndexBuilderError("Please provide a valid quay_api object.")
         self.addon_dir = addon_dir
         self.dry_run = dry_run
-        self.quay_api = quay_api
-        self.docker_conf = docker_conf_path
-        self.logger = get_text_logger("managedtenants-catalog-builder")
+        self.docker_api = (
+            docker_api if docker_api is not None else DockerAPI(debug=debug)
+        )
+        self.log = get_text_logger(
+            "managedtenants-index-builder",
+            level=logging.DEBUG if debug else logging.INFO,
+        )
 
-    def build_push_index_image(
-        self, bundle_images, hash_string, ensure_quay_repo=True
-    ):
+    def build_push_index_image(self, bundle_images, hash_string):
         """
-        Returns an index image which points to the passed bundle_images.
+        Build and push an index image.
+
         :param hash_string: A string to be used in the created image's tag.
         :param bundle_images: A list of bundle images to be added
         to the index image.
         :return: An Index image that has been pushed.
         """
-        dry_run = self.dry_run
-        addon = self.addon_dir
-        repo_name = f"{addon.name}-index"
-        if ensure_quay_repo and not self.quay_api.ensure_repo(
-            repo_name, dry_run=self.dry_run
-        ):
-            raise IndexBuilderError(
-                f"Failed to create/find quay repo:{repo_name} for the addon:"
-                f" {addon.name}"
-            )
+        registry = self.docker_api.registry
+        repo_name = f"{self.addon_dir.name}-index"
+        image = Image(f"{registry}/{repo_name}:{hash_string}")
 
-        image = Image(f"{self.quay_api.org}/{repo_name}:{hash_string}")
-
-        if not dry_run and image:
-            self.logger.info('Image exists "%s"', image.url_tag)
-            return image
-
-        self.logger.info(
-            'Building index image "%s" with %s', image.url_tag, bundle_images
+        self.log.info(
+            f'Building index image "{image.url_tag}" with "{bundle_images}".'
         )
-
         cmd = [
             "index",
             "--container-tool",
@@ -67,31 +55,31 @@ class IndexBuilder:
             image.url_tag,
         ]
 
-        if not dry_run:
-            try:
-                OPM.run(*cmd)
-            except subprocess.CalledProcessError as e:
-                self.logger.error(
-                    "Failed to build and push index image. opm output:"
-                )
-                self.logger.error(e.stdout.decode())
-                # reraise the error to stop execution
-                raise e
+        try:
+            OPM.run(*cmd)
+        except subprocess.CalledProcessError as e:
+            raise IndexBuilderError(
+                f"Failed to build index image: {e.stdout.decode()}."
+            )
 
-        return push_image(
-            dry_run=dry_run,
-            image=image,
-            docker_conf_path=self.docker_conf,
-            logger=self.logger,
-        )
+        if not self.dry_run:
+            self.log.info(f'Pushing index image "{image.url_tag}".')
+            self.docker_api.push(image)
 
+        return image
 
-def list_bundles(index_image_url, logger=None):
-    cmd = ["list-bundles", index_image_url]
-    try:
-        res = MTCLI.run(*cmd).rstrip()
-        return [i for i in res.split("\n") if i != ""]
-    except subprocess.CalledProcessError:
-        if logger:
-            logger.info(f"Failed to extract bundles from {index_image_url}")
-        return None
+    # TODO (sblaisdo) - golang library does not trust self-signed certs
+    # find a way to test this functionality with the local testing registry
+    # before releasing in the wild
+    def _list_bundles(self, index_image_url):
+        cmd = ["list-bundles", index_image_url]
+        try:
+            res = MTCLI.run(*cmd).rstrip()
+            return list(res.split("\n")) if res != "" else []
+        except subprocess.CalledProcessError as e:
+            self.log.error(
+                f"Failed to extract bundles from {index_image_url}. mtcli"
+                " output:"
+            )
+            self.log.error(e.stdout.decode())
+            raise e

@@ -1,16 +1,16 @@
 import signal
 import subprocess
-from pathlib import Path
 
 import pytest
 
+from managedtenants.bundles.docker_api import DockerAPI
 from managedtenants.bundles.utils import run
-from managedtenants.utils.quay_api import QuayApi
+from managedtenants.utils.quay_api import QuayAPI
+from tests.testutils.paths import TEST_ROOT
 
 LOCAL_REGISTRY_NAME = "mt-bundles-test-registry"
 LOCAL_REGISTRY_PORT = 5000
-REGISTRY_URL = Path(f"127.0.0.1:{LOCAL_REGISTRY_PORT}")
-QUAY_API = QuayApi(org=REGISTRY_URL, token="dummy")
+REGISTRY_URL = f"127.0.0.1:{LOCAL_REGISTRY_PORT}"
 HASH_STRING = "int08h"
 
 
@@ -20,6 +20,7 @@ class RegistryTearDownError(Exception):
 
 def setup_image_registry():
     # Teardown if present
+    # registry credentials => testuser:testpassword
     teardown_image_registry(raise_exception=False)
     cmd = [
         "docker",
@@ -28,9 +29,17 @@ def setup_image_registry():
         "-p",
         f"{LOCAL_REGISTRY_PORT}:{LOCAL_REGISTRY_PORT}",
         "--restart=always",
+        "-v",
+        f"{TEST_ROOT}/bundles/auth:/auth",
+        "-e",
+        "REGISTRY_AUTH=htpasswd",
+        "-e",
+        "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd",
         "--name",
         LOCAL_REGISTRY_NAME,
-        "quay.io/asnaraya/registry:2",
+        # (sblaisdo) Use an image from either quay or catalog.redhat.com because
+        # AppSRE Jenkins VMs prohibit pulling images from dockerhub
+        "quay.io/openshift/origin-docker-registry:latest",
     ]
     try:
         res = run(cmd)
@@ -70,3 +79,12 @@ def install_signal_handlers():
 
     signal.signal(signal.SIGINT, teardown)
     signal.signal(signal.SIGTERM, teardown)
+
+
+def get_test_docker_api():
+    return DockerAPI(
+        registry=REGISTRY_URL,
+        quay_api=QuayAPI(org=REGISTRY_URL, token="dummy"),
+        dockercfg_path=TEST_ROOT / "bundles" / "auth",
+        debug=False,
+    )
