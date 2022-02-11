@@ -8,6 +8,7 @@ import yaml
 from gitlab.exceptions import GitlabError
 from sretoolbox.utils.logger import get_text_logger
 
+from managedtenants.bundles.addon_bundles import AddonBundles
 from managedtenants.bundles.bundle_builder import BundleBuilder
 from managedtenants.bundles.docker_api import DockerAPI
 from managedtenants.bundles.index_builder import IndexBuilder
@@ -269,35 +270,14 @@ def get_addon_environments(addon):
     return environments
 
 
-def build_and_push_addon_bundles(bundle_builder):
-    """
-    Builds and pushes bundle images from the passed addon's directory.
-    """
-    err = bundle_builder.validate_local_bundles()
-    if err:
-        exit_with_error(err)
-
-    bundle_images = bundle_builder.build_push_bundle_images_with_deps(
-        versions=None,
-        hash_string=get_short_hash(),
-    )
-    latest_version = bundle_builder.get_latest_version()
-    return (bundle_images, latest_version)
-
-
-# TODO (sblaisdo): continue OO refactoring in future PRs
 class MtbundlesCLI:
     def __init__(self, args):
         self.args = args
         self.addons_dir = Path(args.addons_dir)
         self.quay_org = args.quay_org
-        self.docker_api = DockerAPI(
-            quay_api=QuayAPI(org=args.quay_org),
-            dockercfg_path=DOCKER_CONF,
-            debug=args.debug,
-            force_push=args.force_push,
-        )
-
+        self.docker_api = self._docker_api()
+        self.bundle_builder = self._bundle_builder()
+        self.index_builder = self._index_builder()
         self.log = get_text_logger(
             "mtbundles",
             level=logging.DEBUG if args.debug else logging.INFO,
@@ -306,24 +286,23 @@ class MtbundlesCLI:
     def run(self):
         target_addons = self._get_target_addons()
 
-        for addon in target_addons:
-            bundle_images, latest_version = build_and_push_addon_bundles(
-                bundle_builder=self._bundle_builder(addon)
-            )
+        for addon_dir in target_addons:
+            addon_bundles = AddonBundles(addon_dir)
+            bundles = addon_bundles.get_all_bundles()
 
-            index_builder = self._index_builder(addon)
-            index_image = index_builder.build_push_index_image(
-                bundle_images=bundle_images,
-                hash_string=get_short_hash(),
+            self.bundle_builder.build_and_push_all(bundles, get_short_hash())
+            index_image = self.index_builder.build_and_push(
+                bundles, get_short_hash()
             )
 
             if not self.args.dry_run:
-                environments = get_addon_environments(addon)
+                latest_version = addon_bundles.get_latest_version()
+                environments = get_addon_environments(addon_dir)
                 for env in environments:
-                    if addon.name == "reference-addon":
+                    if addon_dir.name == "reference-addon":
                         post_managed_tenants_mr(
                             dry_run=self.args.dry_run,
-                            addon=addon,
+                            addon=addon_dir,
                             addon_env=env,
                             version=latest_version,
                             index_image=index_image,
@@ -331,7 +310,7 @@ class MtbundlesCLI:
                     else:
                         post_managed_tenants_mr_metadata(
                             dry_run=self.args.dry_run,
-                            addon=addon,
+                            addon=addon_dir,
                             addon_env=env,
                             version=latest_version,
                             index_image=index_image,
@@ -365,17 +344,23 @@ class MtbundlesCLI:
         self.log.info(f"Targeting all addons in {self.addons_dir}.")
         return list(self.addons_dir.iterdir())
 
-    def _bundle_builder(self, addon_dir):
+    def _docker_api(self):
+        return DockerAPI(
+            quay_api=QuayAPI(org=self.args.quay_org),
+            dockercfg_path=DOCKER_CONF,
+            debug=self.args.debug,
+            force_push=self.args.force_push,
+        )
+
+    def _bundle_builder(self):
         return BundleBuilder(
-            addon_dir=addon_dir,
             docker_api=self.docker_api,
             dry_run=self.args.dry_run,
             debug=self.args.debug,
         )
 
-    def _index_builder(self, addon_dir):
+    def _index_builder(self):
         return IndexBuilder(
-            addon_dir=addon_dir,
             docker_api=self.docker_api,
             dry_run=self.args.dry_run,
             debug=self.args.debug,

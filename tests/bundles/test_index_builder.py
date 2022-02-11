@@ -1,31 +1,26 @@
-import sretoolbox
-from conftest import HASH_STRING, REGISTRY_URL, get_test_docker_api
-from mock import patch
+import uuid
 
+from conftest import REGISTRY_URL, get_test_docker_api
+
+from managedtenants.bundles.addon_bundles import AddonBundles
 from managedtenants.bundles.bundle_builder import BundleBuilder
 from managedtenants.bundles.index_builder import IndexBuilder
-from managedtenants.utils.quay_api import QuayAPI
-from tests.testutils.addon_helpers import mt_bundles_addon_path
+from tests.testutils.paths import REFERENCE_ADDON
 
 
-def test_build_push_index_image(mt_bundles_addon_path):
-    bundle_builder = BundleBuilder(
-        addon_dir=mt_bundles_addon_path,
-        docker_api=get_test_docker_api(),
-    )
+def test_index_builder_build_and_push():
+    hash_string = uuid.uuid4().hex
+    docker_api = get_test_docker_api()
+
+    bundles = AddonBundles(REFERENCE_ADDON).get_all_bundles()
+    bundle_builder = BundleBuilder(docker_api)
+    bundle_builder.build_and_push_all(bundles, hash_string)
+
     expected_index_image_url = (
-        f"{REGISTRY_URL}/reference-addon-index:{HASH_STRING}"
+        f"{REGISTRY_URL}/reference-addon-index:{hash_string}"
     )
-    build_images = bundle_builder.build_push_bundle_images_with_deps(
-        versions=[],
-        hash_string=HASH_STRING,
-    )
-    index_builder = IndexBuilder(
-        addon_dir=mt_bundles_addon_path,
-        docker_api=get_test_docker_api(),
-    )
-    index_image = index_builder.build_push_index_image(
-        bundle_images=build_images,
-        hash_string=HASH_STRING,
-    )
+
+    index_builder = IndexBuilder(docker_api=docker_api)
+    index_image = index_builder.build_and_push(bundles, hash_string)
+
     assert index_image.url_tag == expected_index_image_url

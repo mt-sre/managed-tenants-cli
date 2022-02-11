@@ -58,7 +58,7 @@ setup(
         "jsonschema~=3.1",
         "requests~=2.23",
         "sretoolbox~=1.2.0",
-        "semver~=2.9",
+        "semver~=2.13.0",
         "python-gitlab~=2.6",
         "checksumdir~=1.2",
     ],

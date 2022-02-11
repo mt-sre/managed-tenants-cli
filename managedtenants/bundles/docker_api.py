@@ -3,7 +3,6 @@ import os
 
 import docker
 import docker.api.build
-import yaml
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.exceptions import DockerError
@@ -21,11 +20,11 @@ class DockerAPI:
     """
     Class to build and push docker images.
 
-    :param quay_api: (optional) QuayApi object used for pushing images. Defaults
+    :param quay_api: (optional) QuayApi object used for pushing images. Default
                      to osd-addons, reading token from QUAY_APIKEY env var.
     :param registry: docker registry to use. Default: quay.io/{quay_api.org}.
-    :param dockercfg_path: (optional) Custom path for the Docker config file. If
-                            not present, the client does not login.
+    :param dockercfg_path: (optional) Custom path for the Docker config file.
+                           If not present, the client does not login.
     :param force_push: overwrite an existing remote image.
     :param debug: Enable debug logging.
     :raise ValueError: If an invalid empty username is provided.
@@ -52,17 +51,17 @@ class DockerAPI:
             level=logging.DEBUG if debug else logging.INFO,
         )
 
-    def build_bundle(self, path, tag):
+    def build_bundle(self, bundle):
         dockerfile = """
         FROM scratch
         COPY manifests /manifests/
         COPY metadata /metadata/
         """
         return self._build(
-            path=path,
+            path=bundle.path,
             dockerfile=dockerfile,
-            tag=tag,
-            labels=_parse_metadata_annotations(path),
+            tag=bundle.image.url_tag,
+            labels=bundle.annotations,
         )
 
     def _build(self, path, dockerfile, tag, labels=None):
@@ -142,21 +141,3 @@ class DockerAPI:
 
         # By querying tags, the underlying Image(...) obj performs a get query
         return len(image.tags) > 0
-
-
-def _parse_metadata_annotations(bundle_dir):
-    annotations_file = bundle_dir / "metadata" / "annotations.yaml"
-    with open(annotations_file, "r", encoding="utf-8") as f:
-        try:
-            data = yaml.safe_load(f)
-        except yaml.YAMLError as e:
-            raise DockerError(f"Failed to parse {annotations_file}, got {e}.")
-
-    annotations = data.get("annotations", None)
-    if annotations is None:
-        raise DockerError(
-            f"Failed to extract annotations from {annotations_file}."
-        )
-
-    # avoid unmarshaling ints, floats and bools
-    return {k: str(v) for k, v in annotations.items()}

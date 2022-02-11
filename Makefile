@@ -44,11 +44,10 @@ develop: prepare
 
 clean:
 	pipenv --rm || true
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -fr {} +
-	find . -name 'bundle_tmp*' -exec rm -fr {} +
-	find . -name 'index_tmp*' -exec rm -fr {} +
+	find . -name '*.pyc' -o -name '*.pyo' -o -name '__pycache__' \
+		-o -name 'bundle_tmp*' -o -name 'index_tmp*' \
+		-o -name 'build' -o -name 'dist' -o -name '*.egg-info' \
+		-exec rm -fr {} +
 
 LINTERS := $(shell pwd)/.linters
 PY_SRCS := managedtenants/ hack/ tests/ setup.py
@@ -56,7 +55,7 @@ pylint:
 	pipenv run pylint --rcfile=$(LINTERS)/pylint $(PY_SRCS)
 
 check: pylint
-	pipenv run black --config=$(LINTERS)/black --experimental-string-processing $(PY_SRCS) && \
+	pipenv run black --config=$(LINTERS)/black --preview $(PY_SRCS) && \
 	pipenv run isort --profile black -l 80 $(PY_SRCS) && \
 	pipenv run flake8 --config=$(LINTERS)/flake8 $(PY_SRCS) && \
 	pipenv run yamllint --config-file=$(LINTERS)/yamllint .

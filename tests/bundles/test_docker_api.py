@@ -1,44 +1,33 @@
-import pytest
+import uuid
+
 from conftest import get_test_docker_api
+from sretoolbox.container.image import Image
 
-from tests.testutils.addon_helpers import mt_bundles_addon_path
-
-
-def reference_addon_bundle_labels():
-    return {
-        "operators.operatorframework.io.bundle.mediatype.v1": "registry+v1",
-        "operators.operatorframework.io.bundle.manifests.v1": "manifests/",
-        "operators.operatorframework.io.bundle.metadata.v1": "metadata/",
-        "operators.operatorframework.io.bundle.package.v1": "reference-addon",
-        "operators.operatorframework.io.bundle.channels.v1": "alpha",
-        "operators.operatorframework.io.bundle.channel.default.v1": "alpha",
-    }
+from managedtenants.bundles.bundle import Bundle
+from tests.testutils.addon_helpers import reference_addon_bundle_annotations
+from tests.testutils.paths import REFERENCE_ADDON
 
 
-@pytest.mark.parametrize(
-    "addon_dir, bundle_version, expected_labels",
-    [
-        (
-            "mt_bundles_addon_path",
-            "0.1.6",
-            reference_addon_bundle_labels(),
-        ),
-        (
-            "mt_bundles_addon_path",
-            "0.1.5",
-            reference_addon_bundle_labels(),
-        ),
-    ],
-)
-def test_build_bundle_labels(
-    addon_dir, bundle_version, expected_labels, request
-):
-    bundle_main = request.getfixturevalue(addon_dir)
-    bundle_path = bundle_main / "main" / bundle_version
+def test_bundle_annotations_become_labels():
+    path = REFERENCE_ADDON / "main" / "0.1.6"
+    hash_string = uuid.uuid4().hex
 
     docker_api = get_test_docker_api()
-    image = docker_api.build_bundle(bundle_path, "test-bundle-labels:latest")
-    labels = image.attrs["ContainerConfig"].get("Labels", {})
+    image = Image(
+        f"{docker_api.registry}/reference-addon-bundle:0.1.6-{hash_string}"
+    )
+
+    bundle = Bundle(
+        addon_name="reference-addon",
+        operator_name="reference-addon",
+        path=path,
+        version="0.1.6",
+        image=image,
+    )
+
+    out_image = docker_api.build_bundle(bundle)
+    labels = out_image.attrs["ContainerConfig"].get("Labels", {})
+    expected_labels = reference_addon_bundle_annotations()
 
     assert len(labels) == len(expected_labels)
     for k, v in expected_labels.items():

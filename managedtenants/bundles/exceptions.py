@@ -8,3 +8,11 @@ class IndexBuilderError(Exception):
 
 class DockerError(Exception):
     pass
+
+
+class AddonBundlesError(Exception):
+    pass
+
+
+class BundleError(Exception):
+    pass
