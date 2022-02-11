@@ -32,9 +32,13 @@ def setup_image_registry():
         "-v",
         f"{TEST_ROOT}/bundles/auth:/auth",
         "-e",
+        "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm",
+        "-e",
         "REGISTRY_AUTH=htpasswd",
         "-e",
         "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd",
+        "-e",
+        "REGISTRY_OPENSHIFT_SERVER_ADDR=0.0.0.0:5000",
         "--name",
         LOCAL_REGISTRY_NAME,
         # (sblaisdo) Use an image from either quay or catalog.redhat.com because

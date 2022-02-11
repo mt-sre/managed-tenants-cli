@@ -6,18 +6,16 @@ from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.binary_deps import MTCLI, OPM
 from managedtenants.bundles.docker_api import DockerAPI
-from managedtenants.bundles.exceptions import IndexBuilderError
+from managedtenants.bundles.exceptions import DockerError, IndexBuilderError
 
 
 class IndexBuilder:
     def __init__(
         self,
-        addon_dir,
         docker_api=None,
         dry_run=False,
         debug=False,
     ):
-        self.addon_dir = addon_dir
         self.dry_run = dry_run
         self.docker_api = (
             docker_api if docker_api is not None else DockerAPI(debug=debug)
@@ -27,22 +25,32 @@ class IndexBuilder:
             level=logging.DEBUG if debug else logging.INFO,
         )
 
-    def build_push_index_image(self, bundle_images, hash_string):
+    def build_and_push(self, bundles, hash_string):
         """
         Build and push an index image.
 
+        :params bundles: List of Bundle to be added to the index image.
         :param hash_string: A string to be used in the created image's tag.
-        :param bundle_images: A list of bundle images to be added
-        to the index image.
         :return: An Index image that has been pushed.
         """
-        registry = self.docker_api.registry
-        repo_name = f"{self.addon_dir.name}-index"
-        image = Image(f"{registry}/{repo_name}:{hash_string}")
 
-        self.log.info(
-            f'Building index image "{image.url_tag}" with "{bundle_images}".'
+        index_image = self._build(bundles, hash_string)
+        return self._push(index_image)
+
+    def _build(self, bundles, hash_string):
+        if len(bundles) == 0:
+            raise IndexBuilderError("invalid empty bundles list")
+
+        # all bundles for a given addon produce the same index_repo
+        index_image = Image(
+            f"{self.docker_api.registry}/"
+            f"{bundles[0].index_repo_name()}:{hash_string}"
         )
+        self.log.info(f'Building index image "{index_image.url_tag}".')
+        self.log.debug(
+            f"Index image contains {len(bundles)} bundles: {bundles}."
+        )
+
         cmd = [
             "index",
             "--container-tool",
@@ -50,23 +58,35 @@ class IndexBuilder:
             "add",
             "--permissive",
             "--bundles",
-            ",".join([item.url_tag for item in bundle_images]),
+            ",".join([bundle.image.url_tag for bundle in bundles]),
             "--tag",
-            image.url_tag,
+            index_image.url_tag,
         ]
 
         try:
             OPM.run(*cmd)
+            return index_image
+
         except subprocess.CalledProcessError as e:
             raise IndexBuilderError(
-                f"Failed to build index image: {e.stdout.decode()}."
+                f"Failed to build index image {index_image.url_tag}:"
+                f" {e.stdout.decode()}."
             )
 
-        if not self.dry_run:
-            self.log.info(f'Pushing index image "{image.url_tag}".')
-            self.docker_api.push(image)
+    def _push(self, index_image):
+        # skip pushing on dry_run
+        if self.dry_run:
+            return index_image
 
-        return image
+        try:
+            self.log.info(f'Pushing index image "{index_image.url_tag}".')
+            self.docker_api.push(index_image)
+            return index_image
+
+        except DockerError as e:
+            err_msg = f"failed to push {index_image}: {e}."
+            self.log.error(err_msg)
+            raise IndexBuilderError(err_msg)
 
     # TODO (sblaisdo) - golang library does not trust self-signed certs
     # find a way to test this functionality with the local testing registry
@@ -76,6 +96,7 @@ class IndexBuilder:
         try:
             res = MTCLI.run(*cmd).rstrip()
             return list(res.split("\n")) if res != "" else []
+
         except subprocess.CalledProcessError as e:
             self.log.error(
                 f"Failed to extract bundles from {index_image_url}. mtcli"

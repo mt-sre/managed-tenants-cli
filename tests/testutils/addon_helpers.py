@@ -10,7 +10,6 @@ from sretoolbox.container.image import Image
 from managedtenants.bundles.utils import run
 from managedtenants.core.addon_manager import AddonManager
 from managedtenants.core.addons_loader.addon import Addon
-from managedtenants.core.addons_loader.sss import Sss
 
 ADDON_WITH_BUNDLES_TYPE = "with_bundles"
 ADDON_WITH_IMAGESET_TYPE = "with_imageset"
@@ -190,3 +189,14 @@ def return_false(*args, **kwargs):
 
 def return_true(*args, **kwargs):
     return True
+
+
+def reference_addon_bundle_annotations():
+    return {
+        "operators.operatorframework.io.bundle.mediatype.v1": "registry+v1",
+        "operators.operatorframework.io.bundle.manifests.v1": "manifests/",
+        "operators.operatorframework.io.bundle.metadata.v1": "metadata/",
+        "operators.operatorframework.io.bundle.package.v1": "reference-addon",
+        "operators.operatorframework.io.bundle.channels.v1": "alpha",
+        "operators.operatorframework.io.bundle.channel.default.v1": "alpha",
+    }

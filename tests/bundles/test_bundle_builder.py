@@ -1,143 +1,34 @@
-from pathlib import Path
+import uuid
 
-import pytest
-import sretoolbox
 from conftest import REGISTRY_URL, get_test_docker_api
 
+from managedtenants.bundles.addon_bundles import AddonBundles
 from managedtenants.bundles.bundle_builder import BundleBuilder
-from managedtenants.bundles.exceptions import BundleBuilderError
-from tests.testutils.addon_helpers import (
-    mt_bundles_addon_path,
-    mt_bundles_addon_with_invalid_version_path,
-    mt_bundles_with_invalid_dir_structure_path,
-)
-
-HASH_STRING = "int08h"
+from tests.testutils.paths import REFERENCE_ADDON
 
 
-def all_bundle_images(filter_func=None):
-    all_image_urls = [
-        f"{REGISTRY_URL}/reference-addon-bundle:0.1.6-{HASH_STRING}",
-        f"{REGISTRY_URL}/reference-addon-addon-operator-bundle:0.2.0-{HASH_STRING}",
-        f"{REGISTRY_URL}/reference-addon-addon-operator-bundle:0.3.0-{HASH_STRING}",
-        f"{REGISTRY_URL}/reference-addon-bundle:0.1.1-{HASH_STRING}",
-        f"{REGISTRY_URL}/reference-addon-bundle:0.1.0-{HASH_STRING}",
-        f"{REGISTRY_URL}/reference-addon-bundle:0.1.5-{HASH_STRING}",
-        f"{REGISTRY_URL}/reference-addon-bundle:0.1.2-{HASH_STRING}",
-        f"{REGISTRY_URL}/reference-addon-bundle:0.1.3-{HASH_STRING}",
-        f"{REGISTRY_URL}/reference-addon-bundle:0.1.4-{HASH_STRING}",
-        f"{REGISTRY_URL}/reference-addon-addon-operator-bundle:0.1.0-{HASH_STRING}",
-    ]
-    if filter_func:
-        return list(filter(filter_func, all_image_urls))
-    return all_image_urls
+def expected_bundle_images(hash_string):
+    return {
+        f"{REGISTRY_URL}/reference-addon-bundle:0.1.6-{hash_string}",
+        f"{REGISTRY_URL}/reference-addon-addon-operator-bundle:0.2.0-{hash_string}",
+        f"{REGISTRY_URL}/reference-addon-addon-operator-bundle:0.3.0-{hash_string}",
+        f"{REGISTRY_URL}/reference-addon-bundle:0.1.1-{hash_string}",
+        f"{REGISTRY_URL}/reference-addon-bundle:0.1.0-{hash_string}",
+        f"{REGISTRY_URL}/reference-addon-bundle:0.1.5-{hash_string}",
+        f"{REGISTRY_URL}/reference-addon-bundle:0.1.2-{hash_string}",
+        f"{REGISTRY_URL}/reference-addon-bundle:0.1.3-{hash_string}",
+        f"{REGISTRY_URL}/reference-addon-bundle:0.1.4-{hash_string}",
+        f"{REGISTRY_URL}/reference-addon-addon-operator-bundle:0.1.0-{hash_string}",
+    }
 
 
-def bundle_images_for(versions):
-    def filter_versions(image_url):
-        # Always allow dependent operator bundles
-        if "addon-operator-bundle" in image_url:
-            return True
-        for version in versions:
-            if f"reference-addon-bundle:{version}" in image_url:
-                return True
-        return False
+def test_bundle_builder_reference_addon():
+    hash_string = uuid.uuid4().hex
+    bundles = AddonBundles(REFERENCE_ADDON).get_all_bundles()
 
-    return all_bundle_images(filter_func=filter_versions)
+    bundle_builder = BundleBuilder(get_test_docker_api(), False, False)
+    bundle_builder.build_and_push_all(bundles, hash_string)
 
-
-# Tests all public API's
-@pytest.mark.parametrize(
-    "addon_name, path, error_prefix",
-    [
-        ("reference-addon", "mt_bundles_addon_path", None),
-        (
-            "mock-operator-with-bundles",
-            "mt_bundles_with_invalid_dir_structure_path",
-            "Main addon directory not present for the addon",
-        ),
-        (
-            "reference-addon-invalid-versions",
-            "mt_bundles_addon_with_invalid_version_path",
-            "Unable to parse the version number in the followingbundles",
-        ),
-    ],
-)
-def test_class_initialization_validation(
-    addon_name, path, error_prefix, request
-):
-    """Tests initial BundleUtils class initialization validation"""
-    addon_dir = request.getfixturevalue(path)
-    if error_prefix:
-        with pytest.raises(BundleBuilderError) as err:
-            BundleBuilder(
-                addon_dir=addon_dir,
-                docker_api=get_test_docker_api(),
-            )
-        assert error_prefix in str(err)
-    else:
-        try:
-            BundleBuilder(
-                addon_dir=addon_dir,
-                docker_api=get_test_docker_api(),
-            )
-        except BundleBuilderError:
-            pytest.fail("Raised BundleBuilderError when it was not expected!")
-
-
-@pytest.mark.parametrize(
-    "addon_dir, versions, expected_image_urls",
-    [
-        ("mt_bundles_addon_path", [], all_bundle_images()),
-        (
-            "mt_bundles_addon_path",
-            ["0.1.1", "0.1.2", "0.1.3"],
-            bundle_images_for(["0.1.1", "0.1.2", "0.1.3"]),
-        ),
-    ],
-)
-def test_build_push_bundle_images_with_deps(
-    addon_dir, versions, expected_image_urls, request
-):
-    mt_bundles_path = request.getfixturevalue(addon_dir)
-    bundle_builder = BundleBuilder(
-        addon_dir=mt_bundles_path,
-        docker_api=get_test_docker_api(),
-    )
-    images = bundle_builder.build_push_bundle_images_with_deps(
-        versions=versions,
-        hash_string=HASH_STRING,
-    )
-    returned_image_urls = set(map(lambda image: image.url_tag, images))
-    assert returned_image_urls == set(expected_image_urls)
-
-
-def test_get_all_operator_names(mt_bundles_addon_path):
-    bundle_builder = BundleBuilder(
-        addon_dir=mt_bundles_addon_path,
-        docker_api=get_test_docker_api(),
-    )
-    expected_operator_names = [
-        "addon-operator.v0.1.0",
-        "addon-operator.v0.2.0",
-        "addon-operator.v0.3.0",
-        "reference-addon.v0.1.0",
-        "reference-addon.v0.1.1",
-        "reference-addon.v0.1.2",
-        "reference-addon.v0.1.3",
-        "reference-addon.v0.1.4",
-        "reference-addon.v0.1.5",
-        "reference-addon.v0.1.6",
-    ]
-    res = bundle_builder.get_all_operator_names()
-    assert set(expected_operator_names) == set(res)
-
-
-def test_get_latest_version(mt_bundles_addon_path):
-    bundle_builder = BundleBuilder(
-        addon_dir=mt_bundles_addon_path,
-        docker_api=get_test_docker_api(),
-    )
-    returned_max = bundle_builder.get_latest_version()
-    expected_max = "0.1.6"
-    assert returned_max == expected_max
+    expected_images = expected_bundle_images(hash_string)
+    for bundle in bundles:
+        assert bundle.image.url_tag in expected_images
