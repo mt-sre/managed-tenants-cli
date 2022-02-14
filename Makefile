@@ -42,12 +42,7 @@ install: prepare
 develop: prepare
 	pipenv install --dev
 
-clean:
-	pipenv --rm || true
-	find . -name '*.pyc' -o -name '*.pyo' -o -name '__pycache__' \
-		-o -name 'bundle_tmp*' -o -name 'index_tmp*' \
-		-o -name 'build' -o -name 'dist' -o -name '*.egg-info' \
-		-exec rm -fr {} +
+
 
 LINTERS := $(shell pwd)/.linters
 PY_SRCS := managedtenants/ hack/ tests/ setup.py
@@ -90,3 +85,9 @@ docker-build:
 CMD := check
 docker-run: docker-build
 	docker run --rm -it --name managedtenants_cli-dev -v "/var/run/docker.sock:/var/run/docker.sock" $(DEV_IMAGE) $(CMD)
+
+clean:
+	pipenv --rm || true
+	find . \( -name "*.pyc" -o -name "*.pyo" -o -name "__pycache__" \) -exec rm -fr {} +
+	find . -type d \( -name "bundle_tmp*" -o -name "index_tmp*" \) -exec rm -fr {} +
+	find . -type d \( -name "build" -o -name "dist" -o -name "*.egg-info" \) -exec rm -fr {} +
