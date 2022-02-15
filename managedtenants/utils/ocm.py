@@ -15,6 +15,10 @@ class OCMAPIError(Exception):
         self.response = response
 
 
+class AddonCreationError(Exception):
+    pass
+
+
 def retry_hook(exception):
     if not isinstance(exception, OCMAPIError):
         return
@@ -102,7 +106,20 @@ class OcmCli:
         addon = self._addon_from_metadata(metadata)
         return self._post("/api/clusters_mgmt/v1/addons", json=addon)
 
+    def _addon_exists(self, addon_id):
+        resp = self._get(f"/api/clusters_mgmt/v1/addons/{addon_id}")
+        return resp.status_code == 200
+
     def add_addon_version(self, imageset, metadata):
+        if self._addon_exists(metadata.get("id")):
+            return self._add_addon_version(imageset, metadata)
+        # Create the addon first
+        resp = self.add_addon(metadata)
+        if resp.status_code != 201:
+            raise AddonCreationError("Failed to succesfully create the addon.")
+        return self._add_addon_version(imageset, metadata)
+
+    def _add_addon_version(self, imageset, metadata):
         addon = self._addon_from_imageset(imageset, metadata)
         return self._post(
             f'/api/clusters_mgmt/v1/addons/{metadata.get("id")}/versions',
