@@ -3,6 +3,7 @@ import os
 
 import docker
 import docker.api.build
+from requests.exceptions import HTTPError
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.exceptions import DockerError
@@ -110,11 +111,8 @@ class DockerAPI:
             os.environ["DOCKER_CONFIG"] = str(self.dockercfg_path)
 
             if self._is_quay_registry():
-                self.log.debug(f"Ensuring quay repo: {image.image}.")
+                self.log.info(f"Ensuring quay repo: {image.image}.")
                 self.quay_api.ensure_repo(image.image)
-
-            if self._is_quay_registry():
-                self.quay_api.ensure_repo(image.repository)
 
             if not self._image_exists(image) or self.force_push:
                 response = self.client.api.push(
@@ -135,9 +133,16 @@ class DockerAPI:
         return self.registry.startswith("quay.io")
 
     def _image_exists(self, image):
-        # The Image(...) requires a valid quay registry.
+        # The Image(...) sretoolbox library requires a valid quay registry.
         if not self._is_quay_registry():
             return False
 
-        # By querying tags, the underlying Image(...) obj performs a get query
-        return len(image.tags) > 0
+        try:
+            self.log.info(
+                f"Skipping pushing {image.url_digest} as it already exists."
+            )
+            return True
+        except HTTPError:
+            # image.url_digest, calls digest which raises HTTPError
+            # https://github.com/app-sre/sretoolbox/blob/master/sretoolbox/container/image.py#L119
+            return False
