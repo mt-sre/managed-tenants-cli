@@ -6,6 +6,7 @@ from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.docker_api import DockerAPI
 from managedtenants.bundles.exceptions import BundleBuilderError, DockerError
+from managedtenants.utils.git import get_short_hash
 
 
 class BundleBuilder:
@@ -33,7 +34,7 @@ class BundleBuilder:
             level=logging.DEBUG if debug else logging.INFO,
         )
 
-    def build_and_push_all(self, bundles, hash_string):
+    def build_and_push_all(self, bundles, hash_string=get_short_hash()):
         """
         Builds all the bundles. Also sets the bundle.image field.
         """
@@ -64,9 +65,13 @@ class BundleBuilder:
             return
 
         try:
+            # Optimization - only ensure repo once for an operator dir
+            seen = set()
             for bundle in bundles:
                 self.log.info(f"Pushing {bundle}.")
-                self.docker_api.push(bundle.image)
+                repo = bundle.bundle_repo_name()
+                self.docker_api.push(bundle.image, ensure_repo=repo not in seen)
+                seen.add(repo)
 
         except DockerError as e:
             err_msg = f"failed to push {bundle}: {e}"

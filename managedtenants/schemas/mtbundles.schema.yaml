@@ -19,6 +19,7 @@ properties:
   addons:
     type: array
     description: "List of addons that use these underlying bundles."
+    minItems: 1
     items:
       type: object
       required:

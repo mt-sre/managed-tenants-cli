@@ -16,3 +16,23 @@ class AddonBundlesError(Exception):
 
 class BundleError(Exception):
     pass
+
+
+class ImageSetError(Exception):
+    pass
+
+
+class ImageSetCreatorError(Exception):
+    pass
+
+
+class MtbundlesCLIError(Exception):
+    pass
+
+
+class QuayAPIError(Exception):
+    """Used when there are errors with the Quay API."""
+
+    def __init__(self, message, response):
+        super().__init__(message)
+        self.response = response

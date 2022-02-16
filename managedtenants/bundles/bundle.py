@@ -73,10 +73,14 @@ class Bundle:
         annotations_file = self.path / "metadata" / "annotations.yaml"
         with open(annotations_file, "r", encoding="utf-8") as f:
             try:
-                data = yaml.safe_load(f)
+                data = yaml.load(f, Loader=yaml.CSafeLoader)
+
+            except FileNotFoundError as e:
+                raise BundleError(f"{self}: {annotations_file} not found: {e}")
+
             except yaml.YAMLError as e:
                 raise BundleError(
-                    f"{self}: failed to parse {annotations_file}, got {e}."
+                    f"{self}: failed to parse {annotations_file}: {e}."
                 )
 
         annotations = data.get("annotations", None)

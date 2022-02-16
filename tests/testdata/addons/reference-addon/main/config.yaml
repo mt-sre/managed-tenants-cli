@@ -1,0 +1,9 @@
+addons:
+  - name: reference-addon
+    environments:
+      - integration
+      - stage
+  - name: reference-addon-alias
+    environments:
+      - integration
+      - stage

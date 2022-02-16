@@ -62,9 +62,8 @@ class GitLab:
     def mr_exists(self, title):
         mrs = self.get_items(self.project.mergerequests.list, state="opened")
         for mr in mrs:
-            if mr.attributes.get("title") != title:
-                continue
-            return True
+            if mr.attributes.get("title") == title:
+                return True
         return False
 
     def get_file(self, path, ref="main"):
