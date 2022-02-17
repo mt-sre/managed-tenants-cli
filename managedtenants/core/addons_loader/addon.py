@@ -24,13 +24,31 @@ _PERMITTED_SUBSCRIPTION_CONFIGS = ["env"]
 
 
 class Addon:
-    def __init__(self, path, environment, override_manager=None):
+    def __init__(
+        self,
+        path,
+        environment,
+        override_manager=None,
+        imageset_latest_only=False,
+    ):
         self.path = path
         self.extra_resources_loader = None
         self.metadata = self.load_metadata(environment=environment)
         self.imageset_version = self.metadata.get("addonImageSetVersion")
+        self.imageset_latest_only = imageset_latest_only
         # If imagebundles are provided
         if self.imageset_version is not None:
+
+            # Do not allow pin-pointing a version
+            # Temporary hot-fix for https://issues.redhat.com/browse/SDA-4918
+            # See: https://issues.redhat.com/browse/MTSRE-453
+            if self.imageset_latest_only and self.imageset_version != "latest":
+                raise AddonLoadError(
+                    "Pointing to a specific version is not allowed. Please use"
+                    " only latest. See"
+                    " https://issues.redhat.com/browse/MTSRE-453 for more info"
+                )
+
             self.imagesets_path = self.path / f"addonimagesets/{environment}"
             self.imageset = self.load_imageset(self.imageset_version)
             self.package = None
