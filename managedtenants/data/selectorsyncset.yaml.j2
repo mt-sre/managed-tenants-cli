@@ -62,7 +62,7 @@ items:
         {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
         {{ maybe_labels(ADDON.metadata.get('commonLabels')) | indent(8) }}
       spec:
-        displayName: |-
+        displayName: >-
           {{ADDON.metadata['name']}}
         image: {{ADDON.image_tag.format(hash='${IMAGE_TAG}')}}
         publisher: OSD Red Hat Addons
