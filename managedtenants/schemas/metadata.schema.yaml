@@ -9,7 +9,7 @@ properties:
     description: "Unique ID of the addon."
   name:
     type: string
-    pattern: ^[0-9A-Z][A-Za-z0-9-_ ()]+$
+    pattern: ^[0-9A-Z\[\]][A-Za-z0-9-_ ()\[\]]+$
     description: "Friendly name for the addon, displayed in the UI."
   description:
     type: string
