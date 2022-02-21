@@ -32,7 +32,8 @@
           "number",
           "boolean",
           "cidr",
-          "resource"
+          "resource",
+          "resource_requirement"
         ]
       },
       "validation": {
@@ -73,6 +74,9 @@
             "value": {
               "type": "string",
               "format": "printable"
+            },
+            "addOnRequirements":{
+              "$ref": "addon_requirements.json"
             }
           }
         }
