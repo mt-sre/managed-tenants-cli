@@ -160,3 +160,5 @@
 - **`subOperators`**: Refer to *shared/sub_operators.json*.
 
 - **`subscriptionConfig`**: Refer to *shared/subscription_config.json*.
+
+- **`managedService`** *(boolean)*: Indicates if the add-on will be used as a Managed Service.

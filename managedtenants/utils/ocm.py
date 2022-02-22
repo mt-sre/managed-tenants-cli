@@ -46,6 +46,7 @@ class OcmCli:
         "addOnParameters": "parameters",
         "addOnRequirements": "requirements",
         "subOperators": "sub_operators",
+        "managedService" : "managed_service",
     }
 
     IMAGESET_KEYS = {
