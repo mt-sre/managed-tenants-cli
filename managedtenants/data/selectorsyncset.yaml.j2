@@ -62,7 +62,8 @@ items:
         {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
         {{ maybe_labels(ADDON.metadata.get('commonLabels')) | indent(8) }}
       spec:
-        displayName: {{ADDON.metadata['name']}}
+        displayName: >-
+          {{ADDON.metadata['name']}}
         image: {{ADDON.image_tag.format(hash='${IMAGE_TAG}')}}
         publisher: OSD Red Hat Addons
         sourceType: grpc
@@ -168,7 +169,8 @@ items:
       metadata:
         name: {{ADDON.metadata['id']}}
       spec:
-        displayName: {{ADDON.metadata['name']}}
+        displayName: >-
+          {{ADDON.metadata['name']}}
         namespaces:
 {% for namespace in ADDON.metadata['namespaces'] %}
         - name: {{namespace}}
@@ -276,15 +278,15 @@ items:
     dmsAPIKeySecretRef:
       name: deadmanssnitch-api-key
       namespace: deadmanssnitch-operator
-    
+
     {% if ADDON.metadata['deadmanssnitch']['snitchNamePostFix'] is defined %}
     snitchNamePostFix: {{ADDON.metadata['deadmanssnitch']['snitchNamePostFix']}}
     {% else %}
     snitchNamePostFix: {{ADDON.metadata['id']}} {# Ref: https://gitlab.cee.redhat.com/service/managed-tenants/-/blob/main/addons/ocs-converged-qe/metadata/stage/deadmanssnitch.yaml.j2#L16 and https://gitlab.cee.redhat.com/service/managed-tenants/-/blob/main/addons/ocs-converged/metadata/stage/deadmanssnitch.yaml.j2#L16 #}
     {% endif %}
-    
+
     tags: {{ADDON.metadata['deadmanssnitch']['tags']}}
-    
+
     targetSecretRef:
     {% if ADDON.metadata['deadmanssnitch']['targetSecretRef'] is defined and ADDON.metadata['deadmanssnitch']['targetSecretRef']['name'] is defined %}
       name: {{ADDON.metadata['deadmanssnitch']['targetSecretRef']['name']}}
