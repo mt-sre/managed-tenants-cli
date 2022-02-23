@@ -4,8 +4,8 @@ import subprocess
 import pytest
 
 from managedtenants.bundles.docker_api import DockerAPI
+from managedtenants.bundles.quay_api import QuayAPI
 from managedtenants.bundles.utils import run
-from managedtenants.utils.quay_api import QuayAPI
 from tests.testutils.paths import TEST_ROOT
 
 LOCAL_REGISTRY_NAME = "mt-bundles-test-registry"

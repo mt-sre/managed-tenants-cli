@@ -1,6 +1,5 @@
+import os
 import subprocess
-
-import yaml
 
 
 def run(cmd, logger=None):
@@ -21,10 +20,8 @@ def get_subdirs(path):
     return (item for item in path.iterdir() if item.is_dir())
 
 
-def load_yaml(path):
-    try:
-        with open(path, "r", encoding="utf8") as file_obj:
-            data = yaml.load(file_obj.read(), Loader=yaml.CSafeLoader)
-            return data
-    except yaml.YAMLError:
-        return None
+def read_env_or_fail(env_var_name):
+    res = os.environ.get(env_var_name)
+    if res == "":
+        raise ValueError(f"Please set {env_var_name} env var.")
+    return res

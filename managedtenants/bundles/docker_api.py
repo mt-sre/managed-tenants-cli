@@ -6,8 +6,8 @@ import docker.api.build
 from requests.exceptions import HTTPError
 from sretoolbox.utils.logger import get_text_logger
 
-from managedtenants.bundles.exceptions import DockerError
-from managedtenants.utils.quay_api import QuayAPI, QuayAPIError
+from managedtenants.bundles.exceptions import DockerError, QuayAPIError
+from managedtenants.bundles.quay_api import QuayAPI
 
 # Hack to allow dockerfile as string
 # https://github.com/docker/docker-py/issues/2105#issuecomment-613685891
@@ -40,7 +40,9 @@ class DockerAPI:
         debug=False,
         force_push=False,
     ):
-        self.quay_api = quay_api if quay_api is not None else QuayAPI()
+        self.quay_api = (
+            quay_api if quay_api is not None else QuayAPI(debug=debug)
+        )
         self.registry = (
             registry if registry is not None else f"quay.io/{self.quay_api.org}"
         )
@@ -97,7 +99,7 @@ class DockerAPI:
                 f"Failed to build image for path {path}, got {e}."
             )
 
-    def push(self, image):
+    def push(self, image, ensure_repo=True):
         """
         Push an image to a remote repository.
 
@@ -110,7 +112,7 @@ class DockerAPI:
             # https://github.com/docker/docker-py/blob/a48a5a9647761406d66e8271f19fab7fa0c5f582/docker/utils/config.py#L33-L38
             os.environ["DOCKER_CONFIG"] = str(self.dockercfg_path)
 
-            if self._is_quay_registry():
+            if self._is_quay_registry() and ensure_repo:
                 self.log.info(f"Ensuring quay repo: {image.image}.")
                 self.quay_api.ensure_repo(image.image)
 

@@ -6,7 +6,7 @@ from pathlib import Path
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants import PostTask, PreTask, Task
-from managedtenants.bundles.ci import MtbundlesCLI
+from managedtenants.bundles.cli import MtbundlesCLI
 from managedtenants.core import runner
 from managedtenants.core.addons_loader import load_addons
 from managedtenants.core.addons_loader.exceptions import AddonsLoaderError
@@ -91,19 +91,53 @@ class Cli:
             ),
         )
 
+        bundles_parser_examples = [
+            "Examples:",
+            "# Build all bundles and index images locally.",
+            "$ managedtenants --addons-dir=PATH --dry-run bundles",
+            "",
+            "# Build and push all bundles and index images to a custom quay"
+            " org.",
+            "$ managedtenants --addons-dir=PATH bundles --quay-org QUAY_ORG",
+            "",
+            "# Debug the gitlab merge request integration for the"
+            " reference-addon.",
+            "$ managedtenants --addons-dir=PATH --addon-name=reference-addon"
+            " --debug bundles --enable-gitlab",
+        ]
         bundles_parser = subcommands.add_parser(
-            "bundles", help="Build addon bundles"
+            "bundles",
+            help="Build addon bundles",
+            description="\n".join(bundles_parser_examples),
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            usage=(
+                "managedtenants --addons-dir ADDONS_DIR [--addon-name"
+                " ADDON_NAME] [--dry-run] [--debug] bundles [-h] [--quay-org"
+                " QUAY_ORG] [--force-push] [--enable-gitlab]"
+            ),
         )
         bundles_parser.add_argument(
             "--quay-org",
             default="osd-addons",
-            help="Quay org to push images to.",
+            help=(
+                "Quay org to push images to. (Requires setting QUAY_USER and"
+                " QUAY_APIKEY env vars.)"
+            ),
         )
         bundles_parser.add_argument(
             "--force-push",
             action="store_true",
             default=False,
-            help="Force push an existing image.",
+            help="Overwrite an existing image in the quay repository.",
+        )
+        bundles_parser.add_argument(
+            "--enable-gitlab",
+            action="store_true",
+            default=False,
+            help=(
+                "Enable the gitlab merge-request integration. (Requires setting"
+                " GITLAB_SERVER, GITLAB_TOKEN and GITLAB_PROJECT env vars.)"
+            ),
         )
 
         self.args = parser.parse_args()

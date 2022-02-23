@@ -1,19 +1,14 @@
 # Adapted from: https://github.com/app-sre/qontract-reconcile/blob/master/reconcile/utils/quay_api.py # pylint: disable=C0301 # noqa: E501
 # qontract-reconcile takes a long time to install because it has so many
 # dependencies. Pipelines will be faster if we simply redefine QuayApi here.
-import os
+import logging
 
 import requests
 from sretoolbox.utils import retry
 from sretoolbox.utils.logger import get_text_logger
 
-
-class QuayAPIError(Exception):
-    """Used when there are errors with the Quay API."""
-
-    def __init__(self, message, response):
-        super().__init__(message)
-        self.response = response
+from managedtenants.bundles.exceptions import QuayAPIError
+from managedtenants.bundles.utils import read_env_or_fail
 
 
 def retry_hook(exception):
@@ -34,7 +29,9 @@ class QuayAPI:
     View swagger docs here: https://docs.quay.io/api/swagger/.
     """
 
-    def __init__(self, org="osd-addons", token=None, base_url="quay.io"):
+    def __init__(
+        self, org="osd-addons", token=None, base_url="quay.io", debug=False
+    ):
         """
         Creates a Quay API abstraction.
 
@@ -43,18 +40,24 @@ class QuayAPI:
         :param token: (optional) Quay OAuth Application token (no robot account)
                        Default: value of env QUAY_APITOKEN
         :param base_url: (optional) Quay base API server url. Default: 'quay.io'
+        :param debug: (optional) Enable debug logging.
 
         :raise ValueError: invalid empty token
         """
 
-        self.token = _get_token_or_fail(token)
+        self.token = (
+            token if token is not None else read_env_or_fail("QUAY_APIKEY")
+        )
         self.org = org
         self.headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.token}",
         }
         self.api_url = f"https://{base_url}/api/v1"
-        self.log = get_text_logger("app")
+        self.log = get_text_logger(
+            "managedtenants-quay",
+            level=logging.DEBUG if debug else logging.INFO,
+        )
 
     def ensure_repo(self, repo_name, dry_run=False):
         """
@@ -132,21 +135,15 @@ class QuayAPI:
         # Don't raise for certain HTTP response code, e.g.: 404 not found.
         if response.status_code not in dont_raise_for:
             _raise_for_status(response, method, url, **kwargs)
-        self.log.info("JSON response: %s", response.json())
-        self.log.info("status_code: %s", response.status_code)
+        self.log.debug(
+            f"Quay response status_code: {response.status_code}. JSON response:"
+            f" {response.json()}."
+        )
         return response
 
 
 def _is_200(status_code):
     return 200 <= status_code < 300
-
-
-def _get_token_or_fail(token):
-    res = token if token is not None else os.environ.get("QUAY_APIKEY")
-    if token == "":
-        raise ValueError("Invalid empty QUAY_APIKEY environment variable.")
-
-    return res
 
 
 def _raise_for_status(response, method, url, **kwargs):

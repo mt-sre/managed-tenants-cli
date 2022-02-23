@@ -7,6 +7,7 @@ from sretoolbox.utils.logger import get_text_logger
 from managedtenants.bundles.binary_deps import MTCLI, OPM
 from managedtenants.bundles.docker_api import DockerAPI
 from managedtenants.bundles.exceptions import DockerError, IndexBuilderError
+from managedtenants.utils.git import get_short_hash
 
 
 class IndexBuilder:
@@ -25,12 +26,11 @@ class IndexBuilder:
             level=logging.DEBUG if debug else logging.INFO,
         )
 
-    def build_and_push(self, bundles, hash_string):
+    def build_and_push(self, bundles, hash_string=get_short_hash()):
         """
         Build and push an index image.
 
         :params bundles: List of Bundle to be added to the index image.
-        :param hash_string: A string to be used in the created image's tag.
         :return: An Index image that has been pushed.
         """
 
