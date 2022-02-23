@@ -41,6 +41,8 @@ class OcmCli:
         "ocmQuotaCost": "resource_cost",
         "operatorName": "operator_name",
         "hasExternalResources": "has_external_resources",
+        "serviceAccount": "service_account",
+        "policyPermissions": "policy_permissions",
         "addOnParameters": "parameters",
         "addOnRequirements": "requirements",
         "subOperators": "sub_operators",
