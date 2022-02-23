@@ -39,7 +39,11 @@ class MtbundlesCLI:
             self.log.info(
                 f"==> Building bundles for {addon_dir.name} ({i+1}/{n})..."
             )
-            addon_bundles = AddonBundles(addon_dir, debug=self.args.debug)
+            addon_bundles = AddonBundles(
+                addon_dir,
+                debug=self.args.debug,
+                single_bundle=self.args.single_bundle,
+            )
             bundles = addon_bundles.get_all_bundles()
 
             self.bundle_builder.build_and_push_all(bundles)

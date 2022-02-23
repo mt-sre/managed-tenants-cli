@@ -139,6 +139,12 @@ class Cli:
                 " GITLAB_SERVER, GITLAB_TOKEN and GITLAB_PROJECT env vars.)"
             ),
         )
+        bundles_parser.add_argument(
+            "--single-bundle",
+            action="store_true",
+            default=False,
+            help="Enforce the single-bundle-per-operator pattern.",
+        )
 
         self.args = parser.parse_args()
 

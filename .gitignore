@@ -31,3 +31,5 @@ Pipfile.lock
 # ignore opm stuff
 bundle_tmp*/
 index_tmp*/
+index_build_tmp*/
+index.Dockerfile*

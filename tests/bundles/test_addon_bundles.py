@@ -6,32 +6,30 @@ from managedtenants.bundles.exceptions import AddonBundlesError, BundleError
 from tests.testutils.paths import REFERENCE_ADDON, TEST_ROOT
 
 
-def test_addon_bundles_reference_addon():
-    expected_bundles = {
-        "addon-operator": {"0.1.0", "0.2.0", "0.3.0"},
-        "reference-addon": {
-            "0.1.0",
-            "0.1.1",
-            "0.1.2",
-            "0.1.3",
-            "0.1.4",
-            "0.1.5",
-            "0.1.6",
-        },
-    }
-    bundles = AddonBundles(REFERENCE_ADDON).get_all_bundles()
+@pytest.mark.parametrize(
+    "path,expected_bundles,single_bundle",
+    [
+        (
+            REFERENCE_ADDON,
+            {"addon-operator": {"0.3.0"}, "reference-addon": {"0.1.6"}},
+            True,
+        ),
+        (
+            TEST_ROOT
+            / "testdata"
+            / "addons"
+            / "reference-addon-multiple-bundles",
+            {"reference-addon-multiple-bundles": {"0.1.5", "0.1.6"}},
+            False,
+        ),
+    ],
+)
+def test_addon_bundles_reference_addon(path, expected_bundles, single_bundle):
+    bundles = AddonBundles(path, single_bundle=single_bundle).get_all_bundles()
 
     assert len(bundles) == sum(len(v) for v in expected_bundles.values())
     for bundle in bundles:
         assert bundle.version in expected_bundles[bundle.operator_name]
-
-
-def test_addon_bundles_invalid_version():
-    reference_addon_dir = (
-        TEST_ROOT / "testdata" / "addons" / "reference-addon-invalid-versions"
-    )
-    with pytest.raises(BundleError):
-        _ = AddonBundles(reference_addon_dir).get_all_bundles()
 
 
 def test_addon_bundles_latest_version():
@@ -41,42 +39,33 @@ def test_addon_bundles_latest_version():
 
 
 @pytest.mark.parametrize(
-    "path,raises",
+    "reference_addon",
     [
-        (REFERENCE_ADDON, False),
-        (
-            TEST_ROOT
-            / "testdata"
-            / "addons"
-            / "reference-addon-invalid-config",
-            True,
-        ),
-        (
-            TEST_ROOT / "testdata" / "addons" / "reference-addon-empty-bundles",
-            True,
-        ),
+        TEST_ROOT / "testdata" / "addons" / "reference-addon-invalid-config",
+        TEST_ROOT / "testdata" / "addons" / "reference-addon-empty-bundles",
+        TEST_ROOT / "testdata" / "addons" / "reference-addon-multiple-bundles",
     ],
 )
-def test_addon_bundles_config(path, raises):
-    if raises:
-        with pytest.raises(AddonBundlesError):
-            _ = AddonBundles(path)
+def test_invalid_reference_addon_raises_AddonBundlesError(reference_addon):
+    with pytest.raises(AddonBundlesError):
+        _ = AddonBundles(reference_addon, single_bundle=True)
 
-    else:
-        addon_bundles = AddonBundles(path)
-        addon = addon_bundles.config["addons"][0]
 
-        assert addon["name"] == "reference-addon"
-        assert addon["environments"] == ["integration", "stage"]
+def test_reference_addon_valid_config():
+    addon_bundles = AddonBundles(REFERENCE_ADDON)
+    addon = addon_bundles.config["addons"][0]
 
-        ocm_config = addon_bundles._get_ocm_config()
-        for expected_key in [
-            "addOnParameters",
-            "addOnRequirements",
-            "subOperators",
-            "subscriptionConfig",
-        ]:
-            assert ocm_config[expected_key] is not None
+    assert addon["name"] == "reference-addon"
+    assert addon["environments"] == ["integration", "stage"]
+
+    ocm_config = addon_bundles._get_ocm_config()
+    for expected_key in [
+        "addOnParameters",
+        "addOnRequirements",
+        "subOperators",
+        "subscriptionConfig",
+    ]:
+        assert ocm_config[expected_key] is not None
 
 
 def test_addon_bundles_get_all_imagesets():
