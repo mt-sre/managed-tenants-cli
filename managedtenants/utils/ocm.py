@@ -15,10 +15,6 @@ class OCMAPIError(Exception):
         self.response = response
 
 
-class AddonCreationError(Exception):
-    pass
-
-
 def retry_hook(exception):
     if not isinstance(exception, OCMAPIError):
         return
@@ -107,16 +103,18 @@ class OcmCli:
         return self._post("/api/clusters_mgmt/v1/addons", json=addon)
 
     def _addon_exists(self, addon_id):
-        resp = self._get(f"/api/clusters_mgmt/v1/addons/{addon_id}")
-        return resp.status_code == 200
+        try:
+            self._get(f"/api/clusters_mgmt/v1/addons/{addon_id}")
+            return True
+        # `_get` raises OCMAPIError on 404's
+        except OCMAPIError:
+            return False
 
     def add_addon_version(self, imageset, metadata):
         if self._addon_exists(metadata.get("id")):
             return self._add_addon_version(imageset, metadata)
         # Create the addon first
-        resp = self.add_addon(metadata)
-        if resp.status_code != 201:
-            raise AddonCreationError("Failed to succesfully create the addon.")
+        self.add_addon(metadata)
         return self._add_addon_version(imageset, metadata)
 
     def _add_addon_version(self, imageset, metadata):
@@ -246,10 +244,6 @@ class OcmCli:
         self._raise_for_status(
             response, reqs_method=reqs_method, url=url, **kwargs
         )
-
-        if response.headers.get("Content-Type") == "application/json":
-            return response.json()
-
         return response
 
     def _post(self, path, **kwargs):
@@ -268,7 +262,7 @@ class OcmCli:
         items = []
         page = 1
         while True:
-            result = self._get(path, params={"page": str(page)})
+            result = self._get(path, params={"page": str(page)}).json()
 
             items.extend(result["items"])
             total = result["total"]
