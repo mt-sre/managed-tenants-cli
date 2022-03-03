@@ -45,6 +45,8 @@
 
 - **`serviceAccount`** *(string)*: Name of the service account created by the addon operator to authenticate to the API.
 
+- **`credentialsSecret`** *(string)*: Name of the secret that will hold the credentials required to access cloud resources.
+
 - **`policyPermissions`** *(array)*: List of permissions in an IAM policy that are required by the addon operator.
 
   - **Items** *(string)*

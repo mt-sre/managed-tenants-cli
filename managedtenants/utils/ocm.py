@@ -42,6 +42,7 @@ class OcmCli:
         "operatorName": "operator_name",
         "hasExternalResources": "has_external_resources",
         "serviceAccount": "service_account",
+        "credentialsSecret": "credentials_secret",
         "policyPermissions": "policy_permissions",
         "addOnParameters": "parameters",
         "addOnRequirements": "requirements",
