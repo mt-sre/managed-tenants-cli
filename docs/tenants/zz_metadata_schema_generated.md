@@ -43,12 +43,6 @@
 
   - **Items** *(string)*
 
-- **`serviceAccount`** *(string)*: Name of the service account created by the addon operator to authenticate to the API.
-
-- **`policyPermissions`** *(array)*: List of permissions in an IAM policy that are required by the addon operator.
-
-  - **Items** *(string)*
-
 - **`pullSecret`** *(string)*: 'pullSecret' is deprecated for now. Please use the 'secrets' and 'pullSecretName' fields instead.
 
 - **`secrets`** *(array)*: List of secrets that are required by the addon.
@@ -164,6 +158,8 @@
 - **`extraResources`** *(array)*: Extra Resources to be applied to the Hive cluster.
 
   - **Items** *(string)*
+
+- **`credentialsRequests`**: Refer to *shared/credentials_requests.json*.
 
 - **`addOnParameters`**: Refer to *shared/addon_parameters.json*.
 
