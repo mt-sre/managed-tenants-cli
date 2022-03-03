@@ -20,10 +20,6 @@ def addon_with_imageset_path():
     return Path("tests/testdata/addons/mock-operator-with-imagesets")
 
 
-def zero_size_image_docker_file_path():
-    return Path("tests/testdata/zero_size_image_dockerfile")
-
-
 def addon_with_bundles_path():
     return Path("tests/testdata/addons/mock-operator-with-bundles")
 
@@ -162,25 +158,6 @@ def addon_metadata_with_imageset_version(imageset_version):
 
     metadata["addonImageSetVersion"] = imageset_version
     return metadata
-
-
-def create_zero_size_docker_image():
-    url_tag = f"{REGISTRY_URL}/zerosize:latest"
-    cmd = [
-        "docker",
-        "build",
-        "-f",
-        str(zero_size_image_docker_file_path()),
-        "-t",
-        url_tag,
-        ".",
-    ]
-    try:
-        res = run(cmd)
-        res.check_returncode()
-        return Image(url_tag)
-    except subprocess.CalledProcessError:
-        return None
 
 
 def return_false(*args, **kwargs):

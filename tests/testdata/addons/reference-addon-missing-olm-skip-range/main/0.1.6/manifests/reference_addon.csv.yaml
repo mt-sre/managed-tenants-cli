@@ -2,7 +2,6 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
   annotations:
-    olm.skipRange: ">=0.0.1 <0.1.6"
     repository: https://github.com/openshift/reference-addon
     support: "false"
     containerImage: quay.io/app-sre/reference-addon-manager@sha256:214792459db8e6b829f5b5e315a0150304fa2242552a0dd9834272058d2074a8

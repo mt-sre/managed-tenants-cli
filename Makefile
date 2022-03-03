@@ -89,5 +89,5 @@ docker-run: docker-build
 clean:
 	pipenv --rm || true
 	find . \( -name "*.pyc" -o -name "*.pyo" -o -name "__pycache__" \) -exec rm -fr {} +
-	find . -type d \( -name "bundle_tmp*" -o -name "index_tmp*" \) -exec rm -fr {} +
+	find . -type d \( -name "bundle_tmp*" -o -name "index_tmp*" -o -name "index_build_tmp*" -o -name "index.Dockerfile*" \) -exec rm -fr {} +
 	find . -type d \( -name "build" -o -name "dist" -o -name "*.egg-info" \) -exec rm -fr {} +

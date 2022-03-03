@@ -18,6 +18,10 @@ class BundleError(Exception):
     pass
 
 
+class CSVError(Exception):
+    pass
+
+
 class ImageSetError(Exception):
     pass
 
