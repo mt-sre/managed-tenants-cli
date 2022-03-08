@@ -154,7 +154,7 @@ properties:
     minimum: 0
   operatorName:
     type: string
-    pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,30}[A-Za-z0-9]$
+    pattern: ^[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$
     description: "Name of the addon operator."
   bundleParameters:
     type: object
