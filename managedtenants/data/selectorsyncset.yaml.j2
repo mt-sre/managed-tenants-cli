@@ -39,7 +39,7 @@ items:
     - apiVersion: v1
       kind: Secret
       metadata:
-        name: addon-{{ADDON.metadata['id']}}-pullsecret
+        name: addon-pullsecret
         namespace: {{namespace}}
         {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
         {{
