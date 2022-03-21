@@ -75,7 +75,7 @@
               "type": "string",
               "format": "printable"
             },
-            "addOnRequirements":{
+            "requirements":{
               "$ref": "addon_requirements.json"
             }
           }

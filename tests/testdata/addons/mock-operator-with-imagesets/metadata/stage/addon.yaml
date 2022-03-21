@@ -46,7 +46,7 @@ addOnParameters:
     options:
       - name: 1 TiB
         value: "1"
-        addOnRequirements:
+        requirements:
           - id: managed_svc_machine_pool_req
             resource: machine_pool
             data:
