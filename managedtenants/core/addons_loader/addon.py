@@ -122,11 +122,18 @@ class Addon:
 
         self._validate_schema_instance(metadata, "metadata")
         self._validate_extra_resources(environment, metadata)
+        self._validate_additional_catalogue_srcs(metadata)
 
         if "extraResources" in metadata:
             self.extra_resources_loader = FileSystemLoader(str(metadata_dir))
 
         return metadata
+
+    def _validate_additional_catalogue_srcs(self, metadata):
+        if metadata.get("additionalCatalogSources"):
+            ctlg_src_names = [obj["name"] for obj in metadata["additionalCatalogSources"]]
+            if len(set(ctlg_src_names)) != len(ctlg_src_names):
+                raise AddonLoadError("Additional catalog source should have a unique name")
 
     def load_imageset(self, imageset_version):
         if not version_parsable(imageset_version):
