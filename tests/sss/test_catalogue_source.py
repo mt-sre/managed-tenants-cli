@@ -2,9 +2,10 @@ import pytest
 
 from managedtenants.core.addons_loader.addon import Addon
 from tests.testutils.addon_helpers import addon_with_imageset  # noqa: F401
-from tests.testutils.addon_helpers import addon_with_indeximage, addon_with_indeximage_path  # noqa: F401
 from tests.testutils.addon_helpers import (  # noqa: F401
     addon_with_deadmanssnitch,
+    addon_with_indeximage,
+    addon_with_indeximage_path,
     addon_with_pagerduty,
     addons_managed_by_addon_cr,
 )
@@ -49,7 +50,8 @@ def test_addon_sss_object(addon_str, request):
         assert name is not None
         assert data is not None
         assert data["spec"]["image"] is not None
-        
+
+
 def test_additional_catalog_srcs():
     addon = Addon(addon_with_indeximage_path(), "integration")
     sss_walker = addon.sss.walker()

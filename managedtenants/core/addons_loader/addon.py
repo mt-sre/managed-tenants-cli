@@ -131,9 +131,14 @@ class Addon:
 
     def _validate_additional_catalogue_srcs(self, metadata):
         if metadata.get("additionalCatalogSources"):
-            ctlg_src_names = [obj["name"] for obj in metadata["additionalCatalogSources"]]
+            ctlg_src_names = [
+                obj["name"] for obj in metadata["additionalCatalogSources"]
+            ]
             if len(set(ctlg_src_names)) != len(ctlg_src_names):
-                raise AddonLoadError("Additional catalog source should have a unique name")
+                raise AddonLoadError(
+                    f"{self.path} validation error: Additional catalog source"
+                    " should have a unique name"
+                )
 
     def load_imageset(self, imageset_version):
         if not version_parsable(imageset_version):
