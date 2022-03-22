@@ -1,7 +1,8 @@
 import pytest
 
+from managedtenants.core.addons_loader.addon import Addon
 from tests.testutils.addon_helpers import addon_with_imageset  # noqa: F401
-from tests.testutils.addon_helpers import addon_with_indeximage  # noqa: F401
+from tests.testutils.addon_helpers import addon_with_indeximage, addon_with_indeximage_path  # noqa: F401
 from tests.testutils.addon_helpers import (  # noqa: F401
     addon_with_deadmanssnitch,
     addon_with_pagerduty,
@@ -45,6 +46,19 @@ def test_addon_sss_object(addon_str, request):
         ]
         assert len(catalogue_src_obj) == 1
         name, data = catalogue_src_obj[0]
+        assert name is not None
+        assert data is not None
+        assert data["spec"]["image"] is not None
+        
+def test_additional_catalog_srcs():
+    addon = Addon(addon_with_indeximage_path(), "integration")
+    sss_walker = addon.sss.walker()
+    catalogue_src_objs = sss_walker["sss_deploy"]["spec"]["resources"][
+        "CatalogSource"
+    ]
+    assert len(catalogue_src_objs) == 2
+    for catalog_obj in catalogue_src_objs:
+        name, data = catalog_obj
         assert name is not None
         assert data is not None
         assert data["spec"]["image"] is not None

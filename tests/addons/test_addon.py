@@ -4,7 +4,7 @@ from sretoolbox.container import Image
 
 from managedtenants.core.addons_loader.addon import Addon
 from managedtenants.core.addons_loader.exceptions import AddonLoadError
-from tests.testutils.addon_helpers import addon_with_bundles  # noqa: F401
+from tests.testutils.addon_helpers import addon_with_bundles, addon_with_indeximage_path  # noqa: F401
 from tests.testutils.addon_helpers import addon_with_imageset  # noqa: F401
 from tests.testutils.addon_helpers import addon_with_indeximage  # noqa: F401
 from tests.testutils.addon_helpers import (  # noqa: F401; flake8: noqa: F401
@@ -84,6 +84,13 @@ def test_addon_catalog_image(addon, addon_type, request):
     addon = request.getfixturevalue(addon)
     assert isinstance(addon.catalog_image, Image)
 
+def test_additional_catalogue_src_name_validation():
+    addon = Addon(addon_with_indeximage_path(), "integration")
+    metadata = addon.metadata
+    duplicate = metadata["additionalCatalogSources"][0]
+    metadata["additionalCatalogSources"].append(duplicate)
+    with pytest.raises(AddonLoadError):
+        addon._validate_additional_catalogue_srcs(metadata)
 
 def assert_exceptions_on_addon_initialization(imageset_version, error_to_raise):
     required_metadata = addon_metadata_with_imageset_version(imageset_version)
