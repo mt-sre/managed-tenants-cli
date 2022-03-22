@@ -51,6 +51,14 @@
 
 - **`pullSecret`** *(string)*
 
+- **`additionalCatalogSources`** *(array)*: List of additional catalog sources to be created.
+
+  - **Items** *(object)*: Cannot contain additional properties.
+
+    - **`name`** *(string)*: Name of the additional catalog source.
+
+    - **`image`** *(string)*: Url of the additional catalog source image.
+
 - **`namespaceLabels`** *(object)*: Labels to be applied on all listed namespaces.
 
   - **Items** *(string)*

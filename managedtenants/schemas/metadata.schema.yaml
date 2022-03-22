@@ -82,6 +82,24 @@ properties:
   pullSecret:
     type: string
     format: printable
+  additionalCatalogSources:
+    type: array
+    description: "List of additional catalog sources to be created"
+    items:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          format: printable
+          description: "Name of the additional catalog source"
+        image:
+          type: string
+          pattern: ^quay\.io/[0-9A-Za-z._-]+/[a-z-]+
+          description: "Url of the additional catalog source image"
+      required:
+      - name
+      - image
   namespaceLabels:
     type: object
     items:
