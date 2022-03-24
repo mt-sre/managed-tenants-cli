@@ -284,6 +284,9 @@ properties:
     $ref: "shared/sub_operators.json"
   subscriptionConfig:
     $ref: "shared/subscription_config.json"
+  managedService:
+    type: boolean
+    description: "Indicates if the add-on will be used as a Managed Service."
 required:
   - id
   - name
