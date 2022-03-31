@@ -79,9 +79,36 @@ properties:
     items:
       type: string
       pattern: ^[a-z0-9]{1,60}:[A-Za-z0-9]{1,60}$
-  pullSecret:
+  secrets:
+    type: array
+    description: "List of secrets that are required by the addon operator."
+    items:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$
+          description: "Name of the secret present in app-interface's deploy.yaml."
+        type:
+          type: string
+          enum:
+            - Opaque
+            - kubernetes.io/dockercfg
+            - kubernetes.io/dockerconfigjson
+            - kubernetes.io/service-account-token
+            - kubernetes.io/basic-auth
+            - kubernetes.io/ssh-auth
+            - kubernetes.io/tls
+            - bootstrap.kubernetes.io/token
+          description: "Type of the secret."
+        vaultPath:
+          type: string
+          pattern: ^mtsre\/quay\/osd\-addons\/secrets\/[A-Za-z0-9][A-Za-z0-9-]{0,30}[A-Za-z0-9]\/[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$
+          description: "Vault path of the secret."
+  pullSecretName:
     type: string
-    format: printable
+    pattern: ^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$
   additionalCatalogSources:
     type: array
     description: "List of additional catalog sources to be created"
