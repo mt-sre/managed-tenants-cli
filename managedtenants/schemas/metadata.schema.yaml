@@ -69,20 +69,6 @@ properties:
       type: string
       pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
     description: "Namespaces managed by the addon-operator. Need to include the TargetNamespace."
-  serviceAccount:
-    type: string
-    pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
-    description: "Name of the service account created by the addon operator to authenticate to the API."
-  credentialsSecret:
-    type: string
-    pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
-    description: "Name of the secret that will hold the credentials required to access cloud resources."
-  policyPermissions:
-    type: array
-    description: "List of permissions in an IAM policy that are required by the addon operator."
-    items:
-      type: string
-      pattern: ^[a-z0-9]{1,60}:[A-Za-z0-9]{1,60}$
   pullSecret:
     type: string
     format: printable
@@ -280,6 +266,8 @@ properties:
       type: string
       format: printable
     description: "Extra Resources to be applied to the Hive cluster."
+  credentialsRequests:
+    $ref: "shared/credentials_requests.json"
   addOnParameters:
     $ref: "shared/addon_parameters.json"
   addOnRequirements:
