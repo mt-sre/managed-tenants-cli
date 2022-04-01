@@ -49,6 +49,18 @@
 
   - **Items** *(string)*
 
+- **`secrets`** *(array)*: List of secrets that are required by the addon operator.
+
+  - **Items** *(object)*: Cannot contain additional properties.
+
+    - **`name`** *(string)*: Name of the secret present in app-interface's `deploy.yaml`.
+
+    - **`type`** *(string)*: Type of the secret.
+
+    - **`vaultPath`** *(string)*: Vault path of the secret.
+
+- **`pullSecretName`** *(string)*
+
 - **`pullSecret`** *(string)*
 
 - **`additionalCatalogSources`** *(array)*: List of additional catalog sources to be created.

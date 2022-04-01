@@ -14,6 +14,7 @@ from managedtenants.core.addons_loader.addon import Addon
 ADDON_WITH_BUNDLES_TYPE = "with_bundles"
 ADDON_WITH_IMAGESET_TYPE = "with_imageset"
 ADDON_WITH_INDEXIMAGE_TYPE = "with_indeximage"
+ADDON_WITH_SECRETS_TYPE = "with_secrets"
 
 
 def addon_with_imageset_path():
@@ -34,6 +35,10 @@ def addon_with_deadmanssnitch_path():
 
 def addon_with_pagerduty_path():
     return Path("tests/testdata/addons/test-operator")
+
+
+def addon_with_secrets_path():
+    return Path("tests/testdata/addons/mock-operator-with-secrets")
 
 
 @pytest.fixture
@@ -126,6 +131,12 @@ def addon_with_imageset_and_default_config():
 @pytest.fixture
 def addon_with_bundles():
     addon_path = addon_with_bundles_path()
+    return Addon(addon_path, "stage")
+
+
+@pytest.fixture
+def addon_with_secrets():
+    addon_path = addon_with_secrets_path()
     return Addon(addon_path, "stage")
 
 

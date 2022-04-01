@@ -6,10 +6,12 @@ from managedtenants.core.addons_loader.addon import Addon
 from managedtenants.core.addons_loader.exceptions import AddonLoadError
 from tests.testutils.addon_helpers import addon_with_imageset  # noqa: F401
 from tests.testutils.addon_helpers import addon_with_indeximage  # noqa: F401
+from tests.testutils.addon_helpers import addon_with_secrets  # noqa: F401
 from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: noqa: F401
     ADDON_WITH_BUNDLES_TYPE,
     ADDON_WITH_IMAGESET_TYPE,
     ADDON_WITH_INDEXIMAGE_TYPE,
+    ADDON_WITH_SECRETS_TYPE,
     addon_metadata_with_imageset_version,
     addon_with_bundles,
     addon_with_imageset_and_default_config,
@@ -28,6 +30,7 @@ from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: n
     [
         ("addon_with_bundles", ADDON_WITH_BUNDLES_TYPE),
         ("addon_with_imageset", ADDON_WITH_IMAGESET_TYPE),
+        ("addon_with_secrets", ADDON_WITH_SECRETS_TYPE),
     ],
 )
 def test_addon_metadata(addon, addon_type, request):

@@ -79,7 +79,7 @@ properties:
     items:
       type: string
       pattern: ^[a-z0-9]{1,60}:[A-Za-z0-9]{1,60}$
-  pullSecret: 
+  pullSecret:
     type: string
     format: printable
     description: "'pullSecret' is deprecated for now. Please use the 'secrets' and 'pullSecretName' fields instead."

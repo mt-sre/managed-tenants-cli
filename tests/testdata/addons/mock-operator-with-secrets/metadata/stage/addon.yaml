@@ -1,0 +1,35 @@
+---
+id: mocksecret
+name: Mock Operator
+description: This is a mock operator with Secrets.
+icon: mock
+label: "api.openshift.com/addon-mock-operator-secrets"
+enabled: true
+addonOwner: Mock <mock@redhat.com>
+quayRepo: quay.io/osd-addons/mock-operator-secrets
+installMode: OwnNamespace
+targetNamespace: mock-operator
+namespaces:
+  - mock-operator
+namespaceLabels:
+  monitoring-key: mock
+namespaceAnnotations: {}
+ocmQuotaName: addon-mock-operator
+ocmQuotaCost: 1
+testHarness: quay.io/mock-operator/mock-operator-test-harness
+operatorName: mock-operator-secrets
+hasExternalResources: true
+channels:
+- name: alpha
+  currentCSV: mock-operator-secrets-v1.0.0
+defaultChannel: alpha
+bundleParameters:
+  useClusterStorage: "true"
+secrets:
+  - name: mock-operator-secret
+    type: Opaque
+    vaultPath: mtsre/quay/osd-addons/secrets/mocksecret/mock-operator-secret
+  - name: mock-operator-secret-2
+    type: kubernetes.io/dockerconfigjson
+    vaultPath: mtsre/quay/osd-addons/secrets/mocksecret/mock-operator-secret-2
+pullSecretName: mock-operator-pull-secret-2
