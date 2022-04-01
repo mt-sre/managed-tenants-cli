@@ -19,7 +19,7 @@ from managedtenants.utils.schema import load_schema
 # IDs of addons that are managed by the addon-operator
 # These addon IDs _MUST_ be stable and not changed or bad things will happen
 # (this applies to addon IDs in general, but it's worth pointing out here, too)
-_ADDON_OPERATOR_ADDON_IDS = ["reference-addon"]
+_ADDON_OPERATOR_ADDON_IDS = []
 _PERMITTED_SUBSCRIPTION_CONFIGS = ["env"]
 
 
