@@ -11,7 +11,6 @@ from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: n
     ADDON_WITH_BUNDLES_TYPE,
     ADDON_WITH_IMAGESET_TYPE,
     ADDON_WITH_INDEXIMAGE_TYPE,
-    ADDON_WITH_SECRETS_TYPE,
     addon_metadata_with_imageset_version,
     addon_with_bundles,
     addon_with_imageset_and_default_config,
