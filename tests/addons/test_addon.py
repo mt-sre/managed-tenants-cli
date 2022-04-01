@@ -30,7 +30,7 @@ from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: n
     [
         ("addon_with_bundles", ADDON_WITH_BUNDLES_TYPE),
         ("addon_with_imageset", ADDON_WITH_IMAGESET_TYPE),
-        ("addon_with_secrets", ADDON_WITH_SECRETS_TYPE),
+        ("addon_with_secrets", ADDON_WITH_BUNDLES_TYPE),
     ],
 )
 def test_addon_metadata(addon, addon_type, request):

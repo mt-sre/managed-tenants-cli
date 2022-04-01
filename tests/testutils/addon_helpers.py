@@ -14,7 +14,6 @@ from managedtenants.core.addons_loader.addon import Addon
 ADDON_WITH_BUNDLES_TYPE = "with_bundles"
 ADDON_WITH_IMAGESET_TYPE = "with_imageset"
 ADDON_WITH_INDEXIMAGE_TYPE = "with_indeximage"
-ADDON_WITH_SECRETS_TYPE = "with_secrets"
 
 
 def addon_with_imageset_path():
