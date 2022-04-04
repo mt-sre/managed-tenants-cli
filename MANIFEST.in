@@ -1,3 +1,4 @@
 include managedtenants/data/*
 include managedtenants/schemas/*
 include managedtenants/schemas/shared/*
+include managedtenants/bundles/auth/*
