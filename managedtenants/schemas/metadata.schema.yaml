@@ -85,7 +85,7 @@ properties:
     description: "'pullSecret' is deprecated for now. Please use the 'secrets' and 'pullSecretName' fields instead."
   secrets:
     type: array
-    description: "List of secrets that are required by the addon operator."
+    description: "List of secrets that are required by the addon."
     items:
       type: object
       additionalProperties: false
@@ -93,7 +93,7 @@ properties:
         name:
           type: string
           pattern: ^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$
-          description: "Name of the secret present in app-interface's deploy.yaml."
+          description: "Name of the secret present in app-interface's `deploy.yaml`."
         type:
           type: string
           enum:
@@ -105,11 +105,11 @@ properties:
             - kubernetes.io/ssh-auth
             - kubernetes.io/tls
             - bootstrap.kubernetes.io/token
-          description: "Type of the secret."
+          description: "Kubernetes's type of the secret. Ref https://kubernetes.io/docs/concepts/configuration/secret/#secret-types"
         vaultPath:
           type: string
           pattern: ^mtsre\/quay\/osd\-addons\/secrets\/[A-Za-z0-9][A-Za-z0-9-]{0,30}[A-Za-z0-9]\/[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$
-          description: "Vault path of the secret."
+          description: "Vault path of the secret. Expected to be under the `mtsre/quay/osd-addons/secrets/` directory of Vault."
       required:
         - name
         - type
@@ -117,6 +117,7 @@ properties:
   pullSecretName:
     type: string
     pattern: ^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$
+    description: Name of the secret under `secrets` which is supposed to be used for pulling Catalog Image under CatalogSource.
   additionalCatalogSources:
     type: array
     description: "List of additional catalog sources to be created"

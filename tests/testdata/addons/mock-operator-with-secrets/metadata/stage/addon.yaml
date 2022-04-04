@@ -29,7 +29,7 @@ secrets:
   - name: mock-operator-secret
     type: Opaque
     vaultPath: mtsre/quay/osd-addons/secrets/mocksecret/mock-operator-secret
-  - name: mock-operator-secret-2
+  - name: mock-operator-pull-secret-2
     type: kubernetes.io/dockerconfigjson
     vaultPath: mtsre/quay/osd-addons/secrets/mocksecret/mock-operator-secret-2
 pullSecretName: mock-operator-pull-secret-2
