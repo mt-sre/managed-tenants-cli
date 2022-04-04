@@ -3,12 +3,10 @@ from pathlib import Path
 
 import semver
 import yaml
-from sretoolbox.binaries import OperatorSDK
 
+from managedtenants.bundles.binary_deps import MTCLI, OPERATOR_SDK
 from managedtenants.bundles.csv import CSV
 from managedtenants.bundles.exceptions import BundleError, CSVError
-
-_OPERATOR_SDK = OperatorSDK(version="1.4.2", download_path="/tmp")
 
 
 class Bundle:
@@ -78,6 +76,7 @@ class Bundle:
     def validate(self):
         self._validate_semver()
         self._validate_operator_sdk()
+        self._validate_mtcli()
 
         if self.single_bundle:
             self._validate_single_bundle_pattern()
@@ -86,18 +85,32 @@ class Bundle:
         if not semver.VersionInfo.isvalid(self.version):
             raise BundleError(f"invalid semver for {self}")
 
+        # also needs to validate CSV spec.version field does not start with "v"
+        # https://github.com/operator-framework/operator-registry/issues/910
+        csv_version = self.csv.get_version()
+        if csv_version is None or csv_version.startswith("v"):
+            raise BundleError(
+                f"invalid csv 'spec.version' starts with 'v' for {self}"
+            )
+
     def _validate_operator_sdk(self):
-        cmd = [
-            "bundle",
-            "validate",
-            str(self.path),
-        ]
+        cmd = ["bundle", "validate", str(self.path)]
         try:
-            _OPERATOR_SDK.run(*cmd)
+            OPERATOR_SDK.run(*cmd)
         except subprocess.CalledProcessError as e:
             raise BundleError(
                 f"Failed to validate {self} with operator_sdk version"
-                f" {_OPERATOR_SDK.version}: {e.stdout.decode()}."
+                f" {OPERATOR_SDK.version}: {e.stdout.decode()}."
+            )
+
+    def _validate_mtcli(self):
+        cmd = ["bundle", "validate", str(self.path)]
+        try:
+            MTCLI.run(*cmd)
+        except subprocess.CalledProcessError as e:
+            raise BundleError(
+                f"Failed to validate {self} with mtcli version"
+                f" {MTCLI.version}: {e.stdout.decode()}."
             )
 
     def _validate_single_bundle_pattern(self):

@@ -11,7 +11,6 @@ from managedtenants.bundles.docker_api import DockerAPI
 from managedtenants.bundles.exceptions import MtbundlesCLIError
 from managedtenants.bundles.imageset_creator import ImageSetCreator
 from managedtenants.bundles.index_builder import IndexBuilder
-from managedtenants.bundles.quay_api import QuayAPI
 from managedtenants.utils.git import ChangeDetector
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -21,15 +20,14 @@ class MtbundlesCLI:
     def __init__(self, args):
         self.args = args
         self.addons_dir = Path(args.addons_dir)
-        self.quay_org = args.quay_org
-        self.docker_api = self._init_docker_api()
-        self.bundle_builder = self._init_bundle_builder()
-        self.index_builder = self._init_index_builder()
-        self.imageset_creator = self._init_imageset_creator()
         self.log = get_text_logger(
             "mtbundles",
             level=logging.DEBUG if args.debug else logging.INFO,
         )
+        self.docker_api = self._init_docker_api()
+        self.bundle_builder = self._init_bundle_builder()
+        self.index_builder = self._init_index_builder()
+        self.imageset_creator = self._init_imageset_creator()
 
     def run(self):
         target_addons = self._get_target_addons()
@@ -87,7 +85,8 @@ class MtbundlesCLI:
 
     def _init_docker_api(self):
         return DockerAPI(
-            quay_api=QuayAPI(org=self.args.quay_org, debug=self.args.debug),
+            registry=f"quay.io/{self.args.quay_org}",
+            quay_org=self.args.quay_org,
             dockercfg_path=os.environ.get("DOCKER_CONF"),
             debug=self.args.debug,
             force_push=self.args.force_push,
