@@ -123,6 +123,8 @@ class Addon:
         self._validate_schema_instance(metadata, "metadata")
         self._validate_extra_resources(environment, metadata)
         self._validate_additional_catalogue_srcs(metadata)
+        self._validate_secret_names(metadata)
+        self._validate_pullSecretName(metadata)
 
         if "extraResources" in metadata:
             self.extra_resources_loader = FileSystemLoader(str(metadata_dir))
@@ -138,6 +140,30 @@ class Addon:
                 raise AddonLoadError(
                     f"{self.path} validation error: Additional catalog source"
                     " should have a unique name"
+                )
+
+    def _validate_secret_names(self, metadata):
+        if metadata.get("secrets"):
+            secret_names = [
+                secret["name"] for secret in metadata["secrets"]
+            ]
+            if len(set(secret_names)) != len(secret_names):
+                raise AddonLoadError(
+                    f"{self.path} validation error: secrets should have a unique name"
+                )
+
+    def _validate_pullSecretName(self,metadata):
+        if metadata.get("pullSecretName"):
+            if not metadata.get("secrets"):
+                raise AddonLoadError(
+                    f"{self.path} validation error: No secrets provided,"
+                    " pullSecretName should be one of secrets' names"
+                )
+            secret_names = [secret["name"] for secret in metadata["secrets"]]
+            if not metadata["pullSecretName"] in secret_names:
+                raise AddonLoadError(
+                    f"{self.path} validation error: pullSecretName should"
+                    " be one of secrets' names"
                 )
 
     def load_imageset(self, imageset_version):
