@@ -110,11 +110,8 @@ def test_secret_names_validation():
 def test_pullSecretName_validation():
     addon = Addon(addon_with_secrets_path(), "stage")
     metadata = addon.metadata
-    pullSecretName = metadata["pullSecretName"]
-    secrets = metadata["secrets"]
-    metadata["secrets"] = list(
-        filter(lambda secret: secret["name"] != pullSecretName, secrets)
-    )
+    """Assigning a random UUID"""
+    metadata["pullSecretName"] = "5daad7e9-dea7-4b3a-9fe5-a773df8ec57c"
     with pytest.raises(AddonLoadError):
         addon._validate_pullSecretName(metadata)
 
