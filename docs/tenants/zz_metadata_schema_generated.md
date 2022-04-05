@@ -35,6 +35,8 @@
 
 - **`installMode`** *(string)*: OLM InstallMode for the addon operator. Must be one of: `['AllNamespaces', 'OwnNamespace']`.
 
+- **`syncsetMigration`** *(string)*: The step currently in consideration in the process of migrating the addon to SyncSet. Must be one of: `['step 1 - block installations', 'step 2 - orphan SSS objects', 'step 3 - change SSS label', 'step 4 - enable syncset', 'step 5 - migration complete', 'rollback step 1 - ocm', 'rollback step 2 - selectorsyncset', 'rollback step 3 - reset addon migration']`.
+
 - **`manualInstallPlanApproval`** *(boolean)*
 
 - **`targetNamespace`** *(string)*: Namespace where the addon operator should be installed.

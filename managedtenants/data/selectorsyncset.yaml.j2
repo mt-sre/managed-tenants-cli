@@ -14,8 +14,16 @@ items:
   spec:
     clusterDeploymentSelector:
       matchLabels:
+        {% if ADDON.metadata.get('syncsetMigration') in ["step 3 - change SSS label", "step 4 - enable syncset", "step 5 - migration complete", "rollback step 1 - ocm"] %}
+        {{ADDON.metadata['label']}}: 'migrated'
+        {% else %}
         {{ADDON.metadata['label']}}: 'true'
+        {% endif %}
+    {% if ADDON.metadata.get('syncsetMigration') in ["step 2 - orphan SSS objects", "step 3 - change SSS label", "step 4 - enable syncset", "step 5 - migration complete", "rollback step 1 - ocm"] %}
+    resourceApplyMode: Upsert
+    {% else %}
     resourceApplyMode: Sync
+    {% endif %}
     resources:
 
 {% for namespace in ADDON.metadata['namespaces'] %}
@@ -181,6 +189,7 @@ items:
       matchLabels:
         {{ADDON.metadata['label']}}: 'true'
     resourceApplyMode: Sync
+
     resources:
 {% if (ADDON.metadata.get('indexImage') or ADDON.imageset) %}
     - apiVersion: addons.managed.openshift.io/v1alpha1

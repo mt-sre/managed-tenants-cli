@@ -159,6 +159,80 @@ class OcmCli:
             f"/api/clusters_mgmt/v1/addons/{addon_id}", json={"enabled": False}
         )
 
+    def get_addon_migrations(self):
+        return self._get("/api/clusters_mgmt/v1/addon_migrations")
+
+    def get_addon_migration(self, addon_id):
+        return self._get(f"/api/clusters_mgmt/v1/addon_migrations/{addon_id}")
+
+    def post_addon_migration(self, addon_id):
+        return self._post(
+            "/api/clusters_mgmt/v1/addon_migrations",
+            json={
+                "addon_id": addon_id,
+                "enabled": False,
+                "white_listed": False,
+                "rollback_migration": False,
+            },
+        )
+
+    def patch_addon_migration(self, addon_id, patch):
+        return self._patch(
+            f"/api/clusters_mgmt/v1/addon_migrations/{addon_id}", json=patch
+        )
+
+    def disable_addon_installation(self, addon_id):
+        try:
+            output = self.post_addon_migration(addon_id)
+        except OCMAPIError as exception:
+            if exception.response.status_code == 409:
+                return self.patch_addon_migration(
+                    addon_id,
+                    {
+                        "enabled": False,
+                        "white_listed": False,
+                        "rollback_migration": False,
+                    },
+                )
+            raise exception
+        return output
+
+    def enable_addon_migration(self, addon_id):
+        return self.patch_addon_migration(
+            addon_id,
+            {
+                "enabled": True,
+                "rollback_migration": False,
+            },
+        )
+
+    def complete_addon_migration(self, addon_id):
+        return self.patch_addon_migration(
+            addon_id,
+            {
+                "enabled": True,
+                "white_listed": True,
+            },
+        )
+
+    def rollback_addon_migration(self, addon_id):
+        return self.patch_addon_migration(
+            addon_id,
+            {
+                "enabled": True,
+                "white_listed": False,
+                "rollback_migration": True,
+            },
+        )
+
+    def unrollback_addon_migration(self, addon_id):
+        return self.patch_addon_migration(
+            addon_id,
+            {
+                "rollback_migration": False,
+            },
+        )
+
     def upsert_addon(self, metadata):
         try:
             addon = self.add_addon(metadata)
