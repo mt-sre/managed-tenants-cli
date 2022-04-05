@@ -144,15 +144,14 @@ class Addon:
 
     def _validate_secret_names(self, metadata):
         if metadata.get("secrets"):
-            secret_names = [
-                secret["name"] for secret in metadata["secrets"]
-            ]
+            secret_names = [secret["name"] for secret in metadata["secrets"]]
             if len(set(secret_names)) != len(secret_names):
                 raise AddonLoadError(
-                    f"{self.path} validation error: secrets should have a unique name"
+                    f"{self.path} validation error: secrets"
+                    " should have a unique name"
                 )
 
-    def _validate_pullSecretName(self,metadata):
+    def _validate_pullSecretName(self, metadata):
         if metadata.get("pullSecretName"):
             if not metadata.get("secrets"):
                 raise AddonLoadError(

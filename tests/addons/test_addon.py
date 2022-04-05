@@ -19,6 +19,7 @@ from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: n
     addon_with_imageset_path,
     addon_with_indeximage_path,
     addon_with_only_imageset_config,
+    addon_with_secrets_path,
     load_yaml,
     setup_addon_class_with_stubbed_metadata,
 )
@@ -95,6 +96,27 @@ def test_additional_catalogue_src_name_validation():
     metadata["additionalCatalogSources"].append(duplicate)
     with pytest.raises(AddonLoadError):
         addon._validate_additional_catalogue_srcs(metadata)
+
+
+def test_secret_names_validation():
+    addon = Addon(addon_with_secrets_path(), "stage")
+    metadata = addon.metadata
+    duplicate = metadata["secrets"][0]
+    metadata["secrets"].append(duplicate)
+    with pytest.raises(AddonLoadError):
+        addon._validate_secret_names(metadata)
+
+
+def test_pullSecretName_validation():
+    addon = Addon(addon_with_secrets_path(), "stage")
+    metadata = addon.metadata
+    pullSecretName = metadata["pullSecretName"]
+    secrets = metadata["secrets"]
+    metadata["secrets"] = list(
+        filter(lambda secret: secret["name"] != pullSecretName, secrets)
+    )
+    with pytest.raises(AddonLoadError):
+        addon._validate_pullSecretName(metadata)
 
 
 def assert_exceptions_on_addon_initialization(imageset_version, error_to_raise):
