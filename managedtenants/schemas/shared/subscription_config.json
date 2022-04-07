@@ -19,7 +19,7 @@
         "properties": {
           "name": {
             "type": "string",
-            "format": "printable"
+            "pattern": "^[A-Z][A-Z0-9_]*$"
           },
           "value": {
             "type": "string",
