@@ -20,6 +20,8 @@ from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: n
     addon_with_indeximage_path,
     addon_with_only_imageset_config,
     addon_with_secrets_path,
+    addon_without_package_name_path,
+    addon_with_package_name_path,
     load_yaml,
     setup_addon_class_with_stubbed_metadata,
 )
@@ -228,3 +230,10 @@ def test_addon_subscription_config_validations(addon, addon_type, request):
         updated_imageset["subscriptionConfig"]["unsupportedAttr"] = "present"
         with pytest.raises(AddonLoadError):
             addon._validate_schema_instance(updated_imageset, "imageset")
+
+
+def test_package_name():
+    addon = Addon(addon_without_package_name_path(), "stage")
+    assert addon.metadata["packageName"] == addon.metadata["operatorName"]
+    addon = Addon(addon_with_package_name_path(), "production")
+    assert addon.metadata["packageName"] != addon.metadata["operatorName"]

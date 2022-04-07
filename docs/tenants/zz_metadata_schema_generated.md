@@ -107,6 +107,8 @@
 
 - **`operatorName`** *(string)*: Name of the addon operator.
 
+- **`packageName`** *(string)*: Name of the addon OLM package. Defaults to operatorName when not specified.
+
 - **`bundleParameters`** *(object)*: Cannot contain additional properties.
 
   - **`useClusterStorage`** *(string)*

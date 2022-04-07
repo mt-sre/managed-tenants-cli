@@ -210,6 +210,10 @@ properties:
     type: string
     pattern: ^[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$
     description: "Name of the addon operator."
+  packageName:
+    type: string
+    pattern: ^[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$
+    description: "Name of the addon OLM package. Defaults to operatorName when not specified."
   bundleParameters:
     type: object
     additionalProperties: false

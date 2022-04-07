@@ -19,3 +19,4 @@ defaultChannel: alpha
 namespaceLabels: {}
 namespaceAnnotations: {}
 indexImage: quay.io/osd-addons/test-operator-index@sha256:8980b407722366080af758b138f438618912ce3270c72134273440c477653b56
+packageName: test-operator-package

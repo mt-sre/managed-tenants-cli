@@ -40,6 +40,14 @@ def addon_with_secrets_path():
     return Path("tests/testdata/addons/mock-operator-with-secrets")
 
 
+def addon_without_package_name_path():
+    return Path("tests/testdata/addons/test-operator")
+
+
+def addon_with_package_name_path():
+    return Path("tests/testdata/addons/test-operator")
+
+
 @pytest.fixture
 def mt_bundles_with_invalid_dir_structure_path():
     return Path("tests/testdata/addons/mock-operator-with-bundles")

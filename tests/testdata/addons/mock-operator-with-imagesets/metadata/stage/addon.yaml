@@ -18,6 +18,7 @@ ocmQuotaName: addon-mock-operator
 ocmQuotaCost: 1
 testHarness: quay.io/mock-operator/mock-operator-test-harness
 operatorName: mock-operator
+packageName: mock-operator
 hasExternalResources: true
 channels:
 - name: alpha

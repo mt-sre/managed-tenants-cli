@@ -139,6 +139,9 @@ class Addon:
         if "extraResources" in metadata:
             self.extra_resources_loader = FileSystemLoader(str(metadata_dir))
 
+        if "packageName" not in metadata:
+            metadata["packageName"] = metadata["operatorName"]
+
         return metadata
 
     def _validate_additional_catalogue_srcs(self, metadata):
