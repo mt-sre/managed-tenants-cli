@@ -67,9 +67,9 @@ items:
         image: {{ADDON.image_tag.format(hash='${IMAGE_TAG}')}}
         publisher: OSD Red Hat Addons
         sourceType: grpc
-        {% if ADDON.metadata['pullSecretName'] is defined %}
+        {% if ADDON.pull_secret_name() != None %}
         secrets:
-          - {{ADDON.metadata['pullSecretName']}}
+          - {{ADDON.pull_secret_name()}}
         {% endif %}
 
 {% if ADDON.metadata['additionalCatalogSources'] is defined %}
@@ -87,9 +87,9 @@ items:
         image: {{catalog_src["image"]}}
         publisher: OSD Red Hat Addons
         sourceType: grpc
-        {% if ADDON.metadata['pullSecretName'] is defined %}
+        {% if ADDON.pull_secret_name() != None %}
         secrets:
-          - {{ADDON.metadata['pullSecretName']}}
+          - {{ADDON.pull_secret_name()}}
         {% endif %}
 {% endfor %}
 {% endif %}
