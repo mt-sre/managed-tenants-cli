@@ -82,3 +82,19 @@ def test_pull_secret_injection():
         assert data["spec"]["image"] is not None
         assert len(data["spec"]["secrets"]) == 1
         assert data["spec"]["secrets"][0] == addon.metadata["pullSecretName"]
+
+    # Addon with legacy pull secret attribute
+    addon = Addon(addon_with_indeximage_path(), "integration")
+    sss_walker = addon.sss.walker()
+    catalogue_src_objs = sss_walker["sss_deploy"]["spec"]["resources"][
+        "CatalogSource"
+    ]
+    assert len(catalogue_src_objs) == 2
+    for catalog_obj in catalogue_src_objs:
+        name, data = catalog_obj
+        assert name is not None
+        assert data is not None
+        assert data["spec"]["image"] is not None
+        assert len(data["spec"]["secrets"]) == 1
+        # Ensure name is the hardcoded value in the SSS.
+        assert data["spec"]["secrets"][0] == "addon-pullsecret"

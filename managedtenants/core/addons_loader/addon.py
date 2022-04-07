@@ -85,6 +85,16 @@ class Addon:
     def name(self):
         return self.path.name
 
+    def pull_secret_name(self):
+        # For metadata's that use the legacy
+        # pull secret, pull secret name is hardcoded to
+        # "addon-pullsecret" in the SSS.
+        if self.metadata.get("pullSecret"):
+            return "addon-pullsecret"
+        if self.metadata.get("pullSecretName"):
+            return self.metadata.get("pullSecretName")
+        return None
+
     def get_subscription_config(self):
         # If imageset is present, check for subscriptionConfig in the
         # imageset file, otherwise check for the default subscription config
