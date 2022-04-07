@@ -140,7 +140,7 @@ class AddonBundles:
         except jsonschema.exceptions.ValidationError as e:
             raise AddonBundlesError(f"schema validation error for {self}: {e}")
 
-    @lru_cache(maxsize=None)
+    @lru_cache()
     def _get_latest_version(self):
         """
         Returns the latest version amongst the main_bundles.
