@@ -33,3 +33,6 @@ secrets:
     type: kubernetes.io/dockerconfigjson
     vaultPath: mtsre/quay/osd-addons/secrets/mocksecret/mock-operator-secret-2
 pullSecretName: mock-operator-pull-secret-2
+additionalCatalogSources:
+  - name: new-catalog
+    image: quay.io/osd-addons/test-operator-index@sha256:12ce3270c72134273440c477653b568980b407722366080af758b138f43861891

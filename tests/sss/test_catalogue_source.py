@@ -7,6 +7,7 @@ from tests.testutils.addon_helpers import (  # noqa: F401
     addon_with_indeximage,
     addon_with_indeximage_path,
     addon_with_pagerduty,
+    addon_with_secrets_path,
     addons_managed_by_addon_cr,
 )
 
@@ -50,6 +51,7 @@ def test_addon_sss_object(addon_str, request):
         assert name is not None
         assert data is not None
         assert data["spec"]["image"] is not None
+        assert data["spec"].get("secrets") is None
 
 
 def test_additional_catalog_srcs():
@@ -64,3 +66,19 @@ def test_additional_catalog_srcs():
         assert name is not None
         assert data is not None
         assert data["spec"]["image"] is not None
+
+
+def test_pull_secret_injection():
+    addon = Addon(addon_with_secrets_path(), "stage")
+    sss_walker = addon.sss.walker()
+    catalogue_src_objs = sss_walker["sss_deploy"]["spec"]["resources"][
+        "CatalogSource"
+    ]
+    assert len(catalogue_src_objs) == 2
+    for catalog_obj in catalogue_src_objs:
+        name, data = catalog_obj
+        assert name is not None
+        assert data is not None
+        assert data["spec"]["image"] is not None
+        assert len(data["spec"]["secrets"]) == 1
+        assert data["spec"]["secrets"][0] == addon.metadata["pullSecretName"]
