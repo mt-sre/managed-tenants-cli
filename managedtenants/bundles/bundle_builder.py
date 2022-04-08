@@ -4,7 +4,6 @@ import logging
 from sretoolbox.container import Image
 from sretoolbox.utils.logger import get_text_logger
 
-from managedtenants.bundles.docker_api import DockerAPI
 from managedtenants.bundles.exceptions import BundleBuilderError, DockerError
 from managedtenants.utils.git import get_short_hash
 
@@ -20,15 +19,13 @@ class BundleBuilder:
 
     def __init__(
         self,
-        docker_api=None,
+        docker_api,
         dry_run=False,
         debug=False,
     ):
 
         self.dry_run = dry_run
-        self.docker_api = (
-            docker_api if docker_api is not None else DockerAPI(debug=debug)
-        )
+        self.docker_api = docker_api
         self.log = get_text_logger(
             "managedtenants-bundle-builder",
             level=logging.DEBUG if debug else logging.INFO,

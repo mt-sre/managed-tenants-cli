@@ -51,6 +51,9 @@ class CSV:
             .get("olm.skipRange", None)
         )
 
+    def get_version(self):
+        return self.data.get("spec", {}).get("version", None)
+
     def is_replaces_unset(self):
         return self.data.get("spec", {}).get("replaces", None) is None
 

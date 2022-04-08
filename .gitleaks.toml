@@ -1,2 +1,5 @@
 [allowlist]
-paths = ['''tests/bundles/auth/htpasswd''']
+paths = [
+     '''managedtenants/bundles/auth/config.json''',
+     '''managedtenants/bundles/auth/htpasswd'''
+]

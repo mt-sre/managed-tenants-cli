@@ -34,25 +34,22 @@ class DockerAPI:
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        quay_api=None,
-        registry=None,
-        dockercfg_path="/home/.docker/",
+        registry,
+        dockercfg_path,
+        quay_org,
         debug=False,
         force_push=False,
     ):
-        self.quay_api = (
-            quay_api if quay_api is not None else QuayAPI(debug=debug)
-        )
-        self.registry = (
-            registry if registry is not None else f"quay.io/{self.quay_api.org}"
-        )
-        self.client = docker.from_env()
+        self.registry = registry
         self.dockercfg_path = dockercfg_path
+        self.client = docker.from_env()
         self.force_push = force_push
         self.log = get_text_logger(
             "managedtenants-docker",
             level=logging.DEBUG if debug else logging.INFO,
         )
+        if self._is_quay_registry():
+            self.quay_api = QuayAPI(org=quay_org, debug=debug)
 
     def build_bundle(self, bundle):
         dockerfile = """
@@ -88,10 +85,7 @@ class DockerAPI:
             for log in log_generator:
                 self.log.debug(log)
 
-            self.log.debug(out_image.attrs)
-            if out_image.attrs.get("Size", -1) == 0:
-                raise DockerError(f"Built an empty image for path {path}.")
-
+            self.validate_image(tag)
             return out_image
 
         except docker.errors.BuildError as e:
@@ -148,3 +142,9 @@ class DockerAPI:
             # image.url_digest, calls digest which raises HTTPError
             # https://github.com/app-sre/sretoolbox/blob/master/sretoolbox/container/image.py#L119
             return False
+
+    def validate_image(self, tag):
+        image = self.client.images.get(tag)
+        self.log.debug(image.attrs)
+        if image.attrs.get("Size", -1) == 0:
+            raise DockerError(f"Built an empty image: {tag}.")

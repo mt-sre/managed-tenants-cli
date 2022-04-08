@@ -68,6 +68,15 @@ def test_bundle_repo_names(path, operator_name, expected_bundle_repo):
             / "abcd",
             False,
         ),
+        (
+            TEST_ROOT
+            / "testdata"
+            / "addons"
+            / "reference-addon-invalid-csv-version"
+            / "main"
+            / "0.0.1",
+            False,
+        ),
     ],
 )
 def test_invalid_bundle_raises_BundleError(bundle_path, single_bundle):
