@@ -108,7 +108,7 @@ class Sss:
 PAGERDUTY_KIND = "PagerDutyIntegration"
 DEADMANSSNITCH_KIND = "DeadmansSnitchIntegration"
 SSS_KIND = "SelectorSyncSet"
-
+TEMPLATE_KIND = "Template"
 
 class SssWalker:
     """
@@ -125,6 +125,7 @@ class SssWalker:
         res = {
             "sss_deploy": None,
             "sss_delete": None,
+            "template_deploy": None,
             "pdi": None,
             "dms": None,
         }
@@ -134,6 +135,8 @@ class SssWalker:
                     res["sss_delete"] = self._walk_sss(item)
                 else:
                     res["sss_deploy"] = self._walk_sss(item)
+            elif item["kind"] == TEMPLATE_KIND:
+                res["template_deploy"]= self._walk_template(item)
             elif item["kind"] == PAGERDUTY_KIND:
                 res["pdi"] = item
             elif item["kind"] == DEADMANSSNITCH_KIND:
@@ -147,7 +150,7 @@ class SssWalker:
     @staticmethod
     def _walk_sss(data):
         """
-        Transform sss['resources']['spec'] into a dictionary of lists, indexed
+        Transform sss["spec"]["resources"] into a dictionary of lists, indexed
         by Kind. Each Kind is a list of (name, resource) tuples.
 
         Example of the structure:
@@ -181,6 +184,18 @@ class SssWalker:
             name = resource["metadata"]["name"]
             sss["spec"]["resources"][kind].append((name, resource))
         return sss
+
+    @staticmethod
+    def _walk_template(data):
+        template = deepcopy(data)
+        old_resources = deepcopy(data["objects"][0]["spec"]["resources"])
+        template["objects"][0]["spec"]["resources"] = defaultdict(list)
+        for resource in old_resources:
+            kind = resource["kind"]
+            name = resource["metadata"]["name"]
+            template["objects"][0]["spec"]["resources"][
+                kind].append((name, resource))
+        return template
 
     def __getitem__(self, item):
         return self.data[item]
