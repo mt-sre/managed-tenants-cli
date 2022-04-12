@@ -31,22 +31,22 @@ items:
         metadata:
           name: {{secret['name']}}
           namespace: {{ADDON.metadata['targetNamespace']}}
-          type: {{secret['type']}}
-          {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
+          {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(10) }}
           {{
               maybe_labels(ADDON.metadata.get('commonLabels', {})
                 | merge_dicts({'addon-secret': ADDON.metadata['id']}))
-                | indent(8)
+                | indent(10)
           }}
-          data:
-{% raw %}            ${{% endraw %}{{secret['name']}}{% raw %}}{% endraw %}
+        type: {{secret['type']}}
+        data:
+{% raw %}          ${{% endraw %}{{secret['name']}}{% raw %}}{% endraw %}
 
     {% endfor %}
 
   parameters:
 
   {% for secret in ADDON.metadata['secrets'] %}
-  - name: {{secret['name']}}    
+  - name: {{secret['name']}}
   {% endfor %}
 
 {% endif %}
