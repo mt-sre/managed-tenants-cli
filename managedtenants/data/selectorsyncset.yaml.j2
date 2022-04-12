@@ -7,6 +7,50 @@ apiVersion: v1
 items:
 {# addon v1 create OLM resources manually #}
 {% if ADDON.manager == AddonManager.UKNOWN %}
+
+{% if ADDON.metadata['secrets'] is defined %}
+- apiVersion: template.openshift.io/v1
+  kind: Template
+  metadata:
+    name: addon-{{ADDON.metadata['id']}}-secrets
+  objects:
+  - apiVersion: hive.openshift.io/v1
+    kind: SelectorSyncSet
+    metadata:
+      name: addon-{{ADDON.metadata['id']}}
+    spec:
+      clusterDeploymentSelector:
+        matchLabels:
+          {{ADDON.metadata['label']}}: 'true'
+      resourceApplyMode: Sync
+      resources:
+
+      {% for secret in ADDON.metadata['secrets'] %}
+      - apiVersion: v1
+        kind: Secret
+        metadata:
+          name: {{secret['name']}}
+          namespace: {{ADDON.metadata['targetNamespace']}}
+          type: {{secret['type']}}
+          {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
+          {{
+              maybe_labels(ADDON.metadata.get('commonLabels', {})
+                | merge_dicts({'addon-secret': ADDON.metadata['id']}))
+                | indent(8)
+          }}
+          data:
+{% raw %}            ${{% endraw %}{{secret['name']}}{% raw %}}{% endraw %}
+
+    {% endfor %}
+
+  parameters:
+
+  {% for secret in ADDON.metadata['secrets'] %}
+  - name: {{secret['name']}}    
+  {% endfor %}
+
+{% endif %}
+
 - apiVersion: hive.openshift.io/v1
   kind: SelectorSyncSet
   metadata:
