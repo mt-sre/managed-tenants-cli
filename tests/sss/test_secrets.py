@@ -3,13 +3,11 @@ import pytest
 from tests.testutils.addon_helpers import addon_with_secrets  # noqa: F401
 
 
-@pytest.mark.parametrize("addon_str", ["addon_with_secrets"])
-def test_secrets(addon_str, request):
-    addon = request.getfixturevalue(addon_str)
-    sss_walker = addon.sss.walker()
+def test_secrets(addon_with_secrets):
+    sss_walker = addon_with_secrets.sss.walker()
 
-    if addon.metadata.get("secrets"):
-        no_of_secrets = len(addon.metadata.get("secrets"))
+    if addon_with_secrets.metadata.get("secrets"):
+        no_of_secrets = len(addon_with_secrets.metadata.get("secrets"))
         assert (
             len(
                 sss_walker["template_deploy"]["objects"][0]["spec"][
