@@ -96,7 +96,7 @@ class Bundle:
     def _validate_operator_sdk(self):
         cmd = ["bundle", "validate", str(self.path)]
         try:
-            OPERATOR_SDK.run(*cmd)
+            OPERATOR_SDK.run(cmd)
         except subprocess.CalledProcessError as e:
             raise BundleError(
                 f"Failed to validate {self} with operator_sdk version"
@@ -106,7 +106,7 @@ class Bundle:
     def _validate_mtcli(self):
         cmd = ["bundle", "validate", str(self.path)]
         try:
-            MTCLI.run(*cmd)
+            MTCLI.run(cmd)
         except subprocess.CalledProcessError as e:
             raise BundleError(
                 f"Failed to validate {self} with mtcli version"

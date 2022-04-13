@@ -6,6 +6,7 @@ from pathlib import Path
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants import PostTask, PreTask, Task
+from managedtenants.bundles.cli import MtbundlesCLI
 from managedtenants.core import runner
 from managedtenants.core.addons_loader import load_addons
 from managedtenants.core.addons_loader.exceptions import AddonsLoaderError
@@ -249,11 +250,6 @@ class Cli:
             runner.run(tasks_factory=tasks_factory)
 
     def _build_bundles(self):
-        # lazy import because we have global vars that pull binaries
-        # using sretoolbox: bundles/binary_deps.py
-        # pylint:disable=import-outside-toplevel
-        from managedtenants.bundles.cli import MtbundlesCLI
-
         cli = MtbundlesCLI(args=self.args)
         cli.run()
 
