@@ -16,5 +16,11 @@ def test_secrets(addon_with_secrets):
             )
             == no_of_secrets
         )
+        for secret in sss_walker["template_deploy"]["objects"][0]["spec"][
+            "resources"
+        ]["Secret"]:
+            assert secret[1].get("metadata", {}).get("labels") is not None
+            assert "data" in secret[1]
+            assert "type" in secret[1]
     else:
         assert sss_walker["template_deploy"] is None
