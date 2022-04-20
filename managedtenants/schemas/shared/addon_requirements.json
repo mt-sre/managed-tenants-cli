@@ -34,6 +34,9 @@
             "type": "string",
             "format": "printable"
           },
+          "aws.security_group_filters": {
+            "type": "string"
+          },
           "aws.sts.enabled": {
             "type": "boolean"
           },
