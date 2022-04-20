@@ -61,7 +61,7 @@ class IndexBuilder:
         ]
 
         try:
-            OPM.run(*cmd)
+            OPM.run(cmd)
             self.docker_api.validate_image(index_image.url_tag)
             return index_image
 
