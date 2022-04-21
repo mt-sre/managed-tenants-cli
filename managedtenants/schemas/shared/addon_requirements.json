@@ -34,9 +34,6 @@
             "type": "string",
             "format": "printable"
           },
-          "aws.security_group_filters": {
-            "type": "string"
-          },
           "aws.sts.enabled": {
             "type": "boolean"
           },
@@ -59,6 +56,9 @@
               "type": "string",
               "format": "printable"
             }
+          },
+          "compute.security_group_filters": {
+            "type": "string"
           },
           "compute.memory": {
             "type": "integer"
