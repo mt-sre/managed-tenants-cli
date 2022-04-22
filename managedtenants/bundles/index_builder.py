@@ -1,5 +1,7 @@
 import logging
+import sqlite3
 import subprocess
+import tempfile
 
 from sretoolbox.container import Image
 from sretoolbox.utils.logger import get_text_logger
@@ -23,7 +25,9 @@ class IndexBuilder:
             level=logging.DEBUG if debug else logging.INFO,
         )
 
-    def build_and_push(self, bundles, hash_string=get_short_hash()):
+    def build_and_push(
+        self, bundles, hash_string=get_short_hash(), skip_validation=False
+    ):
         """
         Build and push an index image.
 
@@ -31,10 +35,10 @@ class IndexBuilder:
         :return: An Index image that has been pushed.
         """
 
-        index_image = self._build(bundles, hash_string)
+        index_image = self._build(bundles, hash_string, skip_validation)
         return self._push(index_image)
 
-    def _build(self, bundles, hash_string):
+    def _build(self, bundles, hash_string, skip_validation=False):
         if len(bundles) == 0:
             raise IndexBuilderError("invalid empty bundles list")
 
@@ -59,10 +63,12 @@ class IndexBuilder:
             "--tag",
             index_image.url_tag,
         ]
+        self.log.debug(f"OPM build command: opm {' '.join(cmd)}")
 
         try:
             OPM.run(cmd)
-            self.docker_api.validate_image(index_image.url_tag)
+            if not skip_validation:
+                self._validate_sql_catalog(index_image.url_tag)
             return index_image
 
         except subprocess.CalledProcessError as e:
@@ -88,3 +94,74 @@ class IndexBuilder:
             err_msg = f"failed to push {index_image}: {e}."
             self.log.error(err_msg)
             raise IndexBuilderError(err_msg)
+
+    def _validate_sql_catalog(self, tag):
+        """
+        Validates an sql based index_image. Makes sure it contains bundles.
+        """
+        try:
+            in_memory_db = self.docker_api.extract_file_from_container(
+                tag, "/database/index.db"
+            )
+
+        except DockerError as e:
+            err_msg = f"failed to validate {tag}, got {e}."
+            self.log.error(err_msg)
+            raise IndexBuilderError(err_msg)
+
+        try:
+            with SQLCatalog(in_memory_db) as catalog:
+                bundles = catalog.get_bundles()
+                if len(bundles) == 0:
+                    err_msg = f"{tag} contains 0 bundles."
+                    self.log.error(err_msg)
+                    raise IndexBuilderError(err_msg)
+
+                self.log.debug(f"Found {len(bundles)} bundles:")
+                for bundle in bundles:
+                    self.log.debug(bundle)
+
+        except sqlite3.Error as e:
+            err_msg = (
+                "failed to query bundles from '/database/index.db' inside of ",
+                f"{tag}, got {e}.",
+            )
+            self.log.error(err_msg)
+            raise IndexBuilderError(err_msg)
+
+
+# (sblaisdo) OPM 1.19.5 uses a busybox distroless container. It does not have
+# sqlite3 or a package manager so it's easier to simply create a temp container
+# and validate the index.db on the host.
+class SQLCatalog:
+    """
+    Abstract an SQL catalog.
+    """
+
+    def __init__(self, in_memory_db):
+        """
+        Initialize a database connection from an in_memory_db fileobj.
+        """
+        # sqlite3 module only works with path-like object and does not support
+        # fileobj so we unfortunately have to do some temp I/O gymnastics
+        try:
+            with tempfile.NamedTemporaryFile() as tmp:
+                tmp.write(in_memory_db.read())
+                self.db = sqlite3.connect(tmp.name)
+                self.cursor = self.db.cursor()
+
+        except sqlite3.Error as e:
+            raise e
+
+    def get_bundles(self):
+        try:
+            self.cursor.execute("SELECT * from properties;")
+            return self.cursor.fetchall()
+        except sqlite3.Error as e:
+            raise e
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.db.close()

@@ -1,5 +1,7 @@
+import io
 import logging
 import os
+import tarfile
 
 import docker
 import docker.api.build
@@ -85,7 +87,7 @@ class DockerAPI:
             for log in log_generator:
                 self.log.debug(log)
 
-            self.validate_image(tag)
+            self.check_image_size_non_zero(tag)
             return out_image
 
         except docker.errors.BuildError as e:
@@ -143,8 +145,45 @@ class DockerAPI:
             # https://github.com/app-sre/sretoolbox/blob/master/sretoolbox/container/image.py#L119
             return False
 
-    def validate_image(self, tag):
+    def check_image_size_non_zero(self, tag):
+        """
+        Bundle containers only contain data, so detecting a 0 size is enough
+        to validate we successfully inserted data in the bundle.
+        """
         image = self.client.images.get(tag)
         self.log.debug(image.attrs)
         if image.attrs.get("Size", -1) == 0:
             raise DockerError(f"Built an empty image: {tag}.")
+
+    def extract_file_from_container(self, tag, path):
+        """
+        Creates a temporary container and returns the given file as an
+        io.BytesIO object.
+
+        :tag str: image from which to create the container
+        :path str: path of the file to be extracted from container
+        :returns: in-memory fileobj of the extracted file
+        """
+        try:
+            in_memory_tar = io.BytesIO()
+            container = self.client.containers.create(tag)
+            tar_bytes, _ = container.get_archive(path)
+
+            for tb in tar_bytes:
+                in_memory_tar.write(tb)
+
+            container.remove(force=True)
+
+            in_memory_tar.seek(0)
+            with tarfile.open(fileobj=in_memory_tar) as tf:
+                return tf.extractfile(os.path.basename(path))
+
+        except docker.errors.ImageNotFound as e:
+            raise DockerError(
+                f"Could not find local index image {tag} got {e}."
+            )
+
+        except docker.errors.APIError as e:
+            raise DockerError(
+                f"Failed to read file from index image {tag} got {e}"
+            )

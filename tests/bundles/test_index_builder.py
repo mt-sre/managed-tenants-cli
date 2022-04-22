@@ -20,7 +20,11 @@ def test_index_builder_build_and_push():
         f"{REGISTRY_URL}/reference-addon-index:{hash_string}"
     )
 
-    index_builder = IndexBuilder(docker_api=docker_api)
-    index_image = index_builder.build_and_push(bundles, hash_string)
+    # (sblaisdo) need to skip validation because opm tries to query
+    # <registry_url>/v2/ and our quay.io registry doesn't support this workflow
+    index_builder = IndexBuilder(docker_api=docker_api, debug=True)
+    index_image = index_builder.build_and_push(
+        bundles, hash_string, skip_validation=True
+    )
 
     assert index_image.url_tag == expected_index_image_url
