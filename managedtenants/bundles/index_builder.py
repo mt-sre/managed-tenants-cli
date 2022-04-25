@@ -38,6 +38,7 @@ class IndexBuilder:
         index_image = self._build(bundles, hash_string, skip_validation)
         return self._push(index_image)
 
+    # pylint: disable=unused-argument
     def _build(self, bundles, hash_string, skip_validation=False):
         if len(bundles) == 0:
             raise IndexBuilderError("invalid empty bundles list")
@@ -67,8 +68,11 @@ class IndexBuilder:
 
         try:
             OPM.run(cmd)
-            if not skip_validation:
-                self._validate_sql_catalog(index_image.url_tag)
+
+            # (sblaisdo) the index image is always broken on --dry-run as opm
+            #            tooling requires bundles to be hosted on a registry
+            # if not skip_validation:
+            #     self._validate_sql_catalog(index_image.url_tag, len(bundles))
             return index_image
 
         except subprocess.CalledProcessError as e:
@@ -95,13 +99,14 @@ class IndexBuilder:
             self.log.error(err_msg)
             raise IndexBuilderError(err_msg)
 
-    def _validate_sql_catalog(self, tag):
+    def _validate_sql_catalog(self, tag, n_bundles):
         """
         Validates an sql based index_image. Makes sure it contains bundles.
         """
+        db_name = "/database/index.db"
         try:
             in_memory_db = self.docker_api.extract_file_from_container(
-                tag, "/database/index.db"
+                tag, db_name
             )
 
         except DockerError as e:
@@ -112,8 +117,13 @@ class IndexBuilder:
         try:
             with SQLCatalog(in_memory_db) as catalog:
                 bundles = catalog.get_bundles()
-                if len(bundles) == 0:
-                    err_msg = f"{tag} contains 0 bundles."
+                self.log.debug(bundles)
+
+                if len(bundles) != n_bundles:
+                    err_msg = (
+                        f"expected {db_name} to contain {n_bundles} bundles"
+                        f" but found {len(bundles)}."
+                    )
                     self.log.error(err_msg)
                     raise IndexBuilderError(err_msg)
 
