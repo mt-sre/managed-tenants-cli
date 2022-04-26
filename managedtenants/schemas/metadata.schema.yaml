@@ -121,7 +121,6 @@ properties:
           description: "Name of the additional catalog source"
         image:
           type: string
-          pattern: ^quay\.io/[0-9A-Za-z._-]+/[a-z-]+
           description: "Url of the additional catalog source image"
       required:
       - name
