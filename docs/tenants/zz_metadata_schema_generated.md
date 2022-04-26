@@ -55,6 +55,8 @@
 
     - **`vaultPath`** *(string)*: Vault path of the secret. Expected to be under the `mtsre/quay/osd-addons/secrets/` directory of Vault.
 
+    - **`destinationSecretName`** *(string)*: Name of the `Secret` resource that will be applied.
+
 - **`pullSecretName`** *(string)*: Name of the secret under `secrets` which is supposed to be used for pulling Catalog Image under CatalogSource.
 
 - **`additionalCatalogSources`** *(array)*: List of additional catalog sources to be created.
