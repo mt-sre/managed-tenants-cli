@@ -29,7 +29,7 @@ items:
       - apiVersion: v1
         kind: Secret
         metadata:
-          name: {{secret['destinationSecretName'] | default(secret['name'])}}
+          name: {{secret.get('destinationSecretName', secret['name'])}}
           namespace: {{ADDON.metadata['targetNamespace']}}
           {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(10) }}
           {{

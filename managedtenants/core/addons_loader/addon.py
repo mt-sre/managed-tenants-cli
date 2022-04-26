@@ -154,7 +154,10 @@ class Addon:
 
     def _validate_secret_names(self, metadata):
         if metadata.get("secrets"):
-            secret_names = [secret["name"] for secret in metadata["secrets"]]
+            secret_names = [
+                secret.get("destinationSecretName", secret["name"])
+                for secret in metadata["secrets"]
+            ]
             if len(set(secret_names)) != len(secret_names):
                 raise AddonLoadError(
                     f"{self.path} validation error: secrets"
@@ -168,7 +171,10 @@ class Addon:
                     f"{self.path} validation error: No secrets provided,"
                     " pullSecretName should be one of secrets' names"
                 )
-            secret_names = [secret["name"] for secret in metadata["secrets"]]
+            secret_names = [
+                secret.get("destinationSecretName", secret["name"])
+                for secret in metadata["secrets"]
+            ]
             if not metadata["pullSecretName"] in secret_names:
                 raise AddonLoadError(
                     f"{self.path} validation error: pullSecretName should"
