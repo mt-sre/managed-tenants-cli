@@ -53,7 +53,9 @@
 
     - **`type`** *(string)*: Kubernetes's type of the secret. Ref https://kubernetes.io/docs/concepts/configuration/secret/#secret-types. Must be one of: `['Opaque', 'kubernetes.io/dockercfg', 'kubernetes.io/dockerconfigjson', 'kubernetes.io/service-account-token', 'kubernetes.io/basic-auth', 'kubernetes.io/ssh-auth', 'kubernetes.io/tls', 'bootstrap.kubernetes.io/token']`.
 
-    - **`vaultPath`** *(string)*: Vault path of the secret. Expected to be under the `mtsre/quay/osd-addons/secrets/` directory of Vault.
+    - **`vaultPath`** *(string)*: Vault path of the secret.
+
+    - **`destinationSecretName`** *(string)*: Name of the `Secret` resource that will be applied.
 
 - **`pullSecretName`** *(string)*: Name of the secret under `secrets` which is supposed to be used for pulling Catalog Image under CatalogSource.
 
