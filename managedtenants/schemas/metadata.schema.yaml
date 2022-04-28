@@ -138,8 +138,8 @@ properties:
           type: string
           description: "Url of the additional catalog source image"
       required:
-      - name
-      - image
+        - name
+        - image
   namespaceLabels:
     type: object
     items:
@@ -173,6 +173,11 @@ properties:
       - matchNames
       - matchLabels
     properties:
+      portName:
+        type: string
+        default: https
+        pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
+        description: "The name of the service port fronting the prometheus server."
       namespace:
         type: string
         pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
