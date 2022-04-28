@@ -57,6 +57,18 @@ properties:
       - AllNamespaces
       - OwnNamespace
     description: "OLM InstallMode for the addon operator."
+  syncsetMigration:
+    type: string
+    enum:
+      - "step 1 - block installations"
+      - "step 2 - orphan SSS objects"
+      - "step 3 - change SSS label"
+      - "step 4 - enable syncset"
+      - "step 5 - migration complete"
+      - "rollback step 1 - ocm"
+      - "rollback step 2 - selectorsyncset"
+      - "rollback step 3 - reset addon migration"
+    description: "The step currently in consideration in the process of migrating the addon to SyncSet"
   manualInstallPlanApproval:
     type: boolean
   targetNamespace:

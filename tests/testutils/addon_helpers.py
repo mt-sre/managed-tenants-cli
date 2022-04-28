@@ -1,7 +1,9 @@
 import subprocess
+from logging import exception
 from pathlib import Path
 from unittest import mock
 
+import jsonschema
 import pytest
 import yaml
 from conftest import REGISTRY_URL
@@ -10,6 +12,9 @@ from sretoolbox.container.image import Image
 from managedtenants.bundles.utils import run
 from managedtenants.core.addon_manager import AddonManager
 from managedtenants.core.addons_loader.addon import Addon
+from managedtenants.core.addons_loader.sss import Sss
+from managedtenants.data.paths import SCHEMAS_DIR
+from managedtenants.utils.schema import load_schema
 
 ADDON_WITH_BUNDLES_TYPE = "with_bundles"
 ADDON_WITH_IMAGESET_TYPE = "with_imageset"
@@ -149,6 +154,102 @@ def addon_with_deadmanssnitch():
 def addon_with_pagerduty():
     addon_path = addon_with_pagerduty_path()
     return Addon(addon_path, "stage")
+
+
+@pytest.fixture
+def addon_with_syncset_migration_step_1():
+    addon_path = addon_with_indeximage_path()
+    addon = Addon(addon_path, "stage")
+    return rerender_addon_with_syncset_migration_step(
+        addon, "stage", "step 1 - block installations"
+    )
+
+
+@pytest.fixture
+def addon_with_syncset_migration_step_2():
+    addon_path = addon_with_indeximage_path()
+    addon = Addon(addon_path, "stage")
+    return rerender_addon_with_syncset_migration_step(
+        addon, "stage", "step 2 - orphan SSS objects"
+    )
+
+
+@pytest.fixture
+def addon_with_syncset_migration_step_3():
+    addon_path = addon_with_indeximage_path()
+    addon = Addon(addon_path, "stage")
+    return rerender_addon_with_syncset_migration_step(
+        addon, "stage", "step 3 - change SSS label"
+    )
+
+
+@pytest.fixture
+def addon_with_syncset_migration_step_4():
+    addon_path = addon_with_indeximage_path()
+    addon = Addon(addon_path, "stage")
+    return rerender_addon_with_syncset_migration_step(
+        addon, "stage", "step 4 - enable syncset"
+    )
+
+
+@pytest.fixture
+def addon_with_syncset_migration_step_5():
+    addon_path = addon_with_indeximage_path()
+    addon = Addon(addon_path, "stage")
+    return rerender_addon_with_syncset_migration_step(
+        addon, "stage", "step 5 - migration complete"
+    )
+
+
+@pytest.fixture
+def addon_with_syncset_migration_step_rollback_ocm():
+    addon_path = addon_with_indeximage_path()
+    addon = Addon(addon_path, "stage")
+    return rerender_addon_with_syncset_migration_step(
+        addon, "stage", "rollback step 1 - ocm"
+    )
+
+
+@pytest.fixture
+def addon_with_syncset_migration_step_rollback_selectorsyncset():
+    addon_path = addon_with_indeximage_path()
+    addon = Addon(addon_path, "stage")
+    return rerender_addon_with_syncset_migration_step(
+        addon, "stage", "rollback step 2 - selectorsyncset"
+    )
+
+
+@pytest.fixture
+def addon_with_syncset_migration_step_rollback_reset_addon_migration():
+    addon_path = addon_with_indeximage_path()
+    addon = Addon(addon_path, "stage")
+    return rerender_addon_with_syncset_migration_step(
+        addon, "stage", "rollback step 3 - reset addon migration"
+    )
+
+
+@pytest.fixture
+def addon_with_wrong_syncset_migration_step():
+    addon_path = addon_with_indeximage_path()
+    addon = Addon(addon_path, "stage")
+    return rerender_addon_with_syncset_migration_step(
+        addon, "stage", "step not in enum"
+    )
+
+
+def rerender_addon_with_syncset_migration_step(addon, environment, step):
+    addon.metadata["syncsetMigration"] = step
+    # re-validate the addon metadata
+    jsonschema.validate(
+        instance=addon.metadata,
+        schema=load_schema("metadata"),
+        resolver=jsonschema.RefResolver(
+            base_uri=f"file://{SCHEMAS_DIR}/",
+            referrer="metadata.schema.yaml",
+        ),
+    )
+    addon.sss = Sss(addon=addon)
+    return addon
 
 
 def setup_addon_class_with_stubbed_metadata(required_metadata):
