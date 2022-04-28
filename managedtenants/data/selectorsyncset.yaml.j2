@@ -205,16 +205,14 @@ items:
         namespace: redhat-monitoring-{{ ADDON.metadata['id'] }}
       spec:
         endpoints:
-          - honorLabels: true
-            port: "9090"
+          - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+            honorLabels: true
+            port: {{ ADDON.metadata['monitoring']['portName'] }}
             path: /federate
             scheme: https
             interval: 30s
             tlsConfig:
-              ca:
-                configMap:
-                  name: openshift-service-ca.crt
-                  key: service-ca.crt
+              caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
               serverName: prometheus.{{ ADDON.metadata['monitoring']['namespace'] }}.svc
             params:
               'match[]':
