@@ -30,7 +30,11 @@ items:
         kind: Secret
         metadata:
           name: {{secret.get('destinationSecretName', secret['name'])}}
-          namespace: {{ADDON.metadata['targetNamespace']}}
+          namespace: {% if ADDON.pull_secret_name() != None and ADDON.pull_secret_name() == secret.get('destinationSecretName', secret['name'])%}
+            openshift-marketplace
+          {% else %}
+            {{ADDON.metadata['targetNamespace']}}
+          {% endif %}
           {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(10) }}
           {{
               maybe_labels(ADDON.metadata.get('commonLabels', {})
