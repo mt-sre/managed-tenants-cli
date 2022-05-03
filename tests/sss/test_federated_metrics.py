@@ -69,6 +69,8 @@ def test_namespace_and_servicemonitor_v2(data):
     env = data.draw(custom_strategies.environment())
     addon = data.draw(custom_strategies.addon(env))
     addon.metadata["monitoring"] = {
+        "portName": data.draw(custom_strategies.k8s_name()),
+        "namespace": data.draw(custom_strategies.namespace()),
         "matchNames": data.draw(
             hypothesis_strategies.lists(custom_strategies.k8s_name())
         ),
@@ -96,3 +98,10 @@ def test_namespace_and_servicemonitor_v2(data):
     # validate servicemonitor does not exist
     with pytest.raises(IndexError):
         _ = walker["sss_deploy"]["spec"]["resources"]["ServiceMonitor"][0]
+
+    # Get AddonCR
+    _, addon_cr = walker["sss_deploy"]["spec"]["resources"]["Addon"][0]
+    monitoring = addon_cr["spec"]["monitoring"]
+
+    for k in ("portName", "namespace", "matchNames", "matchLabels"):
+        assert monitoring[k] == addon.metadata["monitoring"][k]

@@ -272,6 +272,15 @@ items:
                   {{env_obj['value']}}
               {% endfor %}
             {% endif %}
+      {% if ADDON.metadata['monitoring'] is defined %}
+        {% set mon = ADDON.metadata['monitoring'] %}
+        monitoring:
+          portName: {{ mon['portName'] }}
+          namespace: {{ mon['namespace'] }}
+          matchNames: {{ mon['matchNames'] }}
+          matchLabels:
+            {{ expand_dict(mon['matchLabels']) | indent(12) }}
+      {% endif %}
 {% endif %}
 {# TODO: move pullsecret management into the addon-operator #}
 {% for namespace in ADDON.metadata['namespaces'] %}
