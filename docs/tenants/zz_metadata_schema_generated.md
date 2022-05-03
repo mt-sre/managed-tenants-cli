@@ -87,7 +87,7 @@
 
 - **`monitoring`** *(object)*: Configuration parameters to be injected in the ServiceMonitor used for federation. The target prometheus server found by matchLabels needs to serve service-ca signed TLS traffic (https://docs.openshift.com/container-platform/4.6/security/certificate_types_descriptions/service-ca-certificates.html), and it needs to be runing inside the monitoring.namespace, with the service name 'prometheus'. Cannot contain additional properties.
 
-  - **`portName`** *(string)*: The name of the service port fronting the prometheus server. Default: `https`.
+  - **`portName`** *(string)*: The name of the service port fronting the prometheus server.
 
   - **`namespace`** *(string)*: Namespace where the prometheus server is running.
 

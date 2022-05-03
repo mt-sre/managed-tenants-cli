@@ -169,13 +169,13 @@ properties:
     description: "Configuration parameters to be injected in the ServiceMonitor used for federation. The target prometheus server found by matchLabels needs to serve service-ca signed TLS traffic (https://docs.openshift.com/container-platform/4.6/security/certificate_types_descriptions/service-ca-certificates.html), and it needs to be runing inside the monitoring.namespace, with the service name 'prometheus'."
     additionalProperties: false
     required:
+      - portName
       - namespace
       - matchNames
       - matchLabels
     properties:
       portName:
         type: string
-        default: https
         pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
         description: "The name of the service port fronting the prometheus server."
       namespace:
