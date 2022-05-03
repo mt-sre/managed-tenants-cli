@@ -14,20 +14,13 @@ def test_namespace_and_servicemonitor_v1(data):
     env = data.draw(custom_strategies.environment())
     addon = data.draw(custom_strategies.addon(env))
     addon.metadata["monitoring"] = {
+        "portName": data.draw(custom_strategies.k8s_name()),
         "namespace": data.draw(custom_strategies.namespace()),
         "matchNames": data.draw(
             hypothesis_strategies.lists(custom_strategies.k8s_name())
         ),
         "matchLabels": data.draw(custom_strategies.labels()),
     }
-
-    # Sometimes set a portName
-    customPortName = False
-    if random.random() > 0.5:
-        customPortName = True
-        addon.metadata["monitoring"]["portName"] = data.draw(
-            custom_strategies.k8s_name()
-        )
 
     # Rerender selectorsyncset.yaml.j2
     addon.sss = Sss(addon=addon)
@@ -49,11 +42,7 @@ def test_namespace_and_servicemonitor_v1(data):
 
     # validate endpoint.0
     endpoint = sm["spec"]["endpoints"][0]
-    assert (
-        endpoint["port"] == addon.metadata["monitoring"]["portName"]
-        if customPortName
-        else "https"
-    )
+    assert endpoint["port"] == addon.metadata["monitoring"]["portName"]
     assert (
         endpoint["bearerTokenFile"]
         == "/var/run/secrets/kubernetes.io/serviceaccount/token"
