@@ -15,10 +15,10 @@
 
   - **Items** *(string)*
 
-- **`addOnParameters`**: Refer to *shared/addon_parameters.json*.
+- **`addOnParameters`**: List of parameters for the addon. Refer to *shared/addon_parameters.json*.
 
-- **`addOnRequirements`**: Refer to *shared/addon_requirements.json*.
+- **`addOnRequirements`**: List of requirements for the addon. Refer to *shared/addon_requirements.json*.
 
-- **`subOperators`**: Refer to *shared/sub_operators.json*.
+- **`subOperators`**: Sub operator under the umbrella of add-on operator. Refer to *shared/sub_operators.json*.
 
-- **`subscriptionConfig`**: Refer to *shared/subscription_config.json*.
+- **`subscriptionConfig`**: Subscription config of the addons for the OLM object. Refer to *shared/subscription_config.json*.
