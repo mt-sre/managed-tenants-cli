@@ -68,7 +68,7 @@ properties:
       - "rollback step 1 - ocm"
       - "rollback step 2 - selectorsyncset"
       - "rollback step 3 - reset addon migration"
-    description: "The step currently in consideration in the process of migrating the addon to SyncSet"
+    description: "The step currently in consideration in the process of migrating the addon to SyncSet."
   manualInstallPlanApproval:
     type: boolean
   targetNamespace:
@@ -125,7 +125,7 @@ properties:
     description: Name of the secret under `secrets` which is supposed to be used for pulling Catalog Image under CatalogSource.
   additionalCatalogSources:
     type: array
-    description: "List of additional catalog sources to be created"
+    description: "List of additional catalog sources to be created."
     items:
       type: object
       additionalProperties: false
@@ -133,10 +133,10 @@ properties:
         name:
           type: string
           format: printable
-          description: "Name of the additional catalog source"
+          description: "Name of the additional catalog source."
         image:
           type: string
-          description: "Url of the additional catalog source image"
+          description: "Url of the additional catalog source image."
       required:
         - name
         - image
@@ -323,14 +323,19 @@ properties:
     description: "Extra Resources to be applied to the Hive cluster."
   credentialsRequests:
     $ref: "shared/credentials_requests.json"
+    description: "List of credential requests to authenticate operators."
   addOnParameters:
     $ref: "shared/addon_parameters.json"
+    description: "List of parameters for the addon."
   addOnRequirements:
     $ref: "shared/addon_requirements.json"
+    description: "List of requirements for the addon."
   subOperators:
     $ref: "shared/sub_operators.json"
+    description: "Sub operator under the umbrella of add-on operator."
   subscriptionConfig:
     $ref: "shared/subscription_config.json"
+    description: "Subscription config of the addons for the OLM object."
   managedService:
     type: boolean
     description: "Indicates if the add-on will be used as a Managed Service."
