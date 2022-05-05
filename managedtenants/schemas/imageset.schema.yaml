@@ -6,28 +6,28 @@ properties:
   name:
     type: string
     pattern: ^[a-z-]+.v[0-9A-Za-z\.-]+$
-    description: "The name of the imageset along with the version"
+    description: "The name of the imageset along with the version."
   indexImage:
     type: string
     pattern: ^quay\.io/osd-addons/[a-z-]+
-    description: "The url for the index image"
+    description: "The url for the index image."
   relatedImages:
     type: array
-    description: "A list of image urls of related operators"
+    description: "A list of image urls of related operators."
     items:
       type: string
   addOnParameters:
     $ref: "shared/addon_parameters.json"
-    description: "List of parameters for the addon"
+    description: "List of parameters for the addon."
   addOnRequirements:
     $ref: "shared/addon_requirements.json"
-    description: "List of requirements for the addon"
+    description: "List of requirements for the addon."
   subOperators:
     $ref: "shared/sub_operators.json"
-    description: "Sub operator under the umbrella of add-on operator"
+    description: "Sub operator under the umbrella of add-on operator."
   subscriptionConfig:
     $ref: "shared/subscription_config.json"
-    description: "Subscription config of the addons for the OLM object"
+    description: "Subscription config of the addons for the OLM object."
 required:
   - name
   - indexImage
