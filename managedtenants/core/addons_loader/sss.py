@@ -185,6 +185,10 @@ class SssWalker:
         sss = deepcopy(data)
         old_resources = deepcopy(data["spec"]["resources"])
         sss["spec"]["resources"] = defaultdict(list)
+
+        if old_resources is None:
+            return sss
+
         for resource in old_resources:
             kind = resource["kind"]
             name = resource["metadata"]["name"]

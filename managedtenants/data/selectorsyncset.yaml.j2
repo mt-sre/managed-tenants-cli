@@ -232,7 +232,7 @@ items:
             {{ expand_dict(ADDON.metadata['monitoring']['matchLabels']) | indent(12) }}
 {% endif %}
 
-{# addon v2 create the Addon CR #}
+{# addon v2 Addon CR is created by OCM, only secret management handled by SSS #}
 {% elif ADDON.manager == AddonManager.ADDON_OPERATOR %}
 - apiVersion: hive.openshift.io/v1
   kind: SelectorSyncSet
@@ -245,34 +245,6 @@ items:
     resourceApplyMode: Sync
 
     resources:
-{% if (ADDON.metadata.get('indexImage') or ADDON.imageset) %}
-    - apiVersion: addons.managed.openshift.io/v1alpha1
-      kind: Addon
-      metadata:
-        name: {{ADDON.metadata['id']}}
-      spec:
-        displayName: {{ADDON.metadata['name']}}
-        namespaces:
-{% for namespace in ADDON.metadata['namespaces'] %}
-        - name: {{namespace}}
-{% endfor %}
-        install:
-          type: OLMOwnNamespace
-          olmOwnNamespace:
-            namespace: {{ADDON.metadata['targetNamespace']}}
-            packageName: {{ADDON.metadata['operatorName']}}
-            channel: {{ADDON.metadata['defaultChannel']}}
-            catalogSourceImage: {{ADDON.metadata.get('indexImage') or ADDON.imageset['indexImage']}}
-            {% if ADDON.get_subscription_config() %}
-            config:
-              env:
-              {% for env_obj in ADDON.get_subscription_config().get("env") %}
-              - name: {{env_obj['name']}}
-                value: |-
-                  {{env_obj['value']}}
-              {% endfor %}
-            {% endif %}
-{% endif %}
 {# TODO: move pullsecret management into the addon-operator #}
 {% for namespace in ADDON.metadata['namespaces'] %}
     {% if ADDON.metadata['pullSecret'] is defined %}
