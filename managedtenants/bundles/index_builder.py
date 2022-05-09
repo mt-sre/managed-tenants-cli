@@ -60,14 +60,7 @@ class IndexBuilder:
             "add",
             "--permissive",
             "--bundles",
-            ",".join(
-                [
-                    bundle.image.url_digest
-                    if not skip_validation
-                    else bundle.image.url_tag
-                    for bundle in bundles
-                ]
-            ),
+            ",".join([bundle.image.url_tag for bundle in bundles]),
             "--tag",
             index_image.url_tag,
         ]
