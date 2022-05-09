@@ -60,7 +60,7 @@ class IndexBuilder:
             "add",
             "--permissive",
             "--bundles",
-            ",".join([bundle.image.url_tag for bundle in bundles]),
+            ",".join([bundle.image.url_digest for bundle in bundles]),
             "--tag",
             index_image.url_tag,
         ]
