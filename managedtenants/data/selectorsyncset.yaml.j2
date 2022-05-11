@@ -66,7 +66,7 @@ items:
       kind: CatalogSource
       metadata:
         name: addon-{{ADDON.metadata['id']}}-catalog
-        namespace: openshift-marketplace
+        namespace: {{ADDON.metadata["targetNamespace"]}}
         {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
         {{ maybe_labels(ADDON.metadata.get('commonLabels')) | indent(8) }}
       spec:
