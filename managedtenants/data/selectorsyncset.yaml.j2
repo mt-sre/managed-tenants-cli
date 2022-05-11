@@ -128,7 +128,7 @@ items:
         channel: {{ADDON.metadata['defaultChannel']}}
         name: {{ADDON.metadata['id']}}
         source: addon-{{ADDON.metadata['id']}}-catalog
-        sourceNamespace: openshift-marketplace
+        sourceNamespace: {{ADDON.metadata['targetNamespace']}}
         {% if ADDON.get_subscription_config() %}
         config:
           env:
