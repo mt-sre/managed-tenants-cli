@@ -108,7 +108,6 @@ class Sss:
 PAGERDUTY_KIND = "PagerDutyIntegration"
 DEADMANSSNITCH_KIND = "DeadmansSnitchIntegration"
 SSS_KIND = "SelectorSyncSet"
-TEMPLATE_KIND = "Template"
 
 
 class SssWalker:
@@ -126,7 +125,6 @@ class SssWalker:
         res = {
             "sss_deploy": None,
             "sss_delete": None,
-            "template_deploy": None,
             "pdi": None,
             "dms": None,
         }
@@ -136,13 +134,6 @@ class SssWalker:
                     res["sss_delete"] = self._walk_sss(item)
                 else:
                     res["sss_deploy"] = self._walk_sss(item)
-            elif item["kind"] == TEMPLATE_KIND:
-                res["template_deploy"] = item
-                template_sss = item["objects"][0]
-                walked_template_sss = self._walk_sss(template_sss)
-                res[  # pylint: disable=unsubscriptable-object
-                    "template_deploy"
-                ]["objects"][0] = walked_template_sss
             elif item["kind"] == PAGERDUTY_KIND:
                 res["pdi"] = item
             elif item["kind"] == DEADMANSSNITCH_KIND:
