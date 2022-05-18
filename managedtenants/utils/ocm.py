@@ -206,7 +206,6 @@ class OcmCli:
             addon_id,
             {
                 "enabled": True,
-                "rollback_migration": False,
             },
         )
 
