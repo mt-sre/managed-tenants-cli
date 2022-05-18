@@ -14,7 +14,7 @@ def test_index_builder_build_and_push():
 
     bundles = AddonBundles(REFERENCE_ADDON).get_all_bundles()
     bundle_builder = BundleBuilder(docker_api)
-    bundle_builder.build_and_push_all(bundles, hash_string)
+    bundle_builder.build_and_push_all(bundles, hash_string, ssl_verify=False)
 
     expected_index_image_url = (
         f"{REGISTRY_URL}/reference-addon-index:{hash_string}"

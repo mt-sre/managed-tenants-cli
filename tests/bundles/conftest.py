@@ -7,7 +7,7 @@ from managedtenants.bundles.registry import LocalDockerRegistry
 from managedtenants.data.paths import BUNDLES_DIR
 
 LOCAL_REGISTRY_NAME = "mt-bundles-test-registry"
-LOCAL_REGISTRY_PORT = 9999
+LOCAL_REGISTRY_PORT = 5000
 REGISTRY_URL = f"127.0.0.1:{LOCAL_REGISTRY_PORT}"
 HASH_STRING = "int08h"
 

@@ -68,7 +68,7 @@ class IndexBuilder:
             "quay.io/mtsre/opm-ubi@sha256:471dc5652a045103d75bafd24072926fbd7a520bd613cee896f2ce1602316eac",  # noqa: 501
             "--permissive",
             "--bundles",
-            ",".join([bundle.image.url_tag for bundle in bundles]),
+            ",".join([bundle.image.url_digest for bundle in bundles]),
             "--tag",
             index_image.url_tag,
         ]
