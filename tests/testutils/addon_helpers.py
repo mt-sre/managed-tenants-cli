@@ -63,25 +63,25 @@ def mt_bundles_addon_with_invalid_version_path():
 @pytest.fixture
 def addon_with_indeximage():
     addon_path = addon_with_indeximage_path()
-    return Addon(addon_path, "stage")
+    return Addon.from_path(addon_path, "stage")
 
 
 @pytest.fixture
 def addon_with_imageset():
     addon_path = addon_with_imageset_path()
-    return Addon(addon_path, "stage")
+    return Addon.from_path(addon_path, "stage")
 
 
 @pytest.fixture
 def addon_with_imageset_and_multiple_config():
     addon_path = addon_with_imageset_path()
-    return Addon(addon_path, "stage")
+    return Addon.from_path(addon_path, "stage")
 
 
 @pytest.fixture
 def addon_with_imageset_and_no_config():
     addon_path = addon_with_imageset_path()
-    addon = Addon(addon_path, "stage")
+    addon = Addon.from_path(addon_path, "stage")
     updated_metadata = addon.metadata
     # Remove the default subscriptionConfig
     del updated_metadata["subscriptionConfig"]
@@ -91,14 +91,14 @@ def addon_with_imageset_and_no_config():
     addon.metadata = updated_metadata
     addon.imageset_version = "1.0.2"
     # Reload imageset
-    addon.imageset = addon.load_imageset("1.0.2")
+    addon.imageset = addon._load_imageset(addon.root.imagesets_dir(), "1.0.2")
     return addon
 
 
 @pytest.fixture
 def addon_with_only_imageset_config():
     addon_path = addon_with_imageset_path()
-    addon = Addon(addon_path, "stage")
+    addon = Addon.from_path(addon_path, "stage")
     updated_metadata = addon.metadata
     # Remove the default subscriptionConfig
     del updated_metadata["subscriptionConfig"]
@@ -109,7 +109,7 @@ def addon_with_only_imageset_config():
 @pytest.fixture
 def addon_with_imageset_and_default_config():
     addon_path = addon_with_imageset_path()
-    addon = Addon(addon_path, "stage")
+    addon = Addon.from_path(addon_path, "stage")
     updated_metadata = addon.metadata
     # Set imageset to a version that doesnt have
     # subscription config
@@ -117,38 +117,38 @@ def addon_with_imageset_and_default_config():
     addon.metadata = updated_metadata
     addon.imageset_version = "1.0.2"
     # Reload imageset
-    addon.imageset = addon.load_imageset("1.0.2")
+    addon.imageset = addon._load_imageset(addon.root.imagesets_dir(), "1.0.2")
     return addon
 
 
 @pytest.fixture
 def addon_with_bundles():
     addon_path = addon_with_bundles_path()
-    return Addon(addon_path, "stage")
+    return Addon.from_path(addon_path, "stage")
 
 
 @pytest.fixture
 def addon_with_secrets():
     addon_path = addon_with_secrets_path()
-    return Addon(addon_path, "stage")
+    return Addon.from_path(addon_path, "stage")
 
 
 @pytest.fixture
 def addon_with_deadmanssnitch():
     addon_path = addon_with_deadmanssnitch_path()
-    return Addon(addon_path, "stage")
+    return Addon.from_path(addon_path, "stage")
 
 
 @pytest.fixture
 def addon_with_pagerduty():
     addon_path = addon_with_pagerduty_path()
-    return Addon(addon_path, "stage")
+    return Addon.from_path(addon_path, "stage")
 
 
 @pytest.fixture
 def addon_with_syncset_migration_step_1():
     addon_path = addon_with_indeximage_path()
-    addon = Addon(addon_path, "stage")
+    addon = Addon.from_path(addon_path, "stage")
     return rerender_addon_with_syncset_migration_step(
         addon, "stage", "step 1 - block installations"
     )
@@ -157,7 +157,7 @@ def addon_with_syncset_migration_step_1():
 @pytest.fixture
 def addon_with_syncset_migration_step_2():
     addon_path = addon_with_indeximage_path()
-    addon = Addon(addon_path, "stage")
+    addon = Addon.from_path(addon_path, "stage")
     return rerender_addon_with_syncset_migration_step(
         addon, "stage", "step 2 - orphan SSS objects"
     )
@@ -166,7 +166,7 @@ def addon_with_syncset_migration_step_2():
 @pytest.fixture
 def addon_with_syncset_migration_step_3():
     addon_path = addon_with_indeximage_path()
-    addon = Addon(addon_path, "stage")
+    addon = Addon.from_path(addon_path, "stage")
     return rerender_addon_with_syncset_migration_step(
         addon, "stage", "step 3 - change SSS label"
     )
@@ -175,7 +175,7 @@ def addon_with_syncset_migration_step_3():
 @pytest.fixture
 def addon_with_syncset_migration_step_4():
     addon_path = addon_with_indeximage_path()
-    addon = Addon(addon_path, "stage")
+    addon = Addon.from_path(addon_path, "stage")
     return rerender_addon_with_syncset_migration_step(
         addon, "stage", "step 4 - enable syncset"
     )
@@ -184,7 +184,7 @@ def addon_with_syncset_migration_step_4():
 @pytest.fixture
 def addon_with_syncset_migration_step_5():
     addon_path = addon_with_indeximage_path()
-    addon = Addon(addon_path, "stage")
+    addon = Addon.from_path(addon_path, "stage")
     return rerender_addon_with_syncset_migration_step(
         addon, "stage", "step 5 - migration complete"
     )
@@ -193,7 +193,7 @@ def addon_with_syncset_migration_step_5():
 @pytest.fixture
 def addon_with_syncset_migration_step_rollback_ocm():
     addon_path = addon_with_indeximage_path()
-    addon = Addon(addon_path, "stage")
+    addon = Addon.from_path(addon_path, "stage")
     return rerender_addon_with_syncset_migration_step(
         addon, "stage", "rollback step 1 - ocm"
     )
@@ -202,7 +202,7 @@ def addon_with_syncset_migration_step_rollback_ocm():
 @pytest.fixture
 def addon_with_syncset_migration_step_rollback_selectorsyncset():
     addon_path = addon_with_indeximage_path()
-    addon = Addon(addon_path, "stage")
+    addon = Addon.from_path(addon_path, "stage")
     return rerender_addon_with_syncset_migration_step(
         addon, "stage", "rollback step 2 - selectorsyncset"
     )
@@ -211,7 +211,7 @@ def addon_with_syncset_migration_step_rollback_selectorsyncset():
 @pytest.fixture
 def addon_with_syncset_migration_step_rollback_reset_addon_migration():
     addon_path = addon_with_indeximage_path()
-    addon = Addon(addon_path, "stage")
+    addon = Addon.from_path(addon_path, "stage")
     return rerender_addon_with_syncset_migration_step(
         addon, "stage", "rollback step 3 - reset addon migration"
     )
@@ -220,7 +220,7 @@ def addon_with_syncset_migration_step_rollback_reset_addon_migration():
 @pytest.fixture
 def addon_with_syncset_migration_step_delete_addon_migration():
     addon_path = addon_with_indeximage_path()
-    addon = Addon(addon_path, "stage")
+    addon = Addon.from_path(addon_path, "stage")
     return rerender_addon_with_syncset_migration_step(
         addon, "stage", "step 0 - delete addon migration"
     )
@@ -229,7 +229,7 @@ def addon_with_syncset_migration_step_delete_addon_migration():
 @pytest.fixture
 def addon_with_wrong_syncset_migration_step():
     addon_path = addon_with_indeximage_path()
-    addon = Addon(addon_path, "stage")
+    addon = Addon.from_path(addon_path, "stage")
     return rerender_addon_with_syncset_migration_step(
         addon, "stage", "step not in enum"
     )
@@ -248,10 +248,6 @@ def rerender_addon_with_syncset_migration_step(addon, environment, step):
     )
     addon.sss = Sss(addon=addon)
     return addon
-
-
-def setup_addon_class_with_stubbed_metadata(required_metadata):
-    Addon.load_metadata = mock.Mock(return_value=required_metadata)
 
 
 def load_yaml(path):

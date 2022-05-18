@@ -161,5 +161,5 @@ class MockAddon:
             raise TypeError("Invalid environment.")
 
         if cls._instances[env] is None:
-            cls._instances[env] = Addon(TEST_OPERATOR_PATH, env)
+            cls._instances[env] = Addon.from_path(TEST_OPERATOR_PATH, env)
         return deepcopy(cls._instances[env])

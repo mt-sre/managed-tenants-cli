@@ -36,7 +36,7 @@ def test_addon_sss_object(addon_str, request):
 
 
 def test_additional_catalog_srcs():
-    addon = Addon(addon_with_indeximage_path(), "integration")
+    addon = Addon.from_path(addon_with_indeximage_path(), "integration")
     sss_walker = addon.sss.walker()
     catalogue_src_objs = sss_walker["sss_deploy"]["spec"]["resources"][
         "CatalogSource"
@@ -50,7 +50,7 @@ def test_additional_catalog_srcs():
 
 
 def test_pull_secret_injection():
-    addon = Addon(addon_with_secrets_path(), "stage")
+    addon = Addon.from_path(addon_with_secrets_path(), "stage")
     sss_walker = addon.sss.walker()
     catalogue_src_objs = sss_walker["sss_deploy"]["spec"]["resources"][
         "CatalogSource"
@@ -65,7 +65,7 @@ def test_pull_secret_injection():
         assert data["spec"]["secrets"][0] == addon.metadata["pullSecretName"]
 
     # Addon with legacy pull secret attribute
-    addon = Addon(addon_with_indeximage_path(), "integration")
+    addon = Addon.from_path(addon_with_indeximage_path(), "integration")
     sss_walker = addon.sss.walker()
     catalogue_src_objs = sss_walker["sss_deploy"]["spec"]["resources"][
         "CatalogSource"

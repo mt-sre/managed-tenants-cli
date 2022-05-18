@@ -4,7 +4,9 @@ from managedtenants.utils.git import ChangeDetector
 
 def instantiate_addon(args):
     # TODO: Remove `imageset_latest_only` arg
-    return Addon(path=args[0], environment=args[1], imageset_latest_only=True)
+    return Addon.from_path(
+        path=args[0], environment=args[1], imageset_latest_only=True
+    )
 
 
 def load_addons(path, environment, addon_name, args):
