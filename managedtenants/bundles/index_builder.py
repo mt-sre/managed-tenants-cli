@@ -29,7 +29,10 @@ class IndexBuilder:
         self, bundles, hash_string=get_short_hash(), skip_validation=False
     ):
         """
-        Build and push an index image.
+        Build and push an index image. The base image is named binary-image by
+        opm and is later used to generate a final dockerfile using this
+        template:
+        https://github.com/operator-framework/operator-registry/blob/5566e4b6832a7fc08c12d3c79fc0a0b8c6a2e7aa/alpha/action/generate_dockerfile.go#L42-L63
 
         :params bundles: List of Bundle to be added to the index image.
         :return: An Index image that has been pushed.
@@ -53,11 +56,16 @@ class IndexBuilder:
             f"Index image contains {len(bundles)} bundles: {bundles}."
         )
 
+        # pylint: disable=line-too-long
         cmd = [
             "index",
             "--container-tool",
             "docker",
             "add",
+            "--binary-image",
+            # Custom base image based on UBI, OPM 1.19.5
+            # https://github.com/mt-sre/containers/tree/main/opm-ubi
+            "quay.io/mtsre/opm-ubi@sha256:d687f6f03521968148428ad8728f6841ffed055480d86eb0ba732af45a357b3b",  # noqa: 501
             "--permissive",
             "--bundles",
             ",".join([bundle.image.url_tag for bundle in bundles]),
