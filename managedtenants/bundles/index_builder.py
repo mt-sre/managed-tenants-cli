@@ -26,11 +26,7 @@ class IndexBuilder:
         )
 
     def build_and_push(
-        self,
-        bundles,
-        hash_string=get_short_hash(),
-        skip_validation=False,
-        test_run=False,
+        self, bundles, hash_string=get_short_hash(), skip_validation=False
     ):
         """
         Build and push an index image. The base image is named binary-image by
@@ -42,15 +38,11 @@ class IndexBuilder:
         :return: An Index image that has been pushed.
         """
 
-        index_image = self._build(
-            bundles, hash_string, skip_validation, test_run
-        )
+        index_image = self._build(bundles, hash_string, skip_validation)
         return self._push(index_image)
 
     # pylint: disable=unused-argument
-    def _build(
-        self, bundles, hash_string, skip_validation=False, test_run=False
-    ):
+    def _build(self, bundles, hash_string, skip_validation=False):
         if len(bundles) == 0:
             raise IndexBuilderError("invalid empty bundles list")
 
@@ -76,14 +68,7 @@ class IndexBuilder:
             "quay.io/mtsre/opm-ubi@sha256:471dc5652a045103d75bafd24072926fbd7a520bd613cee896f2ce1602316eac",  # noqa: 501
             "--permissive",
             "--bundles",
-            ",".join(
-                [
-                    bundle.image.url_digest
-                    if not test_run
-                    else bundle.image.url_tag
-                    for bundle in bundles
-                ]
-            ),
+            ",".join([bundle.image.url_tag for bundle in bundles]),
             "--tag",
             index_image.url_tag,
         ]
