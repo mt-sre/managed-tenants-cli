@@ -60,6 +60,7 @@ properties:
   syncsetMigration:
     type: string
     enum:
+      - "step 0 - delete addon migration"
       - "step 1 - block installations"
       - "step 2 - orphan SSS objects"
       - "step 3 - change SSS label"
