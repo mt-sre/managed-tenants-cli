@@ -218,6 +218,15 @@ def addon_with_syncset_migration_step_rollback_reset_addon_migration():
 
 
 @pytest.fixture
+def addon_with_syncset_migration_step_delete_addon_migration():
+    addon_path = addon_with_indeximage_path()
+    addon = Addon(addon_path, "stage")
+    return rerender_addon_with_syncset_migration_step(
+        addon, "stage", "step 0 - delete addon migration"
+    )
+
+
+@pytest.fixture
 def addon_with_wrong_syncset_migration_step():
     addon_path = addon_with_indeximage_path()
     addon = Addon(addon_path, "stage")

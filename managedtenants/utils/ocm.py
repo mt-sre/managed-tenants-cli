@@ -180,6 +180,11 @@ class OcmCli:
             f"/api/clusters_mgmt/v1/addon_migrations/{addon_id}", json=patch
         )
 
+    def delete_addon_migration(self, addon_id):
+        return self._delete(
+            f"/api/clusters_mgmt/v1/addon_migrations/{addon_id}"
+        )
+
     def disable_addon_installation(self, addon_id):
         try:
             output = self.post_addon_migration(addon_id)

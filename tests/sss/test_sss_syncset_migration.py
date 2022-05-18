@@ -7,6 +7,7 @@ from tests.testutils.addon_helpers import (  # noqa: F401
     addon_with_syncset_migration_step_3,
     addon_with_syncset_migration_step_4,
     addon_with_syncset_migration_step_5,
+    addon_with_syncset_migration_step_delete_addon_migration,
     addon_with_syncset_migration_step_rollback_ocm,
     addon_with_syncset_migration_step_rollback_reset_addon_migration,
     addon_with_syncset_migration_step_rollback_selectorsyncset,
@@ -25,6 +26,7 @@ from tests.testutils.addon_helpers import (  # noqa: F401
         "addon_with_syncset_migration_step_rollback_ocm",
         "addon_with_syncset_migration_step_rollback_selectorsyncset",
         "addon_with_syncset_migration_step_rollback_reset_addon_migration",
+        "addon_with_syncset_migration_step_delete_addon_migration",
         "addon_with_wrong_syncset_migration_step",
     ],
 )
@@ -44,6 +46,7 @@ def test_sss_syncset_migration(addon_str, request):
             "addon_with_syncset_migration_step_1",
             "addon_with_syncset_migration_step_rollback_selectorsyncset",
             "addon_with_syncset_migration_step_rollback_reset_addon_migration",
+            "addon_with_syncset_migration_step_delete_addon_migration",
         ]:
             assert resource_apply_mode == "Sync"
         else:
@@ -57,6 +60,7 @@ def test_sss_syncset_migration(addon_str, request):
             "addon_with_syncset_migration_step_2",
             "addon_with_syncset_migration_step_rollback_selectorsyncset",
             "addon_with_syncset_migration_step_rollback_reset_addon_migration",
+            "addon_with_syncset_migration_step_delete_addon_migration",
         ]:
             assert (
                 cluster_dep_label_selectors_obj[addon.metadata["label"]]
