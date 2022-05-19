@@ -65,7 +65,10 @@ setup(
         "docker ~=5.0.3",
     ],
     entry_points={
-        "console_scripts": ["managedtenants = managedtenants.cli:main"]
+        "console_scripts": [
+            "managedtenants = managedtenants.cli:main",
+            "validate-imageset = managedtenants.cli.validate_imageset:main",
+        ]
     },
     include_package_data=True,
 )
