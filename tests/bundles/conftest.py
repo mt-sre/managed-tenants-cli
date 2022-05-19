@@ -7,7 +7,7 @@ from managedtenants.bundles.registry import LocalDockerRegistry
 from managedtenants.data.paths import BUNDLES_DIR
 
 LOCAL_REGISTRY_NAME = "mt-bundles-test-registry"
-LOCAL_REGISTRY_PORT = 5000
+LOCAL_REGISTRY_PORT = 443
 REGISTRY_URL = f"127.0.0.1:{LOCAL_REGISTRY_PORT}"
 HASH_STRING = "int08h"
 
@@ -40,6 +40,6 @@ def get_test_docker_api():
         registry=REGISTRY_URL,
         quay_org="dummy",
         dockercfg_path=BUNDLES_DIR / "auth",
-        debug=False,
+        debug=True,
         force_push=True,
     )

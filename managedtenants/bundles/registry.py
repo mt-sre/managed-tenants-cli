@@ -4,6 +4,7 @@ import docker
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.exceptions import LocalDockerRegistryError
+from managedtenants.data.paths import BUNDLES_DIR
 
 
 class LocalDockerRegistry:
@@ -32,8 +33,16 @@ class LocalDockerRegistry:
             self.container = self.client.containers.run(
                 "quay.io/mtsre/registry:v2",
                 name=self.name,
-                ports={str(self.port): str(self.port)},
+                ports={"443": str(self.port)},
                 detach=True,
+                environment={
+                    "REGISTRY_HTTP_ADDR": "0.0.0.0:443",
+                    "REGISTRY_HTTP_TLS_CERTIFICATE": "/certs/registry.crt",
+                    "REGISTRY_HTTP_TLS_KEY": "/certs/registry.key",
+                },
+                volumes={
+                    f"{BUNDLES_DIR}/certs": {"bind": "/certs", "mode": "ro"},
+                },
             )
             self.log.debug(f"Created container: {self.container.id}")
 
