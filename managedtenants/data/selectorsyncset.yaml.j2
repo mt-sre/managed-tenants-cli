@@ -102,6 +102,32 @@ items:
 {% endfor %}
 {% endif %}
 
+    - apiVersion: networking.k8s.io/v1
+      kind: NetworkPolicy
+      metadata:
+        name: addon-{{ADDON.metadata['id']}}-catalogs
+        namespace: {{ADDON.metadata["targetNamespace"]}}
+        {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
+        {{ maybe_labels(ADDON.metadata.get('commonLabels')) | indent(8) }}
+      spec:
+        podSelector:
+          matchExpressions:
+            - key: olm.catalogSource
+              operator: In
+              values:
+                - addon-{{ADDON.metadata['id']}}-catalog
+{% if ADDON.metadata['additionalCatalogSources'] is defined %}
+{% for catalog_src in ADDON.metadata['additionalCatalogSources'] %}
+                - {{catalog_src["name"]}}
+{% endfor %}
+{% endif %}
+        ingress:
+          - ports:
+              - protocol: TCP
+                port: 50051
+        policyTypes:
+          - Ingress
+
 {% if ADDON.metadata['namespaces'] %}
     - apiVersion: operators.coreos.com/v1alpha2
       kind: OperatorGroup
