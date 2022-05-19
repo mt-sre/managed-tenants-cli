@@ -66,7 +66,7 @@ items:
       kind: CatalogSource
       metadata:
         name: addon-{{ADDON.metadata['id']}}-catalog
-        namespace: {{ADDON.metadata["targetNamespace"]}}
+        namespace: openshift-marketplace
         {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
         {{ maybe_labels(ADDON.metadata.get('commonLabels')) | indent(8) }}
       spec:
@@ -128,7 +128,7 @@ items:
         channel: {{ADDON.metadata['defaultChannel']}}
         name: {{ADDON.metadata['id']}}
         source: addon-{{ADDON.metadata['id']}}-catalog
-        sourceNamespace: {{ADDON.metadata['targetNamespace']}}
+        sourceNamespace: openshift-marketplace
         {% if ADDON.get_subscription_config() %}
         config:
           env:
