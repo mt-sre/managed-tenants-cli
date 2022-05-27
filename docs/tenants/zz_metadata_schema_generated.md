@@ -57,8 +57,6 @@
 
     - **`vaultPath`** *(string)*: Vault path of the secret.
 
-    - **`destinationSecretName`** *(string)*: Name of the `Secret` resource that will be applied.
-
 - **`pullSecretName`** *(string)*: Name of the secret under `secrets` which is supposed to be used for pulling Catalog Image under CatalogSource.
 
 - **`additionalCatalogSources`** *(array)*: List of additional catalog sources to be created.
