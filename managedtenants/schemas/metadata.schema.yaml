@@ -112,10 +112,6 @@ properties:
         vaultPath:
           type: string
           description: "Vault path of the secret."
-        destinationSecretName:
-          type: string
-          pattern: ^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$
-          description: "Name of the `Secret` resource that will be applied."
       required:
         - name
         - type

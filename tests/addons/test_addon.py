@@ -105,26 +105,6 @@ def test_secret_names_validation():
     metadata["secrets"].append(duplicate)
     with pytest.raises(AddonLoadError):
         addon._validate_secret_names(metadata)
-    metadata["secrets"].pop()
-    # Adding two different secrets but with same destinationSecretName
-    metadata["secrets"].extend(
-        [
-            {
-                "name": "temp-secret-1",
-                "type": "Opaque",
-                "vaultPath": "random/path/to/vault/temp-secret-1",
-                "destinationSecretName": "my-secret-1",
-            },
-            {
-                "name": "temp-secret-2",
-                "type": "kubernetes.io/dockerconfigjson",
-                "vaultPath": "random/path/to/vault/temp-secret-2",
-                "destinationSecretName": "my-secret-1",
-            },
-        ]
-    )
-    with pytest.raises(AddonLoadError):
-        addon._validate_secret_names(metadata)
 
 
 def test_pullSecretName_validation():
@@ -132,25 +112,6 @@ def test_pullSecretName_validation():
     metadata = addon.metadata
     """Assigning a random UUID"""
     metadata["pullSecretName"] = "5daad7e9-dea7-4b3a-9fe5-a773df8ec57c"
-    with pytest.raises(AddonLoadError):
-        addon._validate_pullSecretName(metadata)
-    # Assigning secret["name"] to pullSecretName, when secret["destinationSecretName"] is present
-    secretWithDestinationSecretNameFound = False
-    for secret in metadata["secrets"]:
-        if secret.get("destinationSecretName"):
-            secretWithDestinationSecretNameFound = True
-            metadata["pullSecretName"] = secret["name"]
-            break
-    if not secretWithDestinationSecretNameFound:
-        metadata["secrets"].append(
-            {
-                "name": "temp-secret-2",
-                "type": "kubernetes.io/dockerconfigjson",
-                "vaultPath": "random/path/to/vault/temp-secret-2",
-                "destinationSecretName": "my-secret-1",
-            }
-        )
-        metadata["pullSecretName"] = "temp-secret-2"
     with pytest.raises(AddonLoadError):
         addon._validate_pullSecretName(metadata)
 
