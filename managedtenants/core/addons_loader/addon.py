@@ -147,38 +147,9 @@ class ImageSetAddon(Addon):
 
         self.imageset = self._load_imageset(root.imagesets_dir(), version)
 
-<<<<<<< HEAD
-    def _validate_secret_names(self, metadata):
-        if metadata.get("secrets"):
-            secret_names = [
-                secret.get("name") for secret in metadata["secrets"]
-            ]
-            if len(set(secret_names)) != len(secret_names):
-                raise AddonLoadError(
-                    f"{self.path} validation error: secrets"
-                    " should have a unique name"
-                )
-
-    def _validate_pullSecretName(self, metadata):
-        if metadata.get("pullSecretName"):
-            if not metadata.get("secrets"):
-                raise AddonLoadError(
-                    f"{self.path} validation error: No secrets provided,"
-                    " pullSecretName should be one of secrets' names"
-                )
-            secret_names = [
-                secret.get("name") for secret in metadata["secrets"]
-            ]
-            if not metadata["pullSecretName"] in secret_names:
-                raise AddonLoadError(
-                    f"{self.path} validation error: pullSecretName should"
-                    " be one of secrets' names"
-                )
-=======
         self.catalog_image = Image(self.imageset["indexImage"])
 
         self.sss = Sss(addon=self)
->>>>>>> c114904 (refactor: addons loader)
 
     def _load_imageset(self, path, version):
         if not _version_parsable(version):
@@ -394,8 +365,7 @@ class _MetadataLoader:
     def _validate_secret_names(self, metadata):
         if metadata.get("secrets"):
             secret_names = [
-                secret.get("destinationSecretName", secret["name"])
-                for secret in metadata["secrets"]
+                secret.get("name") for secret in metadata["secrets"]
             ]
             if len(set(secret_names)) != len(secret_names):
                 raise AddonLoadError(
@@ -411,8 +381,7 @@ class _MetadataLoader:
                     " pullSecretName should be one of secrets' names"
                 )
             secret_names = [
-                secret.get("destinationSecretName", secret["name"])
-                for secret in metadata["secrets"]
+                secret.get("name") for secret in metadata["secrets"]
             ]
             if not metadata["pullSecretName"] in secret_names:
                 raise AddonLoadError(
