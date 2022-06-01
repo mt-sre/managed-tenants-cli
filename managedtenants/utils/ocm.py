@@ -46,6 +46,7 @@ class OcmCli:
         "addOnRequirements": "requirements",
         "subOperators": "sub_operators",
         "managedService": "managed_service",
+        "subscriptionConfig": "config",
     }
 
     IMAGESET_KEYS = {
@@ -53,6 +54,9 @@ class OcmCli:
         "addOnParameters": "parameters",
         "addOnRequirements": "requirements",
         "subOperators": "sub_operators",
+        "pullSecretName": "pull_secret_name",
+        "additionalCatalogSources": "additional_catalog_sources",
+        "subscriptionConfig": "config",
     }
 
     def __init__(self, offline_token, api=API, api_insecure=False):
@@ -265,8 +269,38 @@ class OcmCli:
             "channel": metadata.get("defaultChannel"),
         }
 
+        # Set attributes from metdata file if present.
+        # They will get overwritten with the values from the imageset if they're
+        # present in the imageset as well.
+        if metadata.get("pullSecretName"):
+            addon[self.IMAGESET_KEYS["pullSecretName"]] = metadata.get("pullSecretName")
+
+        if metadata.get("additionalCatalogSources"):
+            addon[self.IMAGESET_KEYS["additionalCatalogSources"]] = self._make_additional_ctlg_src_list(
+                metadata.get("additionalCatalogSources")
+            )
+
+        if metadata.get("subscriptionConfig"):
+            addon[self.IMAGESET_KEYS["subscriptionConfig"]] = {}
+            addon[self.IMAGESET_KEYS["subscriptionConfig"]]["add_on_environment_variables"] = self._make_env_vars_list(
+                metadata.get("subscriptionConfig").get("env")
+            )
+
+
         for key, val in imageset.items():
             if key in self.IMAGESET_KEYS:
+                if key == "additionalCatalogSources":
+                   addon[self.IMAGESET_KEYS[key]] = self._make_additional_ctlg_src_list(
+                       val
+                   )
+                   continue
+
+                if key == "subscriptionConfig":
+                    addon[self.IMAGESET_KEYS[key]] = {}
+                    addon[self.IMAGESET_KEYS[key]]["add_on_environment_variables"] = self._make_env_vars_list(
+                        val["env"]
+                    )
+                    continue
                 if key == "addOnParameters":
                     # Enforce a sort order field on addon parameters
                     # so that they can be shown in the same order as
@@ -276,6 +310,16 @@ class OcmCli:
                     val = {"items": val}
                 addon[self.IMAGESET_KEYS[key]] = val
         return addon
+
+
+    @staticmethod
+    def _make_additional_ctlg_src_list(ctlg_srcs):
+        res = []
+        for index, env in enumerate(ctlg_srcs):
+            # Add an id attribute to the map.
+            env["id"] = str(index)
+            res.append(env)
+        return res
 
     def _addon_from_metadata(self, metadata):
         addon = {}
@@ -300,8 +344,23 @@ class OcmCli:
                     for index, param in enumerate(val):
                         param["order"] = index
                     val = {"items": val}
+                if key == "subscriptionConfig":
+                    addon[self.ADDON_KEYS[key]] = {}
+                    if val.get("env"):
+                        environment_variables_list = self._make_env_vars_list(val.get("env"))
+                        addon[self.ADDON_KEYS[key]]["add_on_environment_variables"] = environment_variables_list
+                    continue
                 addon[self.ADDON_KEYS[key]] = val
         return addon
+
+    @staticmethod
+    def _make_env_vars_list(envs):
+        res = []
+        for index, env in enumerate(envs):
+            # Add an id attribute to the map.
+            env["id"] = str(index)
+            res.append(env)
+        return res
 
     def _headers(self, extra_headers=None):
         headers = {"Authorization": f"Bearer {self.token}"}
