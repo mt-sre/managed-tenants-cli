@@ -26,15 +26,13 @@ _PERMITTED_SUBSCRIPTION_CONFIGS = ["env"]
 class UniqueYAMLKeyLoader(yaml.CSafeLoader):
     def construct_mapping(self, node, deep=False):
         mapping = set()
-        found = False
         duplicates = []
         for key_node, _ in node.value:
             key = self.construct_object(key_node, deep=deep)
             if key in mapping:
-                found = True
                 duplicates.append(key)
             mapping.add(key)
-        if found:
+        if duplicates:
             raise yaml.error.MarkedYAMLError(
                 f"Duplicate key(s) found in addon.yaml : {duplicates}"
             )
