@@ -23,6 +23,24 @@ _ADDON_OPERATOR_ADDON_IDS = []
 _PERMITTED_SUBSCRIPTION_CONFIGS = ["env"]
 
 
+class UniqueYAMLKeyLoader(yaml.CSafeLoader):
+    def construct_mapping(self, node, deep=False):
+        mapping = set()
+        found = False
+        duplicates = []
+        for key_node, _ in node.value:
+            key = self.construct_object(key_node, deep=deep)
+            if key in mapping:
+                found = True
+                duplicates.append(key)
+            mapping.add(key)
+        if found:
+            raise yaml.error.MarkedYAMLError(
+                f"Duplicate key(s) found in addon.yaml : {duplicates}"
+            )
+        return super().construct_mapping(node, deep)
+
+
 class Addon:
     def __init__(
         self,
@@ -126,7 +144,9 @@ class Addon:
 
         try:
             with open(metadata_path, encoding="utf8") as file_obj:
-                metadata = yaml.load(file_obj.read(), Loader=yaml.CSafeLoader)
+                metadata = yaml.load(
+                    file_obj.read(), Loader=UniqueYAMLKeyLoader
+                )
         except yaml.error.MarkedYAMLError as details:
             raise AddonLoadError(f"{metadata_path}: {details}")
 
