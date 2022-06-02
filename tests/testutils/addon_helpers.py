@@ -45,6 +45,10 @@ def addon_with_secrets_path():
     return Path("tests/testdata/addons/mock-operator-with-secrets")
 
 
+def addon_with_duplicate_keys_path():
+    return Path("tests/testdata/addons/mock-operator-with-duplicate-keys")
+
+
 @pytest.fixture
 def mt_bundles_with_invalid_dir_structure_path():
     return Path("tests/testdata/addons/mock-operator-with-bundles")
