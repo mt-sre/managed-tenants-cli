@@ -95,7 +95,7 @@ properties:
       properties:
         name:
           type: string
-          pattern: ^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$
+          pattern: ^[a-z0-9][a-z0-9_]{1,60}[a-z0-9]$
           description: "Name of the secret present in app-interface's `deploy.yaml`."
         type:
           type: string
@@ -118,7 +118,7 @@ properties:
         - vaultPath
   pullSecretName:
     type: string
-    pattern: ^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$
+    pattern: ^[a-z0-9][a-z0-9_]{1,60}[a-z0-9]$
     description: Name of the secret under `secrets` which is supposed to be used for pulling Catalog Image under CatalogSource.
   additionalCatalogSources:
     type: array
