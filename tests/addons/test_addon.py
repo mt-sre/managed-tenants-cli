@@ -13,6 +13,7 @@ from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: n
     ADDON_WITH_INDEXIMAGE_TYPE,
     addon_metadata_with_imageset_version,
     addon_with_bundles,
+    addon_with_duplicate_keys_path,
     addon_with_imageset_and_default_config,
     addon_with_imageset_and_multiple_config,
     addon_with_imageset_and_no_config,
@@ -228,3 +229,8 @@ def test_addon_subscription_config_validations(addon, addon_type, request):
         updated_imageset["subscriptionConfig"]["unsupportedAttr"] = "present"
         with pytest.raises(AddonLoadError):
             addon._validate_schema_instance(updated_imageset, "imageset")
+
+
+def test_addon_unique_keys_validation():
+    with pytest.raises(AddonLoadError):
+        Addon(addon_with_duplicate_keys_path(), "stage")
