@@ -41,7 +41,7 @@ class LocalDockerRegistry:
                     "REGISTRY_HTTP_TLS_KEY": "/certs/registry.key",
                 },
                 volumes={
-                    f"{BUNDLES_DIR}/certs": {"bind": "/certs", "mode": "ro"},
+                    f"sharedCertsVol": {"bind": "/certs", "mode": "ro"},
                 },
             )
             self.log.debug(f"Created container: {self.container.id}")
