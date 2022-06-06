@@ -9,6 +9,7 @@ addonOwner: Mock <mock@redhat.com>
 quayRepo: quay.io/osd-addons/mock-operator-secrets
 installMode: OwnNamespace
 targetNamespace: mock-operator
+indexImage: quay.io/osd-addons/mock-operator-secrets-index
 namespaces:
   - mock-operator
 namespaceLabels:
