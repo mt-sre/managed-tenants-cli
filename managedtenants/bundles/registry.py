@@ -4,7 +4,6 @@ import docker
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.exceptions import LocalDockerRegistryError
-from managedtenants.data.paths import BUNDLES_DIR
 
 
 class LocalDockerRegistry:
@@ -41,7 +40,7 @@ class LocalDockerRegistry:
                     "REGISTRY_HTTP_TLS_KEY": "/certs/registry.key",
                 },
                 volumes={
-                    f"sharedCertsVol": {"bind": "/certs", "mode": "ro"},
+                    "sharedCertsVol": {"bind": "/certs", "mode": "ro"},
                 },
             )
             self.log.debug(f"Created container: {self.container.id}")

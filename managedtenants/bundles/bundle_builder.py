@@ -22,32 +22,32 @@ class BundleBuilder:
         docker_api,
         dry_run=False,
         debug=False,
+        ssl_verify=True,
     ):
 
         self.dry_run = dry_run
         self.docker_api = docker_api
+        self.ssl_verify = ssl_verify
         self.log = get_text_logger(
             "managedtenants-bundle-builder",
             level=logging.DEBUG if debug else logging.INFO,
         )
 
-    def build_and_push_all(
-        self, bundles, hash_string=get_short_hash(), ssl_verify=True
-    ):
+    def build_and_push_all(self, bundles, hash_string=get_short_hash()):
         """
         Builds all the bundles. Also sets the bundle.image field.
         """
-        self._build_all(bundles, hash_string, ssl_verify)
+        self._build_all(bundles, hash_string)
         self._push_all(bundles)
 
-    def _build_all(self, bundles, hash_string, ssl_verify):
+    def _build_all(self, bundles, hash_string):
         try:
             for bundle in bundles:
                 image = Image(
                     f"{self.docker_api.registry}/"
                     f"{bundle.bundle_repo_name()}:"
                     f"{bundle.version}-{hash_string}",
-                    ssl_verify=ssl_verify,
+                    ssl_verify=self.ssl_verify,
                 )
                 bundle.image = image
 
