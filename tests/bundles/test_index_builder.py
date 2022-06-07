@@ -13,7 +13,7 @@ def test_index_builder_build_and_push():
     docker_api = get_test_docker_api()
 
     bundles = AddonBundles(REFERENCE_ADDON).get_all_bundles()
-    bundle_builder = BundleBuilder(docker_api)
+    bundle_builder = BundleBuilder(docker_api, ssl_verify=False)
     bundle_builder.build_and_push_all(bundles, hash_string)
 
     expected_index_image_url = (

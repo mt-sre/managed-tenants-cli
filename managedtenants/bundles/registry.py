@@ -4,7 +4,6 @@ import docker
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.exceptions import LocalDockerRegistryError
-from managedtenants.data.paths import BUNDLES_DIR
 
 
 class LocalDockerRegistry:
@@ -31,18 +30,17 @@ class LocalDockerRegistry:
     def run(self):
         try:
             self.container = self.client.containers.run(
-                "quay.io/openshift/origin-docker-registry:latest",
+                "quay.io/mtsre/registry:v2",
                 name=self.name,
-                ports={str(self.port): str(self.port)},
+                ports={"443": str(self.port)},
                 detach=True,
                 environment={
-                    "REGISTRY_AUTH": "htpasswd",
-                    "REGISTRY_AUTH_HTPASSWD_REALM": "Registry Realm",
-                    "REGISTRY_AUTH_HTPASSWD_PATH": "/auth/htpasswd",
-                    "REGISTRY_OPENSHIFT_SERVER_ADDR": f"0.0.0.0:{self.port}",
+                    "REGISTRY_HTTP_ADDR": "0.0.0.0:443",
+                    "REGISTRY_HTTP_TLS_CERTIFICATE": "/certs/registry.crt",
+                    "REGISTRY_HTTP_TLS_KEY": "/certs/registry.key",
                 },
                 volumes={
-                    f"{BUNDLES_DIR}/auth": {"bind": "/auth", "mode": "ro"},
+                    "sharedCertsVol": {"bind": "/certs", "mode": "ro"},
                 },
             )
             self.log.debug(f"Created container: {self.container.id}")

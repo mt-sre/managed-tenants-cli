@@ -9,7 +9,11 @@ docker build -t ${IMAGE_TEST} -f Dockerfile.test .
 docker_run_args=(
     --rm
     -v "/var/run/docker.sock:/var/run/docker.sock"
+    -v "sharedCertsVol:/managedtenant-cli/managedtenants/bundles/certs"
+    --net "host"
 )
 
 
 docker run "${docker_run_args[@]}" "${IMAGE_TEST}" check test
+
+docker volume rm sharedCertsVol

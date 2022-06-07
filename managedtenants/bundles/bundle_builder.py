@@ -22,10 +22,12 @@ class BundleBuilder:
         docker_api,
         dry_run=False,
         debug=False,
+        ssl_verify=True,
     ):
 
         self.dry_run = dry_run
         self.docker_api = docker_api
+        self.ssl_verify = ssl_verify
         self.log = get_text_logger(
             "managedtenants-bundle-builder",
             level=logging.DEBUG if debug else logging.INFO,
@@ -44,7 +46,8 @@ class BundleBuilder:
                 image = Image(
                     f"{self.docker_api.registry}/"
                     f"{bundle.bundle_repo_name()}:"
-                    f"{bundle.version}-{hash_string}"
+                    f"{bundle.version}-{hash_string}",
+                    ssl_verify=self.ssl_verify,
                 )
                 bundle.image = image
 
