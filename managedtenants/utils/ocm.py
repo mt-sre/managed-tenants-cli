@@ -273,33 +273,40 @@ class OcmCli:
         # They will get overwritten with the values from the imageset if they're
         # present in the imageset as well.
         if metadata.get("pullSecretName"):
-            addon[self.IMAGESET_KEYS["pullSecretName"]] = metadata.get("pullSecretName")
+            mapped_key = self.IMAGESET_KEYS["pullSecretName"]
+            addon[mapped_key] = metadata.get("pullSecretName")
 
         if metadata.get("additionalCatalogSources"):
-            addon[self.IMAGESET_KEYS["additionalCatalogSources"]] = self._make_additional_ctlg_src_list(
+            mapped_key = self.IMAGESET_KEYS["additionalCatalogSources"]
+            addon[mapped_key] = self.index_dicts(
                 metadata.get("additionalCatalogSources")
             )
 
         if metadata.get("subscriptionConfig"):
-            addon[self.IMAGESET_KEYS["subscriptionConfig"]] = {}
-            addon[self.IMAGESET_KEYS["subscriptionConfig"]]["add_on_environment_variables"] = self._make_env_vars_list(
-                metadata.get("subscriptionConfig").get("env")
-            )
-
+            mapped_key = self.IMAGESET_KEYS["subscriptionConfig"]
+            if metadata.get("subscriptionConfig").get("env"):
+                addon[mapped_key] = {}
+                addon[mapped_key][
+                    "add_on_environment_variables"
+                ] = self.index_dicts(
+                    metadata.get("subscriptionConfig").get("env")
+                )
 
         for key, val in imageset.items():
+            mapped_key = self.IMAGESET_KEYS[key]
             if key in self.IMAGESET_KEYS:
                 if key == "additionalCatalogSources":
-                   addon[self.IMAGESET_KEYS[key]] = self._make_additional_ctlg_src_list(
-                       val
-                   )
-                   continue
+                    catalog_src_list = self.index_dicts(val)
+                    addon[mapped_key] = catalog_src_list
+                    continue
 
                 if key == "subscriptionConfig":
-                    addon[self.IMAGESET_KEYS[key]] = {}
-                    addon[self.IMAGESET_KEYS[key]]["add_on_environment_variables"] = self._make_env_vars_list(
-                        val["env"]
-                    )
+                    if val.get("env"):
+                        addon[mapped_key] = {}
+                        env_var_list = self.index_dicts(val["env"])
+                        addon[mapped_key][
+                            "add_on_environment_variables"
+                        ] = env_var_list
                     continue
                 if key == "addOnParameters":
                     # Enforce a sort order field on addon parameters
@@ -308,24 +315,15 @@ class OcmCli:
                     for index, param in enumerate(val):
                         param["order"] = index
                     val = {"items": val}
-                addon[self.IMAGESET_KEYS[key]] = val
+                addon[mapped_key] = val
         return addon
-
-
-    @staticmethod
-    def _make_additional_ctlg_src_list(ctlg_srcs):
-        res = []
-        for index, env in enumerate(ctlg_srcs):
-            # Add an id attribute to the map.
-            env["id"] = str(index)
-            res.append(env)
-        return res
 
     def _addon_from_metadata(self, metadata):
         addon = {}
         metadata["addOnParameters"] = metadata.get("addOnParameters", [])
         metadata["addOnRequirements"] = metadata.get("addOnRequirements", [])
         for key, val in metadata.items():
+            mapped_key = self.ADDON_KEYS[key]
             if key in self.ADDON_KEYS:
                 # Skip adding these parameters as they're present
                 # in the ImageSet (versions endpoint)
@@ -345,22 +343,21 @@ class OcmCli:
                         param["order"] = index
                     val = {"items": val}
                 if key == "subscriptionConfig":
-                    addon[self.ADDON_KEYS[key]] = {}
                     if val.get("env"):
-                        environment_variables_list = self._make_env_vars_list(val.get("env"))
-                        addon[self.ADDON_KEYS[key]]["add_on_environment_variables"] = environment_variables_list
+                        addon[mapped_key] = {}
+                        environment_variables_list = self.index_dicts(
+                            val.get("env")
+                        )
+                        addon[mapped_key][
+                            "add_on_environment_variables"
+                        ] = environment_variables_list
                     continue
-                addon[self.ADDON_KEYS[key]] = val
+                addon[mapped_key] = val
         return addon
 
     @staticmethod
-    def _make_env_vars_list(envs):
-        res = []
-        for index, env in enumerate(envs):
-            # Add an id attribute to the map.
-            env["id"] = str(index)
-            res.append(env)
-        return res
+    def index_dicts(dicts):
+        return [dict(d, id=str(id)) for id, d in enumerate(dicts)]
 
     def _headers(self, extra_headers=None):
         headers = {"Authorization": f"Bearer {self.token}"}
