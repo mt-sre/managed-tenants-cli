@@ -55,8 +55,13 @@ check: pylint
 	pipenv run flake8 --config=$(LINTERS)/flake8 $(PY_SRCS) && \
 	pipenv run yamllint --config-file=$(LINTERS)/yamllint .
 
+MINIMAL_IMAGE := registry.access.redhat.com/ubi8/ubi-minimal@sha256:e83a3146aa8d34dccfb99097aa79a3914327942337890aa6f73911996a80ebb8
 test:
+	docker container create --name storageContainer -v sharedCertsVol:/certs $(MINIMAL_IMAGE)
+	docker cp ./managedtenants/bundles/certs/. storageContainer:/certs
+	docker rm storageContainer
 	pipenv run pytest --cache-clear -v tests/
+	docker volume rm sharedCertsVol
 
 release:
 	python -m pip install twine wheel
