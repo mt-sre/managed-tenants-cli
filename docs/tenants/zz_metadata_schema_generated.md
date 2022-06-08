@@ -57,6 +57,12 @@
 
     - **`vaultPath`** *(string)*: Vault path of the secret.
 
+    - **`version`** *(integer)*: Vault secret version.
+
+    - **`fields`** *(array)*: List of vault secret fields.
+
+      - **Items** *(string)*
+
 - **`pullSecretName`** *(string)*: Name of the secret under `secrets` which is supposed to be used for pulling Catalog Image under CatalogSource.
 
 - **`additionalCatalogSources`** *(array)*: List of additional catalog sources to be created.
