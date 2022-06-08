@@ -112,10 +112,20 @@ properties:
         vaultPath:
           type: string
           description: "Vault path of the secret."
+        version:
+          type: integer
+          description: "Vault secret version."
+        fields:
+          type: array
+          description: "List of vault secret fields."
+          items:
+            type: string
       required:
         - name
         - type
         - vaultPath
+        - version
+        - fields
   pullSecretName:
     type: string
     pattern: ^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$
