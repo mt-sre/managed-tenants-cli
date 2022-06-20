@@ -165,6 +165,14 @@ class OcmCli:
     def get_addon_migrations(self):
         return self._get("/api/clusters_mgmt/v1/addon_migrations")
 
+    def check_addon_migration_exists(self, addon_id):
+        try:
+            self._get(f"/api/clusters_mgmt/v1/addon_migrations/{addon_id}")
+            return True
+        # `_get` raises OCMAPIError on 404's
+        except OCMAPIError:
+            return False
+
     def get_addon_migration(self, addon_id):
         return self._get(f"/api/clusters_mgmt/v1/addon_migrations/{addon_id}")
 
