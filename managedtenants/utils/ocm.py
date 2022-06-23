@@ -300,9 +300,16 @@ class OcmCli:
                     metadata.get("subscriptionConfig").get("env")
                 )
 
+        if metadata.get("addOnParameters"):
+            mapped_key = self.IMAGESET_KEYS["addOnParameters"]
+            addon[mapped_key] = self._parameters_from_list(
+                metadata.get("addOnParameters")
+            )
+
         for key, val in imageset.items():
-            mapped_key = self.IMAGESET_KEYS[key]
             if key in self.IMAGESET_KEYS:
+                mapped_key = self.IMAGESET_KEYS[key]
+
                 if key == "additionalCatalogSources":
                     catalog_src_list = self.index_dicts(val)
                     addon[mapped_key] = catalog_src_list
@@ -317,12 +324,7 @@ class OcmCli:
                         ] = env_var_list
                     continue
                 if key == "addOnParameters":
-                    # Enforce a sort order field on addon parameters
-                    # so that they can be shown in the same order as
-                    # the imageset file.
-                    for index, param in enumerate(val):
-                        param["order"] = index
-                    val = {"items": val}
+                    val = self._parameters_from_list(val)
                 addon[mapped_key] = val
         return addon
 
@@ -331,8 +333,9 @@ class OcmCli:
         metadata["addOnParameters"] = metadata.get("addOnParameters", [])
         metadata["addOnRequirements"] = metadata.get("addOnRequirements", [])
         for key, val in metadata.items():
-            mapped_key = self.ADDON_KEYS[key]
             if key in self.ADDON_KEYS:
+                mapped_key = self.ADDON_KEYS[key]
+
                 # Skip adding these parameters as they're present
                 # in the ImageSet (versions endpoint)
                 if metadata.get("addonImageSetVersion") and key in [
@@ -344,12 +347,7 @@ class OcmCli:
                 if key == "installMode":
                     val = _camel_to_snake_case(val)
                 if key == "addOnParameters":
-                    # Enforce a sort order field on addon parameters
-                    # so that they can be shown in the same order as
-                    # the metadata file.
-                    for index, param in enumerate(val):
-                        param["order"] = index
-                    val = {"items": val}
+                    val = self._parameters_from_list(val)
                 if key == "subscriptionConfig":
                     if val.get("env"):
                         addon[mapped_key] = {}
@@ -362,6 +360,14 @@ class OcmCli:
                     continue
                 addon[mapped_key] = val
         return addon
+
+    def _parameters_from_list(self, params):
+        # Enforce a sort order field on addon parameters
+        # so that they can be shown in the same order as
+        # the metadata file.
+        for index, param in enumerate(params):
+            param["order"] = index
+        return {"items": params}
 
     @staticmethod
     def index_dicts(dicts):

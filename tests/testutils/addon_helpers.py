@@ -126,6 +126,21 @@ def addon_with_imageset_and_default_config():
 
 
 @pytest.fixture
+def addon_with_imageset_and_parameter_config():
+    addon_path = addon_with_imageset_path()
+    addon = Addon(addon_path, "stage")
+    updated_metadata = addon.metadata
+    # Set imageset to a version that doesnt have
+    # subscription config
+    updated_metadata["addonImageSetVersion"] = "1.0.1"
+    addon.metadata = updated_metadata
+    addon.imageset_version = "1.0.1"
+    # Reload imageset
+    addon.imageset = addon.load_imageset("1.0.1")
+    return addon
+
+
+@pytest.fixture
 def addon_with_bundles():
     addon_path = addon_with_bundles_path()
     return Addon(addon_path, "stage")
