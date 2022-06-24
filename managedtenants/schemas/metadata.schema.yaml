@@ -86,46 +86,6 @@ properties:
     type: string
     format: printable
     description: "'pullSecret' is deprecated for now. Please use the 'secrets' and 'pullSecretName' fields instead."
-  secrets:
-    type: array
-    description: "List of secrets that are required by the addon."
-    items:
-      type: object
-      additionalProperties: false
-      properties:
-        name:
-          type: string
-          pattern: ^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$
-          description: "Name of the secret present in app-interface's `deploy.yaml`."
-        type:
-          type: string
-          enum:
-            - Opaque
-            - kubernetes.io/dockercfg
-            - kubernetes.io/dockerconfigjson
-            - kubernetes.io/service-account-token
-            - kubernetes.io/basic-auth
-            - kubernetes.io/ssh-auth
-            - kubernetes.io/tls
-            - bootstrap.kubernetes.io/token
-          description: "Kubernetes's type of the secret. Ref https://kubernetes.io/docs/concepts/configuration/secret/#secret-types"
-        vaultPath:
-          type: string
-          description: "Vault path of the secret."
-        version:
-          type: integer
-          description: "Vault secret version."
-        fields:
-          type: array
-          description: "List of vault secret fields."
-          items:
-            type: string
-      required:
-        - name
-        - type
-        - vaultPath
-        - version
-        - fields
   pullSecretName:
     type: string
     pattern: ^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$
@@ -339,9 +299,9 @@ properties:
   subOperators:
     $ref: "shared/sub_operators.json"
     description: "Sub operator under the umbrella of add-on operator."
-  subscriptionConfig:
-    $ref: "shared/subscription_config.json"
-    description: "Subscription config of the addons for the OLM object."
+  config:
+    $ref: "shared/config.json"
+    description: "Additional config for addons"
   managedService:
     type: boolean
     description: "Indicates if the add-on will be used as a Managed Service."

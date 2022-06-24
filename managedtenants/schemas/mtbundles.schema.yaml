@@ -17,9 +17,30 @@ properties:
       subOperators:
         $ref: "shared/sub_operators.json"
         description: "Sub operator under the umbrella of add-on operator."
-      subscriptionConfig:
-        $ref: "shared/subscription_config.json"
-        description: "Subscription config of the addons for the OLM object."
+      config:
+        $ref: "shared/config.json"
+        description: "Additional config for the addons"
+      pullSecretName:
+        type: string
+        pattern: ^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$
+        description: Name of the secret under `secrets` which is supposed to be used for pulling Catalog Image under CatalogSource.
+      additionalCatalogSources:
+        type: array
+        description: "List of additional catalog sources to be created."
+        items:
+          type: object
+          additionalProperties: false
+          properties:
+            name:
+              type: string
+              format: printable
+              description: "Name of the additional catalog source."
+            image:
+              type: string
+              description: "Url of the additional catalog source image."
+          required:
+            - name
+            - image
   addons:
     type: array
     description: "List of addons that use these underlying bundles."
