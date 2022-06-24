@@ -19,7 +19,7 @@ def test_subscription_config(addon_str, request):
     subscription_obj = sss_walker["sss_deploy"]["spec"]["resources"][
         "Subscription"
     ][0]
-    if addon.get_subscription_config():
+    if addon.get_config():
         _, subscription_contents = subscription_obj
         assert len(subscription_contents["spec"]["config"]["env"]) == 3
         for env_obj in subscription_contents["spec"]["config"]["env"]:

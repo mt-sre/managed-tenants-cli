@@ -26,8 +26,8 @@ defaultChannel: alpha
 bundleParameters:
   useClusterStorage: "true"
 addonImageSetVersion: 1.0.0
-# Default values for subscriptionConfig
-subscriptionConfig:
+# Default values for addon env
+config:
   env:
     - name: DEFAULT
       value: "TRUE"

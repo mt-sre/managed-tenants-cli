@@ -70,16 +70,16 @@ def test_additional_catalogue_src_name_validation():
     duplicate = metadata["additionalCatalogSources"][0]
     metadata["additionalCatalogSources"].append(duplicate)
     with pytest.raises(AddonLoadError):
-        addon._validate_additional_catalogue_srcs(metadata)
+        addon._validate_additional_catalogue_srcs()
 
 
 def test_secret_names_validation():
     addon = Addon(addon_with_secrets_path(), "stage")
     metadata = addon.metadata
-    duplicate = metadata["secrets"][0]
-    metadata["secrets"].append(duplicate)
+    duplicate = metadata["config"]["secrets"][0]
+    metadata["config"]["secrets"].append(duplicate)
     with pytest.raises(AddonLoadError):
-        addon._validate_secret_names(metadata)
+        addon._validate_secret_names()
 
 
 def test_pullSecretName_validation():
@@ -174,14 +174,13 @@ def test_raises_imageset_missing_error():
         ),
     ],
 )
-def test_addon_subscription_config(addon_str, expected_result, request):
-
+def test_addon_env(addon_str, expected_result, request):
     addon = request.getfixturevalue(addon_str)
     if expected_result:
-        res = addon.get_subscription_config().get("env")
+        res = addon.get_config().get("env")
         assert res == expected_result
     else:
-        assert addon.get_subscription_config() == expected_result
+        assert addon.get_config() is None
 
 
 @pytest.mark.parametrize(
@@ -191,16 +190,16 @@ def test_addon_subscription_config(addon_str, expected_result, request):
         ("addon_with_only_imageset_config", ADDON_WITH_IMAGESET_TYPE),
     ],
 )
-def test_addon_subscription_config_validations(addon, addon_type, request):
+def test_addon_config_validations(addon, addon_type, request):
     addon = request.getfixturevalue(addon)
     if addon_type == ADDON_WITH_INDEXIMAGE_TYPE:
         updated_metadata = addon.metadata
-        updated_metadata["subscriptionConfig"]["unsupportedAttr"] = "present"
+        updated_metadata["config"]["unsupportedAttr"] = "present"
         with pytest.raises(AddonLoadError):
             addon._validate_schema_instance(updated_metadata, "metadata")
     else:
         updated_imageset = addon.imageset
-        updated_imageset["subscriptionConfig"]["unsupportedAttr"] = "present"
+        updated_imageset["config"]["unsupportedAttr"] = "present"
         with pytest.raises(AddonLoadError):
             addon._validate_schema_instance(updated_imageset, "imageset")
 

@@ -86,8 +86,8 @@ def addon_with_imageset_and_no_config():
     addon_path = addon_with_imageset_path()
     addon = Addon(addon_path, "stage")
     updated_metadata = addon.metadata
-    # Remove the default subscriptionConfig
-    del updated_metadata["subscriptionConfig"]
+    # Remove the default config
+    del updated_metadata["config"]
     # Set imageset to a version that doesnt have
     # subscription config
     updated_metadata["addonImageSetVersion"] = "1.0.2"
@@ -103,8 +103,8 @@ def addon_with_only_imageset_config():
     addon_path = addon_with_imageset_path()
     addon = Addon(addon_path, "stage")
     updated_metadata = addon.metadata
-    # Remove the default subscriptionConfig
-    del updated_metadata["subscriptionConfig"]
+    # Remove the default config
+    del updated_metadata["config"]
     addon.metadata = updated_metadata
     return addon
 
