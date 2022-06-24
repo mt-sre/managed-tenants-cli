@@ -47,22 +47,6 @@
 
 - **`pullSecret`** *(string)*: 'pullSecret' is deprecated for now. Please use the 'secrets' and 'pullSecretName' fields instead.
 
-- **`secrets`** *(array)*: List of secrets that are required by the addon.
-
-  - **Items** *(object)*: Cannot contain additional properties.
-
-    - **`name`** *(string)*: Name of the secret present in app-interface's `deploy.yaml`.
-
-    - **`type`** *(string)*: Kubernetes's type of the secret. Ref https://kubernetes.io/docs/concepts/configuration/secret/#secret-types. Must be one of: `['Opaque', 'kubernetes.io/dockercfg', 'kubernetes.io/dockerconfigjson', 'kubernetes.io/service-account-token', 'kubernetes.io/basic-auth', 'kubernetes.io/ssh-auth', 'kubernetes.io/tls', 'bootstrap.kubernetes.io/token']`.
-
-    - **`vaultPath`** *(string)*: Vault path of the secret.
-
-    - **`version`** *(integer)*: Vault secret version.
-
-    - **`fields`** *(array)*: List of vault secret fields.
-
-      - **Items** *(string)*
-
 - **`pullSecretName`** *(string)*: Name of the secret under `secrets` which is supposed to be used for pulling Catalog Image under CatalogSource.
 
 - **`additionalCatalogSources`** *(array)*: List of additional catalog sources to be created.
@@ -177,6 +161,6 @@
 
 - **`subOperators`**: Sub operator under the umbrella of add-on operator. Refer to *shared/sub_operators.json*.
 
-- **`subscriptionConfig`**: Subscription config of the addons for the OLM object. Refer to *shared/subscription_config.json*.
+- **`config`**: Additional config for addons. Refer to *shared/config.json*.
 
 - **`managedService`** *(boolean)*: Indicates if the add-on will be used as a Managed Service.

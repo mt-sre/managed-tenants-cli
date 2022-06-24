@@ -15,7 +15,17 @@
 
   - **`subOperators`**: Sub operator under the umbrella of add-on operator. Refer to *shared/sub_operators.json*.
 
-  - **`subscriptionConfig`**: Subscription config of the addons for the OLM object. Refer to *shared/subscription_config.json*.
+  - **`config`**: Additional config for the addons. Refer to *shared/config.json*.
+
+  - **`pullSecretName`** *(string)*: Name of the secret under `secrets` which is supposed to be used for pulling Catalog Image under CatalogSource.
+
+  - **`additionalCatalogSources`** *(array)*: List of additional catalog sources to be created.
+
+    - **Items** *(object)*: Cannot contain additional properties.
+
+      - **`name`** *(string)*: Name of the additional catalog source.
+
+      - **`image`** *(string)*: Url of the additional catalog source image.
 
 - **`addons`** *(array)*: List of addons that use these underlying bundles.
 
