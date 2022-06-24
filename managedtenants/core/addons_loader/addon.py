@@ -99,6 +99,11 @@ class Addon:
             f'{self.metadata["quayRepo"]}:{environment}-{{hash}}'
         )
 
+        # We can only run these validations after the imageset is loaded.
+        self._validate_additional_catalogue_srcs()
+        self._validate_secret_names()
+        self._validate_pullSecretName()
+
         if self.metadata["id"] not in _ADDON_OPERATOR_ADDON_IDS:
             self.manager = AddonManager.UKNOWN
         else:
@@ -119,17 +124,47 @@ class Addon:
         # "addon-pullsecret" in the SSS.
         if self.metadata.get("pullSecret"):
             return "addon-pullsecret"
-        if self.metadata.get("pullSecretName"):
-            return self.metadata.get("pullSecretName")
-        return None
+        return self.get_pull_secret_name()
 
-    def get_subscription_config(self):
-        # If imageset is present, check for subscriptionConfig in the
-        # imageset file, otherwise check for the default subscription config
-        # in the addon metadata file.
-        if self.imageset and self.imageset.get("subscriptionConfig"):
-            return self.imageset.get("subscriptionConfig")
-        return self.metadata.get("subscriptionConfig")
+    def get_pull_secret_name(self, src=None):
+        if src is None:
+            return self.get_pull_secret_name(
+                "imageset"
+            ) or self.get_pull_secret_name("metadata")
+        if src == "imageset" and self.imageset:
+            return self.imageset.get("pullSecretName")
+        return self.metadata.get("pullSecretName")
+
+    # If src is None, check for config in the
+    # imageset file, otherwise check for the default config
+    # in the addon metadata file.
+    def get_config(self, src=None):
+        if src is None:
+            return self.get_config(src="imageset") or self.get_config(
+                "metadata"
+            )
+        if src == "imageset" and self.imageset:
+            return self.imageset.get("config", {})
+        return self.metadata.get("config", {})
+
+    def get_secrets(self, src=None):
+        return self.get_config("imageset").get("secrets") or self.get_config(
+            "metadata"
+        ).get("secrets")
+
+    def get_envs(self, src=None):
+        return self.get_config("imageset").get("env") or self.get_config(
+            "metadata"
+        ).get("env")
+
+    def get_additional_catalog_srcs(self, src=None):
+        if src is None:
+            return self.get_additional_catalog_srcs(
+                src="imageset"
+            ) or self.get_additional_catalog_srcs(src="metadata")
+        if src == "imageset" and self.imageset:
+            return self.imageset.get("additionalCatalogSources")
+        return self.metadata.get("additionalCatalogSources")
 
     def get_image_name(self, environment):
         """
@@ -162,48 +197,40 @@ class Addon:
 
         self._validate_schema_instance(metadata, "metadata")
         self._validate_extra_resources(environment, metadata)
-        self._validate_additional_catalogue_srcs(metadata)
-        self._validate_secret_names(metadata)
-        self._validate_pullSecretName(metadata)
 
         if "extraResources" in metadata:
             self.extra_resources_loader = FileSystemLoader(str(metadata_dir))
-
         return metadata
 
-    def _validate_additional_catalogue_srcs(self, metadata):
-        if metadata.get("additionalCatalogSources"):
-            ctlg_src_names = [
-                obj["name"] for obj in metadata["additionalCatalogSources"]
-            ]
+    def _validate_additional_catalogue_srcs(self):
+        additional_catalog_srcs = self.get_additional_catalog_srcs()
+        if additional_catalog_srcs:
+            ctlg_src_names = [obj["name"] for obj in additional_catalog_srcs]
             if len(set(ctlg_src_names)) != len(ctlg_src_names):
                 raise AddonLoadError(
                     f"{self.path} validation error: Additional catalog source"
                     " should have a unique name"
                 )
 
-    def _validate_secret_names(self, metadata):
-        if metadata.get("secrets"):
-            secret_names = [
-                secret.get("name") for secret in metadata["secrets"]
-            ]
+    def _validate_secret_names(self):
+        secrets = self.get_secrets()
+        if secrets:
+            secret_names = [secret.get("name") for secret in secrets]
             if len(set(secret_names)) != len(secret_names):
                 raise AddonLoadError(
                     f"{self.path} validation error: secrets"
                     " should have a unique name"
                 )
 
-    def _validate_pullSecretName(self, metadata):
-        if metadata.get("pullSecretName"):
-            if not metadata.get("secrets"):
+    def _validate_pullSecretName(self):
+        if self.get_pull_secret_name():
+            if not self.get_secrets():
                 raise AddonLoadError(
                     f"{self.path} validation error: No secrets provided,"
                     " pullSecretName should be one of secrets' names"
                 )
-            secret_names = [
-                secret.get("name") for secret in metadata["secrets"]
-            ]
-            if not metadata["pullSecretName"] in secret_names:
+            secret_names = [secret.get("name") for secret in self.get_secrets()]
+            if not self.get_pull_secret_name() in secret_names:
                 raise AddonLoadError(
                     f"{self.path} validation error: pullSecretName should"
                     " be one of secrets' names"
