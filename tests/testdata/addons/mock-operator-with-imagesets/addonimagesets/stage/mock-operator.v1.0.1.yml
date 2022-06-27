@@ -1,0 +1,24 @@
+name: mock-operator.v1.0.1
+indexImage: quay.io/osd-addons/mock-operator-index@sha256:...
+relatedImages:
+ - quay.io/osd-addons/mock-operator@sha256:...
+ - quay.io/osd-addons/mock-operator@sha256:...
+ - quay.io/osd-addons/mock-operator@sha256:...
+addOnParameters:
+  - id: size
+    name: Managed StorageCluster size
+    description:
+      The size, in terabytes, of the Storage Cluster to be deployed. Currently
+      1 or 4 are supported.
+    value_type: resource_requirement
+    required: true
+    editable: true
+    enabled: true
+  - id: duration
+    name: Managed StorageCluster duration
+    description:
+      How long until the Storage Cluster will be deleted.
+    value_type: number
+    required: true
+    editable: true
+    enabled: true
