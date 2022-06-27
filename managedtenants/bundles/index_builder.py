@@ -17,9 +17,11 @@ class IndexBuilder:
         docker_api,
         dry_run=False,
         debug=False,
+        build_with="digest",
     ):
         self.dry_run = dry_run
         self.docker_api = docker_api
+        self.build_with = build_with
         self.log = get_text_logger(
             "managedtenants-index-builder",
             level=logging.DEBUG if debug else logging.INFO,
@@ -68,7 +70,14 @@ class IndexBuilder:
             "quay.io/mtsre/opm-ubi@sha256:471dc5652a045103d75bafd24072926fbd7a520bd613cee896f2ce1602316eac",  # noqa: 501
             "--permissive",
             "--bundles",
-            ",".join([bundle.image.url_digest for bundle in bundles]),
+            ",".join(
+                [
+                    bundle.image.url_tag
+                    if self.build_with == "tag"
+                    else bundle.image.url_digest
+                    for bundle in bundles
+                ]
+            ),
             "--tag",
             index_image.url_tag,
         ]
