@@ -107,3 +107,69 @@ def test_ocm_addon_parameters(addon_str, expected_result, request):
 
     for idx, item in enumerate(items):
         assert item["id"] == expected_result[idx]["id"]
+
+
+@pytest.mark.parametrize(
+    "addon_str,expected_result",
+    [
+        (
+            "addon_with_imageset_and_default_config",
+            [
+                {
+                    "id": "0",
+                    "source_secret": "managed-secret-one",
+                    "destination_secret": "managed-secret-one",
+                },
+                {
+                    "id": "1",
+                    "source_secret": "pull-secret-one",
+                    "destination_secret": "pull-secret-one",
+                },
+            ],
+        ),
+        (
+            "addon_with_imageset_and_multiple_config",
+            [
+                {
+                    "id": "0",
+                    "source_secret": "imageset-secret-1",
+                    "destination_secret": "imageset-secret-1",
+                },
+                {
+                    "id": "1",
+                    "source_secret": "pull-secret-one",
+                    "destination_secret": "pull-secret-one",
+                },
+            ],
+        ),
+        (
+            "addon_with_only_imageset_config",
+            [
+                {
+                    "id": "0",
+                    "source_secret": "imageset-secret-1",
+                    "destination_secret": "imageset-secret-1",
+                },
+                {
+                    "id": "1",
+                    "source_secret": "pull-secret-one",
+                    "destination_secret": "pull-secret-one",
+                },
+            ],
+        ),
+    ],
+)
+def test_ocm_addon_secrets(addon_str, expected_result, request):
+    addon = request.getfixturevalue(addon_str)
+    ocm_cli = OcmCli(offline_token=None)
+    if addon.imageset:
+        ocm_addon = ocm_cli._addon_from_imageset(
+            imageset=addon.imageset, metadata=addon.metadata
+        )
+    else:
+        ocm_addon = ocm_cli._addon_from_metadata(metadata=addon.metadata)
+
+    assert (
+        ocm_addon.get("config").get("add_on_secret_propagations")
+        == expected_result
+    )

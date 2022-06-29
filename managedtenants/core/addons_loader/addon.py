@@ -147,12 +147,16 @@ class Addon:
             return self.imageset.get("config", {})
         return self.metadata.get("config", {})
 
-    def get_secrets(self, src=None):
+    # Try getting the secrets from the imageset first,
+    # if not present try getting it from the metadata.
+    def get_secrets(self):
         return self.get_config("imageset").get("secrets") or self.get_config(
             "metadata"
         ).get("secrets")
 
-    def get_envs(self, src=None):
+    # Try getting the envs from the imageset first,
+    # if not present try getting it from the metadata.
+    def get_envs(self):
         return self.get_config("imageset").get("env") or self.get_config(
             "metadata"
         ).get("env")

@@ -36,6 +36,38 @@ def addon_with_deadmanssnitch_path():
     return Path("tests/testdata/addons/test-operator")
 
 
+def sample_secrets(name):
+    return [
+        {
+            "name": name,
+            "type": "Opaque",
+            "vaultPath": f"mtsre/quay/osd-addons/secrets/mocksecret/{name}",
+            "version": 1,
+            "fields": ["field1", "field2"],
+        }
+    ]
+
+
+def sample_envs():
+    return [
+        {"name": "SAMPLE_SECRET1", "value": "SAMPLE_SECRET_VALUE1"},
+        {"name": "SAMPLE_SECRET2", "value": "SAMPLE_SECRET_VALUE2"},
+    ]
+
+
+def sample_additional_catalog_srcs():
+    return [
+        {
+            "name": "additional 1",
+            "image": "quay.io/osd-addons/test-operator-index@sha256:12ce3270c72134273440c477653b568980b407722366080af758b138f43861891",
+        },
+        {
+            "name": "additional 2",
+            "image": "quay.io/osd-addons/test-operator-index@sha256:12ce3270c72134273440c477653b568980b407722366080af758b138f43861891",
+        },
+    ]
+
+
 def addon_with_pagerduty_path():
     return Path("tests/testdata/addons/test-operator")
 
@@ -95,6 +127,17 @@ def addon_with_imageset_and_no_config():
     addon.imageset_version = "1.0.2"
     # Reload imageset
     addon.imageset = addon.load_imageset("1.0.2")
+    return addon
+
+
+@pytest.fixture
+def addon_without_additional_ctlg_src():
+    addon_path = addon_with_imageset_path()
+    addon = Addon(addon_path, "stage")
+    updated_metadata = addon.metadata
+    del updated_metadata["additionalCatalogSources"]
+    addon.metadata = updated_metadata
+    addon.sss = Sss(addon=addon)
     return addon
 
 

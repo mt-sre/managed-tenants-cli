@@ -378,7 +378,7 @@ class OcmCli:
         for index, param in enumerate(params):
             param["order"] = index
         return {"items": params}
-   
+
     # Maps a secret from the addon metadata json to the one ocm expects.
     @staticmethod
     def map_secret_objs(secrets):
@@ -457,6 +457,7 @@ class OcmCli:
                 error_message += f"json: {kwargs['json']}\n"
             error_message += f"original error: {response.text}"
             raise OCMAPIError(error_message, response)
+
 
 def _camel_to_snake_case(val):
     return re.sub(r"(?<!^)(?=[A-Z])", "_", val).lower()

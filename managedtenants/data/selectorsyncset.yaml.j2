@@ -121,8 +121,8 @@ items:
               operator: In
               values:
                 - addon-{{ADDON.metadata['id']}}-catalog
-{% if ADDON.metadata['additionalCatalogSources'] is defined %}
-{% for catalog_src in ADDON.metadata['additionalCatalogSources'] %}
+{% if ADDON.get_additional_catalog_srcs() %}
+{% for catalog_src in ADDON.get_additional_catalog_srcs() %}
                 - {{catalog_src["name"]}}
 {% endfor %}
 {% endif %}
@@ -163,12 +163,12 @@ items:
         sourceNamespace: {{ADDON.metadata['targetNamespace']}}
         {% if ADDON.get_envs() %}
         config:
-            env:
-            {% for env_obj in ADDON.get_envs() %}
-            - name: {{env_obj['name']}}
-              value: |-
-                {{env_obj['value']}}
-            {% endfor %}
+          env:
+          {% for env_obj in ADDON.get_envs() %}
+          - name: {{env_obj['name']}}
+            value: |-
+              {{env_obj['value']}}
+          {% endfor %}
         {% endif %}
 {% endif %}
 
