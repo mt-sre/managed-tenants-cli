@@ -94,7 +94,8 @@ class Cli:
         bundles_parser_examples = [
             "Examples:",
             "# Build all bundles and index images locally.",
-            "$ managedtenants --addons-dir=PATH --dry-run bundles",
+            "$ managedtenants --addons-dir=PATH --dry-run bundles"
+            " --build-with tag",
             "",
             "# Build and push all bundles and index images to a custom quay"
             " org.",
@@ -112,8 +113,9 @@ class Cli:
             formatter_class=argparse.RawDescriptionHelpFormatter,
             usage=(
                 "managedtenants --addons-dir ADDONS_DIR [--addon-name"
-                " ADDON_NAME] [--dry-run] [--debug] bundles [-h] [--quay-org"
-                " QUAY_ORG] [--force-push] [--enable-gitlab]"
+                " ADDON_NAME] [--dry-run] [--debug]"
+                " bundles [-h] [--build-with {tag,digest}] [--quay-org QUAY_ORG"
+                "] [--force-push] [--enable-gitlab]"
             ),
         )
         bundles_parser.add_argument(
@@ -144,6 +146,15 @@ class Cli:
             action="store_true",
             default=False,
             help="Enforce the single-bundle-per-operator pattern.",
+        )
+        bundles_parser.add_argument(
+            "--build-with",
+            choices=["tag", "digest"],
+            default="digest",
+            help=(
+                "To specify the format that bundles use when"
+                " index image is built"
+            ),
         )
 
         self.args = parser.parse_args()

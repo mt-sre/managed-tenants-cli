@@ -104,6 +104,7 @@ class MtbundlesCLI:
             docker_api=self.docker_api,
             dry_run=self.args.dry_run,
             debug=self.args.debug,
+            build_with=self.args.build_with,
         )
 
     def _init_imageset_creator(self):
