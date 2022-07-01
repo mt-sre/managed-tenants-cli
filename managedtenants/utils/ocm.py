@@ -361,7 +361,8 @@ class OcmCli:
                 addon[mapped_key] = val
         return addon
 
-    def _parameters_from_list(self, params):
+    @staticmethod
+    def _parameters_from_list(params):
         # Enforce a sort order field on addon parameters
         # so that they can be shown in the same order as
         # the metadata file.
