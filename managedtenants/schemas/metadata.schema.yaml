@@ -143,7 +143,8 @@ properties:
           description: "Name of the additional catalog source."
         image:
           type: string
-          description: "Url of the additional catalog source image."
+          pattern: ([\w\-]+[.][\w\-.]+([:][0-9]+)?\/)([\w\-]+\/)?[\w\-.]+(@sha256:[0-9a-f]{64})$
+          description: "Url of the additional catalog source image in digest format."
       required:
         - name
         - image

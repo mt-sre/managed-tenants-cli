@@ -19,6 +19,7 @@ from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: n
     addon_with_imageset_and_no_config,
     addon_with_imageset_path,
     addon_with_indeximage_path,
+    addon_with_invalid_additionalctlgsource_images_path,
     addon_with_only_imageset_config,
     addon_with_secrets_path,
     load_yaml,
@@ -97,6 +98,11 @@ def test_additional_catalogue_src_name_validation():
     metadata["additionalCatalogSources"].append(duplicate)
     with pytest.raises(AddonLoadError):
         addon._validate_additional_catalogue_srcs(metadata)
+
+
+def test_additional_catalogue_src_image_validation():
+    with pytest.raises(AddonLoadError):
+        Addon(addon_with_invalid_additionalctlgsource_images_path(), "stage")
 
 
 def test_secret_names_validation():
