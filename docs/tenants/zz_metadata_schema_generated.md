@@ -71,7 +71,7 @@
 
     - **`name`** *(string)*: Name of the additional catalog source.
 
-    - **`image`** *(string)*: Url of the additional catalog source image.
+    - **`image`** *(string)*: Url of the additional catalog source image in digest format.
 
 - **`namespaceLabels`** *(object)*: Labels to be applied on all listed namespaces.
 
