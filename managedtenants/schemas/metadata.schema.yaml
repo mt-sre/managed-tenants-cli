@@ -264,7 +264,6 @@ properties:
     type: string
     pattern: ^quay\.io/osd-addons/[a-z-]+
   addonImageSetVersion:
-    type: string
     description: "A string which specifies the imageset to use. Can either be 'latest' or a version string)"
   pagerduty:
     type: object

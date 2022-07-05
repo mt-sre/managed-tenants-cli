@@ -50,34 +50,46 @@ class Addon:
         self.path = path
         self.extra_resources_loader = None
         self.metadata = self.load_metadata(environment=environment)
-        self.imageset_version = self.metadata.get("addonImageSetVersion")
-        self.imageset_latest_only = imageset_latest_only
-        # If imagebundles are provided
-        if self.imageset_version is not None:
 
-            # Do not allow pin-pointing a version
-            # Temporary hot-fix for https://issues.redhat.com/browse/SDA-4918
-            # See: https://issues.redhat.com/browse/MTSRE-453
-            if self.imageset_latest_only and self.imageset_version != "latest":
-                raise AddonLoadError(
-                    "Pointing to a specific version is not allowed. Please use"
-                    " only latest. See"
-                    " https://issues.redhat.com/browse/MTSRE-453 for more info"
+        if "addonImageSetVersion" in self.metadata:
+            self.imageset_version = self.metadata.get("addonImageSetVersion")
+            self.imageset_latest_only = imageset_latest_only
+            if self.imageset_version is None:
+                self.imagesets_path = None
+                self.imageset = None
+                self.bundles = None
+                self.package = None
+                self.catalog_image = None
+            else:
+                if all(
+                    [
+                        self.imageset_latest_only,
+                        self.imageset_version != "latest",
+                    ]
+                ):
+                    raise AddonLoadError(
+                        "Pointing to a specific version is "
+                        "not allowed. Please use only latest. See"
+                        " https://issues.redhat.com/browse/MTSRE-453 "
+                        "for more info"
+                    )
+                self.imagesets_path = (
+                    self.path / f"addonimagesets/{environment}"
                 )
+                self.imageset = self.load_imageset(self.imageset_version)
+                self.package = None
+                self.bundles = None
+                self.catalog_image = self.imageset["indexImage"]
 
-            self.imagesets_path = self.path / f"addonimagesets/{environment}"
-            self.imageset = self.load_imageset(self.imageset_version)
-            self.package = None
-            self.bundles = None
-            self.catalog_image = Image(self.imageset["indexImage"])
-        # remove this after
-        elif self.metadata.get("indexImage"):
+        elif "indexImage" in self.metadata:
             self.imagesets_path = None
             self.imageset = None
             self.bundles = None
             self.package = None
-            self.catalog_image = None
+            self.catalog_image = self.metadata["indexImage"]
         else:
+            # Local bundles doesn't exist anymore,
+            # we have to clean this up
             self.imagesets_path = None
             self.imageset = None
             self.bundles = self.load_bundles(metadata=self.metadata)

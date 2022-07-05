@@ -62,6 +62,7 @@ items:
     {% endif %}
 {% endfor %}
 
+{% if ADDON.catalog_image is not none %}
     - apiVersion: operators.coreos.com/v1alpha1
       kind: CatalogSource
       metadata:
@@ -72,13 +73,14 @@ items:
       spec:
         displayName: >-
           {{ADDON.metadata['name']}}
-        image: {{ADDON.image_tag.format(hash='${IMAGE_TAG}')}}
+        image: {{ADDON.catalog_image}}
         publisher: OSD Red Hat Addons
         sourceType: grpc
         {% if ADDON.pull_secret_name() != None %}
         secrets:
           - {{ADDON.pull_secret_name()}}
         {% endif %}
+{% endif %}
 
 {% if ADDON.metadata['additionalCatalogSources'] is defined %}
 {% for catalog_src in ADDON.metadata['additionalCatalogSources'] %}
@@ -143,6 +145,7 @@ items:
       {% endif %}
 {% endif %}
 
+{% if ADDON.catalog_image is not none %}
     - apiVersion: operators.coreos.com/v1alpha1
       kind: Subscription
       metadata:
@@ -152,7 +155,7 @@ items:
         {{ maybe_labels(ADDON.metadata.get('commonLabels')) | indent(8) }}
       spec:
         channel: {{ADDON.metadata['defaultChannel']}}
-        name: {{ADDON.metadata['id']}}
+        name: {{ADDON.metadata['operatorName']}}
         source: addon-{{ADDON.metadata['id']}}-catalog
         sourceNamespace: {{ADDON.metadata['targetNamespace']}}
         {% if ADDON.get_subscription_config() %}
@@ -164,6 +167,7 @@ items:
               {{env_obj['value']}}
           {% endfor %}
         {% endif %}
+{% endif %}
 
 {% if ADDON.metadata['manualInstallPlanApproval'] is defined and ADDON.metadata['manualInstallPlanApproval'] %}
         installPlanApproval: Manual
