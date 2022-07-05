@@ -8,11 +8,9 @@ from tests.testutils.addon_helpers import addon_with_imageset  # noqa: F401
 from tests.testutils.addon_helpers import addon_with_indeximage  # noqa: F401
 from tests.testutils.addon_helpers import addon_with_secrets  # noqa: F401
 from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: noqa: F401
-    ADDON_WITH_BUNDLES_TYPE,
     ADDON_WITH_IMAGESET_TYPE,
     ADDON_WITH_INDEXIMAGE_TYPE,
     addon_metadata_with_imageset_version,
-    addon_with_bundles,
     addon_with_duplicate_keys_path,
     addon_with_imageset_and_default_config,
     addon_with_imageset_and_multiple_config,
@@ -29,9 +27,7 @@ from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: n
 @pytest.mark.parametrize(
     "addon,addon_type",
     [
-        ("addon_with_bundles", ADDON_WITH_BUNDLES_TYPE),
         ("addon_with_imageset", ADDON_WITH_IMAGESET_TYPE),
-        ("addon_with_secrets", ADDON_WITH_BUNDLES_TYPE),
     ],
 )
 def test_addon_metadata(addon, addon_type, request):
@@ -43,51 +39,29 @@ def test_addon_metadata(addon, addon_type, request):
 @pytest.mark.parametrize(
     "addon,addon_type",
     [
-        ("addon_with_bundles", ADDON_WITH_BUNDLES_TYPE),
         ("addon_with_imageset", ADDON_WITH_IMAGESET_TYPE),
     ],
 )
 def test_addon_bundles(addon, addon_type, request):
     """Test that addon bundles are loaded or not."""
     addon = request.getfixturevalue(addon)
-    if addon_type == ADDON_WITH_BUNDLES_TYPE:
-        assert addon.bundles is not None
-    else:
-        assert addon.bundles is None
+    assert addon.bundles is None
 
 
 @pytest.mark.parametrize(
     "addon,addon_type",
     [
-        ("addon_with_bundles", ADDON_WITH_BUNDLES_TYPE),
         ("addon_with_imageset", ADDON_WITH_IMAGESET_TYPE),
     ],
 )
 def test_addon_imageset(addon, addon_type, request):
     """Test that addon bundles are loaded or not."""
     addon = request.getfixturevalue(addon)
-
-    if addon_type == ADDON_WITH_BUNDLES_TYPE:
-        assert addon.imageset is None
-    else:
-        assert addon.imageset is not None
-        expect_version = addon.metadata.get("addonImageSetVersion")
-        SEMVER_LEN = len("0.0.0")
-        version = addon.imageset["name"][-SEMVER_LEN:]
-        assert version == expect_version
-
-
-@pytest.mark.parametrize(
-    "addon,addon_type",
-    [
-        ("addon_with_bundles", ADDON_WITH_BUNDLES_TYPE),
-        ("addon_with_imageset", ADDON_WITH_IMAGESET_TYPE),
-    ],
-)
-def test_addon_catalog_image(addon, addon_type, request):
-    """Test that addon catalog image is loaded"""
-    addon = request.getfixturevalue(addon)
-    assert isinstance(addon.catalog_image, Image)
+    assert addon.imageset is not None
+    expect_version = addon.metadata.get("addonImageSetVersion")
+    SEMVER_LEN = len("0.0.0")
+    version = addon.imageset["name"][-SEMVER_LEN:]
+    assert version == expect_version
 
 
 def test_additional_catalogue_src_name_validation():

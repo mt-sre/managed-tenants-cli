@@ -6,7 +6,6 @@ from unittest import mock
 import jsonschema
 import pytest
 import yaml
-from conftest import REGISTRY_URL
 from sretoolbox.container.image import Image
 
 from managedtenants.bundles.utils import run
