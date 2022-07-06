@@ -42,18 +42,6 @@ def test_addon_metadata(addon, addon_type, request):
         ("addon_with_imageset", ADDON_WITH_IMAGESET_TYPE),
     ],
 )
-def test_addon_bundles(addon, addon_type, request):
-    """Test that addon bundles are loaded or not."""
-    addon = request.getfixturevalue(addon)
-    assert addon.bundles is None
-
-
-@pytest.mark.parametrize(
-    "addon,addon_type",
-    [
-        ("addon_with_imageset", ADDON_WITH_IMAGESET_TYPE),
-    ],
-)
 def test_addon_imageset(addon, addon_type, request):
     """Test that addon bundles are loaded or not."""
     addon = request.getfixturevalue(addon)
