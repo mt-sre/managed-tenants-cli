@@ -64,9 +64,7 @@ $ make test
 
 ## Release
 
-Edit the VERSION file and change the new version. Submit a pull request to master. When it is merged, create a tag and push it to app-sre/sretoolbox.
-
-This will trigger a CI job that will publish the package on pypi.
+Update the VERSION file and change the new version. Submit a pull request to master. When it is merged, a CI job will be triggered that will publish the package on PyPI.
 
 ## License
 
