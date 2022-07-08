@@ -101,6 +101,9 @@ items:
         secrets:
           - {{ADDON.pull_secret_name()}}
         {% endif %}
+        upgradeStrategy:
+          registryPoll:
+            interval: 10m
 {% endfor %}
 {% endif %}
 
