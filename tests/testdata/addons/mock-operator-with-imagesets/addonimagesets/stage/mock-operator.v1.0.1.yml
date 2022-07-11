@@ -13,7 +13,15 @@ addOnParameters:
     value_type: resource_requirement
     required: true
     editable: true
+    editable_direction: up
     enabled: true
+    options:
+      - name: 1 TiB
+        value: '1'
+        rank: 0
+      - name: 4 TiB
+        value: '4'
+        rank: 1
   - id: duration
     name: Managed StorageCluster duration
     description:
