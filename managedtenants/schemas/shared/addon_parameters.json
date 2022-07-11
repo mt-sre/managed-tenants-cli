@@ -50,6 +50,13 @@
       "editable": {
         "type": "boolean"
       },
+      "editable_direction": {
+        "type": "string",
+        "enum": [
+          "up",
+          "down"
+        ]
+      },
       "enabled": {
         "type": "boolean"
       },
@@ -74,6 +81,9 @@
             "value": {
               "type": "string",
               "format": "printable"
+            },
+            "rank": {
+              "type": "integer"
             },
             "requirements":{
               "$ref": "addon_requirements.json"
