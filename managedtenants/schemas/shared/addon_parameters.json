@@ -12,6 +12,18 @@
       "editable",
       "enabled"
     ],
+    "dependencies": {
+      "editable_direction": {
+        "properties": {
+          "options": {
+            "minItems": 1
+          }
+        },
+        "required": [
+          "options"
+        ]
+      }
+    },
     "properties": {
       "id": {
         "type": "string",
@@ -83,7 +95,8 @@
               "format": "printable"
             },
             "rank": {
-              "type": "integer"
+              "type": "integer",
+              "minimum": 0
             },
             "requirements":{
               "$ref": "addon_requirements.json"
