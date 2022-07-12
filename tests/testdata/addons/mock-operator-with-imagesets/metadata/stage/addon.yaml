@@ -23,14 +23,33 @@ channels:
 - name: alpha
   currentCSV: mock-operator-v1.0.0
 defaultChannel: alpha
+pullSecretName: pull-secret-one
+additionalCatalogSources:
+  - name: new-catalog
+    image: quay.io/osd-addons/test-operator-index@sha256:12ce3270c72134273440c477653b568980b407722366080af758b138f43861891
 bundleParameters:
   useClusterStorage: "true"
 addonImageSetVersion: 1.0.0
-# Default values for subscriptionConfig
-subscriptionConfig:
+# Default values for addon env
+config:
   env:
     - name: DEFAULT
       value: "TRUE"
+  secrets:
+    - name: managed-secret-one
+      type: Opaque
+      vaultPath: mtsre/quay/osd-addons/secrets/mocksecret/managed-secret-one
+      version: 1
+      fields:
+        - field1
+        - field2
+    - name: pull-secret-one
+      type: kubernetes.io/dockerconfigjson
+      vaultPath: mtsre/quay/osd-addons/secrets/pull-secret-one
+      version: 2
+      fields:
+        - field3
+        - field4
 # Test $ref references can be resolved in shared schemas
 addOnParameters:
   - id: size

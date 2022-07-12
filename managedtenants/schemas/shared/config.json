@@ -1,0 +1,80 @@
+{
+  "type": "object",
+  "description": "Configs to be passed to addon in the cluster. Definition in an imageset takes precedence.",
+  "additionalProperties": false,
+  "properties": {
+    "env": {
+      "type": "array",
+      "description": "Array of environment variables (name, value pair) to be created as part of the subscription object",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "value"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "value": {
+            "type": "string",
+            "format": "printable"
+          }
+        }
+      }
+    },
+    "secrets": {
+        "type": "array",
+        "description": "List of secrets that are required by the addon.",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$",
+                "description": "Name of the secret present in app-interface's `deploy.yaml`."
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                    "Opaque",
+                    "kubernetes.io/dockercfg",
+                    "kubernetes.io/dockerconfigjson",
+                    "kubernetes.io/service-account-token",
+                    "kubernetes.io/basic-auth",
+                    "kubernetes.io/ssh-auth",
+                    "kubernetes.io/tls",
+                    "bootstrap.kubernetes.io/token"
+                ],
+                "description": "Kubernetes's type of the secret. Ref https://kubernetes.io/docs/concepts/configuration/secret/#secret-types"
+              },
+              "vaultPath": {
+                "type": "string",
+                "description": "Vault path of the secret."
+              },
+              "version": {
+                "type": "integer",
+                "description": "Vault secret version."
+              },
+              "fields": {
+                "type": "array",
+                "description": "List of vault secret fields.",
+                "items": {
+                    "type": "string"
+                }
+              }
+          },
+          "required": [
+              "name",
+              "type",
+              "vaultPath",
+              "version",
+              "fields"
+          ]
+        }
+    }
+  }
+}

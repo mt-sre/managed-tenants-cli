@@ -194,7 +194,7 @@ class AddonBundles:
                 ("addOnParameters", []),
                 ("addOnRequirements", []),
                 ("subOperators", []),
-                ("subscriptionConfig", {"env": []}),
+                ("config", {}),
             ]
         }
 

@@ -46,7 +46,7 @@ class OcmCli:
         "addOnRequirements": "requirements",
         "subOperators": "sub_operators",
         "managedService": "managed_service",
-        "subscriptionConfig": "config",
+        "config": "config",
     }
 
     IMAGESET_KEYS = {
@@ -56,7 +56,7 @@ class OcmCli:
         "subOperators": "sub_operators",
         "pullSecretName": "pull_secret_name",
         "additionalCatalogSources": "additional_catalog_sources",
-        "subscriptionConfig": "config",
+        "config": "config",
     }
 
     def __init__(self, offline_token, api=API, api_insecure=False):
@@ -277,7 +277,7 @@ class OcmCli:
             "channel": metadata.get("defaultChannel"),
         }
 
-        # Set attributes from metdata file if present.
+        # Set attributes from metadata file if present.
         # They will get overwritten with the values from the imageset if they're
         # present in the imageset as well.
         if metadata.get("pullSecretName"):
@@ -290,15 +290,13 @@ class OcmCli:
                 metadata.get("additionalCatalogSources")
             )
 
-        if metadata.get("subscriptionConfig"):
-            mapped_key = self.IMAGESET_KEYS["subscriptionConfig"]
-            if metadata.get("subscriptionConfig").get("env"):
-                addon[mapped_key] = {}
-                addon[mapped_key][
-                    "add_on_environment_variables"
-                ] = self.index_dicts(
-                    metadata.get("subscriptionConfig").get("env")
-                )
+        if metadata.get("config"):
+            mapped_key = self.IMAGESET_KEYS["config"]
+            addon = self.set_addon_config(
+                addon=addon,
+                config_obj=metadata["config"],
+                mapped_key=mapped_key,
+            )
 
         if metadata.get("addOnParameters"):
             mapped_key = self.IMAGESET_KEYS["addOnParameters"]
@@ -309,23 +307,37 @@ class OcmCli:
         for key, val in imageset.items():
             if key in self.IMAGESET_KEYS:
                 mapped_key = self.IMAGESET_KEYS[key]
-
                 if key == "additionalCatalogSources":
                     catalog_src_list = self.index_dicts(val)
                     addon[mapped_key] = catalog_src_list
                     continue
-
-                if key == "subscriptionConfig":
-                    if val.get("env"):
-                        addon[mapped_key] = {}
-                        env_var_list = self.index_dicts(val["env"])
-                        addon[mapped_key][
-                            "add_on_environment_variables"
-                        ] = env_var_list
+                if key == "config":
+                    addon = self.set_addon_config(
+                        addon=addon, config_obj=val, mapped_key=mapped_key
+                    )
                     continue
                 if key == "addOnParameters":
                     val = self._parameters_from_list(val)
                 addon[mapped_key] = val
+        return addon
+
+    def set_addon_config(self, addon, config_obj, mapped_key):
+        if config_obj:
+            if not addon.get(mapped_key):
+                addon[mapped_key] = {}
+
+            if config_obj.get("env"):
+                env_var_list = self.index_dicts(config_obj["env"])
+                addon[mapped_key]["add_on_environment_variables"] = env_var_list
+
+            if config_obj.get("secrets"):
+                secret_propagations_list = self.index_dicts(
+                    self.map_secret_objs(config_obj.get("secrets"))
+                )
+                addon[mapped_key][
+                    "add_on_secret_propagations"
+                ] = secret_propagations_list
+
         return addon
 
     def _addon_from_metadata(self, metadata):
@@ -335,7 +347,6 @@ class OcmCli:
         for key, val in metadata.items():
             if key in self.ADDON_KEYS:
                 mapped_key = self.ADDON_KEYS[key]
-
                 # Skip adding these parameters as they're present
                 # in the ImageSet (versions endpoint)
                 if metadata.get("addonImageSetVersion") and key in [
@@ -347,16 +358,14 @@ class OcmCli:
                 if key == "installMode":
                     val = _camel_to_snake_case(val)
                 if key == "addOnParameters":
+                    # Enforce a sort order field on addon parameters
+                    # so that they can be shown in the same order as
+                    # the metadata file.
                     val = self._parameters_from_list(val)
-                if key == "subscriptionConfig":
-                    if val.get("env"):
-                        addon[mapped_key] = {}
-                        environment_variables_list = self.index_dicts(
-                            val.get("env")
-                        )
-                        addon[mapped_key][
-                            "add_on_environment_variables"
-                        ] = environment_variables_list
+                if key == "config":
+                    addon = self.set_addon_config(
+                        addon=addon, config_obj=val, mapped_key=mapped_key
+                    )
                     continue
                 addon[mapped_key] = val
         return addon
@@ -369,6 +378,17 @@ class OcmCli:
         for index, param in enumerate(params):
             param["order"] = index
         return {"items": params}
+
+    # Maps a secret from the addon metadata json to the one ocm expects.
+    @staticmethod
+    def map_secret_objs(secrets):
+        return [
+            {
+                "source_secret": i["name"],
+                "destination_secret": i["name"],
+            }
+            for i in secrets
+        ]
 
     @staticmethod
     def index_dicts(dicts):

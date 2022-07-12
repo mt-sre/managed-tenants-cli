@@ -8,6 +8,7 @@ from tests.testutils.addon_helpers import (  # noqa: F401
     addon_with_indeximage_path,
     addon_with_pagerduty,
     addon_with_secrets_path,
+    addon_without_additional_ctlg_src,
 )
 
 
@@ -15,7 +16,7 @@ from tests.testutils.addon_helpers import (  # noqa: F401
     "addon_str",
     [
         "addon_with_indeximage",
-        "addon_with_imageset",
+        "addon_without_additional_ctlg_src",
         "addon_with_deadmanssnitch",
         "addon_with_pagerduty",
     ],
@@ -27,12 +28,12 @@ def test_addon_sss_object(addon_str, request):
     catalogue_src_obj = sss_walker["sss_deploy"]["spec"]["resources"][
         "CatalogSource"
     ]
+    assert addon.get_additional_catalog_srcs() is None
     assert len(catalogue_src_obj) == 1
     name, data = catalogue_src_obj[0]
     assert name is not None
     assert data is not None
     assert data["spec"]["image"] is not None
-    assert data["spec"].get("secrets") is None
 
 
 def test_additional_catalog_srcs():

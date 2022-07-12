@@ -82,8 +82,8 @@ items:
         {% endif %}
 {% endif %}
 
-{% if ADDON.metadata['additionalCatalogSources'] is defined %}
-{% for catalog_src in ADDON.metadata['additionalCatalogSources'] %}
+{% if ADDON.get_additional_catalog_srcs() %}
+{% for catalog_src in ADDON.get_additional_catalog_srcs() %}
     - apiVersion: operators.coreos.com/v1alpha1
       kind: CatalogSource
       metadata:
@@ -121,8 +121,8 @@ items:
               operator: In
               values:
                 - addon-{{ADDON.metadata['id']}}-catalog
-{% if ADDON.metadata['additionalCatalogSources'] is defined %}
-{% for catalog_src in ADDON.metadata['additionalCatalogSources'] %}
+{% if ADDON.get_additional_catalog_srcs() %}
+{% for catalog_src in ADDON.get_additional_catalog_srcs() %}
                 - {{catalog_src["name"]}}
 {% endfor %}
 {% endif %}
@@ -161,10 +161,10 @@ items:
         name: {{ADDON.metadata['operatorName']}}
         source: addon-{{ADDON.metadata['id']}}-catalog
         sourceNamespace: {{ADDON.metadata['targetNamespace']}}
-        {% if ADDON.get_subscription_config() %}
+        {% if ADDON.get_envs() %}
         config:
           env:
-          {% for env_obj in ADDON.get_subscription_config().get("env") %}
+          {% for env_obj in ADDON.get_envs() %}
           - name: {{env_obj['name']}}
             value: |-
               {{env_obj['value']}}

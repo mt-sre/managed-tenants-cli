@@ -4,14 +4,15 @@ from sretoolbox.container import Image
 
 from managedtenants.core.addons_loader.addon import Addon
 from managedtenants.core.addons_loader.exceptions import AddonLoadError
-from tests.testutils.addon_helpers import addon_with_imageset  # noqa: F401
 from tests.testutils.addon_helpers import addon_with_indeximage  # noqa: F401
 from tests.testutils.addon_helpers import addon_with_secrets  # noqa: F401
-from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: noqa: F401
+from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; noqa: F401; flake8: noqa: F401
+    ADDON_WITH_BUNDLES_TYPE,
     ADDON_WITH_IMAGESET_TYPE,
     ADDON_WITH_INDEXIMAGE_TYPE,
     addon_metadata_with_imageset_version,
     addon_with_duplicate_keys_path,
+    addon_with_imageset,
     addon_with_imageset_and_default_config,
     addon_with_imageset_and_multiple_config,
     addon_with_imageset_and_no_config,
@@ -20,6 +21,9 @@ from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: n
     addon_with_only_imageset_config,
     addon_with_secrets_path,
     load_yaml,
+    sample_additional_catalog_srcs,
+    sample_envs,
+    sample_secrets,
     setup_addon_class_with_stubbed_metadata,
 )
 
@@ -70,16 +74,16 @@ def test_additional_catalogue_src_name_validation():
     duplicate = metadata["additionalCatalogSources"][0]
     metadata["additionalCatalogSources"].append(duplicate)
     with pytest.raises(AddonLoadError):
-        addon._validate_additional_catalogue_srcs(metadata)
+        addon._validate_additional_catalogue_srcs()
 
 
 def test_secret_names_validation():
     addon = Addon(addon_with_secrets_path(), "stage")
     metadata = addon.metadata
-    duplicate = metadata["secrets"][0]
-    metadata["secrets"].append(duplicate)
+    duplicate = metadata["config"]["secrets"][0]
+    metadata["config"]["secrets"].append(duplicate)
     with pytest.raises(AddonLoadError):
-        addon._validate_secret_names(metadata)
+        addon._validate_secret_names()
 
 
 def test_pullSecretName_validation():
@@ -88,7 +92,49 @@ def test_pullSecretName_validation():
     """Assigning a random UUID"""
     metadata["pullSecretName"] = "5daad7e9-dea7-4b3a-9fe5-a773df8ec57c"
     with pytest.raises(AddonLoadError):
-        addon._validate_pullSecretName(metadata)
+        addon._validate_pullSecretName()
+
+
+def test_secret_accessor_methods(request):
+    addon = request.getfixturevalue("addon_with_imageset_and_default_config")
+    # Should pickup the default secrets from the metadata file
+    assert addon.get_secrets() == addon.metadata["config"]["secrets"]
+    assert addon.get_pull_secret_name() == "pull-secret-one"
+
+    # Should pickup the secrets defined in the imageset file
+    imageset_copy = addon.imageset
+    imageset_copy["pullSecretName"] = "test-secret"
+    imageset_copy["config"] = {}
+    imageset_copy["config"]["secrets"] = sample_secrets("test-secret")
+    addon.imageset = imageset_copy
+    assert addon.get_secrets() == sample_secrets("test-secret")
+    assert addon.get_pull_secret_name() == "test-secret"
+
+
+def test_env_accessor_method(request):
+    addon = request.getfixturevalue("addon_with_imageset_and_default_config")
+    assert addon.get_envs() == addon.metadata["config"]["env"]
+
+    imageset_copy = addon.imageset
+    imageset_copy["config"] = {}
+    imageset_copy["config"]["env"] = sample_envs()
+    addon.imageset = imageset_copy
+    assert addon.get_envs() == addon.get_envs()
+
+
+def test_additional_ctlg_src_accessor_method():
+    addon = Addon(addon_with_imageset_path(), "stage")
+    assert (
+        addon.get_additional_catalog_srcs()
+        == addon.metadata["additionalCatalogSources"]
+    )
+
+    imageset = addon.imageset
+    imageset["additionalCatalogSources"] = sample_additional_catalog_srcs()
+    addon.imageset = imageset
+    assert (
+        addon.get_additional_catalog_srcs() == sample_additional_catalog_srcs()
+    )
 
 
 def assert_exceptions_on_addon_initialization(imageset_version, error_to_raise):
@@ -174,14 +220,13 @@ def test_raises_imageset_missing_error():
         ),
     ],
 )
-def test_addon_subscription_config(addon_str, expected_result, request):
-
+def test_addon_env(addon_str, expected_result, request):
     addon = request.getfixturevalue(addon_str)
     if expected_result:
-        res = addon.get_subscription_config().get("env")
+        res = addon.get_envs()
         assert res == expected_result
     else:
-        assert addon.get_subscription_config() == expected_result
+        assert addon.get_envs() is None
 
 
 @pytest.mark.parametrize(
@@ -191,16 +236,16 @@ def test_addon_subscription_config(addon_str, expected_result, request):
         ("addon_with_only_imageset_config", ADDON_WITH_IMAGESET_TYPE),
     ],
 )
-def test_addon_subscription_config_validations(addon, addon_type, request):
+def test_addon_config_validations(addon, addon_type, request):
     addon = request.getfixturevalue(addon)
     if addon_type == ADDON_WITH_INDEXIMAGE_TYPE:
         updated_metadata = addon.metadata
-        updated_metadata["subscriptionConfig"]["unsupportedAttr"] = "present"
+        updated_metadata["config"]["unsupportedAttr"] = "present"
         with pytest.raises(AddonLoadError):
             addon._validate_schema_instance(updated_metadata, "metadata")
     else:
         updated_imageset = addon.imageset
-        updated_imageset["subscriptionConfig"]["unsupportedAttr"] = "present"
+        updated_imageset["config"]["unsupportedAttr"] = "present"
         with pytest.raises(AddonLoadError):
             addon._validate_schema_instance(updated_imageset, "imageset")
 

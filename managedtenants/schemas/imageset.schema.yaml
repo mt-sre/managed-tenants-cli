@@ -25,9 +25,9 @@ properties:
   subOperators:
     $ref: "shared/sub_operators.json"
     description: "Sub operator under the umbrella of add-on operator."
-  subscriptionConfig:
-    $ref: "shared/subscription_config.json"
-    description: "Subscription config of the addons for the OLM object."
+  config:
+    $ref: "shared/config.json"
+    description: "Additional config for addons"
   pullSecretName:
     type: string
     pattern: ^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$

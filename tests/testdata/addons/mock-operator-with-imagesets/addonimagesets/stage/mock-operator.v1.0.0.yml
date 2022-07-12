@@ -4,7 +4,7 @@ relatedImages:
  - quay.io/osd-addons/mock-operator@sha256:...
  - quay.io/osd-addons/mock-operator@sha256:...
  - quay.io/osd-addons/mock-operator@sha256:...
-subscriptionConfig:
+config:
   env:
   - name: LOCATION
     value: Black Mesa Research Facility
@@ -12,3 +12,18 @@ subscriptionConfig:
     value: Gordon Freeman
   - name: HUMAN
     value: 'true'
+  secrets:
+    - name: imageset-secret-1
+      type: Opaque
+      vaultPath: mtsre/quay/osd-addons/secrets/mocksecret/managed-secret-one
+      version: 1
+      fields:
+        - field1
+        - field2
+    - name: pull-secret-one
+      type: kubernetes.io/dockerconfigjson
+      vaultPath: mtsre/quay/osd-addons/secrets/pull-secret-one
+      version: 2
+      fields:
+        - field3
+        - field4
