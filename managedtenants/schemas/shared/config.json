@@ -20,7 +20,7 @@
           },
           "value": {
             "type": "string",
-            "format": "printable"
+            "pattern": "^.+$"
           }
         }
       }
