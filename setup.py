@@ -56,7 +56,7 @@ setup(
         "Jinja2~=2.10",
         "markupsafe~=2.0.1",
         "PyYAML~=5.4.1",
-        "jsonschema~=3.1",
+        "jsonschema~=4.7",
         "requests~=2.23",
         "sretoolbox~=1.3.0",
         "semver~=2.13.0",
