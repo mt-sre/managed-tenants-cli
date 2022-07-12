@@ -9,7 +9,6 @@ import yaml
 from sretoolbox.container.image import Image
 
 from managedtenants.bundles.utils import run
-from managedtenants.core.addon_manager import AddonManager
 from managedtenants.core.addons_loader.addon import Addon
 from managedtenants.core.addons_loader.sss import Sss
 from managedtenants.data.paths import SCHEMAS_DIR

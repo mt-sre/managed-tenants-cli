@@ -6,7 +6,6 @@ metadata: {}
 apiVersion: v1
 items:
 {# addon v1 create OLM resources manually #}
-{% if ADDON.manager == AddonManager.UKNOWN %}
 - apiVersion: hive.openshift.io/v1
   kind: SelectorSyncSet
   metadata:
@@ -215,37 +214,6 @@ items:
         selector:
           matchLabels:
             {{ expand_dict(ADDON.metadata['monitoring']['matchLabels']) | indent(12) }}
-{% endif %}
-
-{# addon v2 Addon CR is created by OCM, only secret management handled by SSS #}
-{% elif ADDON.manager == AddonManager.ADDON_OPERATOR %}
-- apiVersion: hive.openshift.io/v1
-  kind: SelectorSyncSet
-  metadata:
-    name: addon-{{ADDON.metadata['id']}}
-  spec:
-    clusterDeploymentSelector:
-      matchLabels:
-        {{ADDON.metadata['label']}}: 'true'
-    resourceApplyMode: Sync
-
-    resources:
-{# TODO: move pullsecret management into the addon-operator #}
-{% for namespace in ADDON.metadata['namespaces'] %}
-    {% if ADDON.metadata['pullSecret'] is defined %}
-    - apiVersion: v1
-      kind: Secret
-      metadata:
-        name: addon-{{ADDON.metadata['id']}}-pullsecret
-        namespace: {{namespace}}
-      labels:
-        addon-pullsecret: "{{ADDON.metadata['id']}}"
-      type: kubernetes.io/dockerconfigjson
-      data:
-        .dockerconfigjson: >-
-          {{ADDON.metadata['pullSecret']}}
-    {% endif %}
-{% endfor %}
 {% endif %}
 
 - apiVersion: hive.openshift.io/v1

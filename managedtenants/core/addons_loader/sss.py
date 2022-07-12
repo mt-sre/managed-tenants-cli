@@ -8,7 +8,6 @@ from jinja2 import ChoiceLoader, Environment, FileSystemLoader, StrictUndefined
 from jinja2.exceptions import UndefinedError
 from sretoolbox.utils.logger import get_text_logger
 
-from managedtenants.core.addon_manager import AddonManager
 from managedtenants.core.addons_loader.exceptions import SssLoadError
 from managedtenants.data.paths import DATA_DIR
 
@@ -49,9 +48,7 @@ class Sss:
             # pylint: disable=unnecessary-lambda
             env.filters["merge_dicts"] = lambda d1, d2: ChainMap(d1, d2)
             template = env.get_template(str(self._sss_filename))
-            content = template.render(
-                AddonManager=AddonManager, ADDON=self._addon
-            )
+            content = template.render(ADDON=self._addon)
         except UndefinedError as details:
             raise SssLoadError(
                 f"error templating {self._sss_filename}: {details.message}"

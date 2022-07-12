@@ -7,7 +7,6 @@ from hypothesis import given
 from jinja2 import FileSystemLoader
 
 import tests.testutils.strategies as custom_strategies
-from managedtenants.core.addon_manager import AddonManager
 from managedtenants.core.addons_loader.sss import Sss
 from tests.testutils.extra_resources import DEADMANSSNITCH, PAGERDUTYINTEGRATION
 
@@ -23,7 +22,6 @@ def test_multiple_extra_resources_v1(data, is_v2):
     addon.metadata["extraResources"] = []
 
     if is_v2:
-        addon.manager = AddonManager.ADDON_OPERATOR
         addon.metadata["indexImage"] = custom_strategies.quay_image(
             addon.metadata["id"]
         )
