@@ -54,7 +54,7 @@ setup(
     ],
     install_requires=[
         "Jinja2~=2.10",
-        "markupsafe~=2.0.1",
+        "markupsafe>=2.0.1,<2.2.0",
         "PyYAML~=5.4.1",
         "jsonschema~=4.7",
         "requests~=2.23",
