@@ -1,0 +1,11 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: /
+  schedule:
+    interval: daily
+  labels:
+  - kind/deps
+  commit-message:
+    prefix: fix
+    include: scope
