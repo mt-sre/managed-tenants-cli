@@ -1,0 +1,14 @@
+name: mock-operator-invalid-env-value.v0.0.9
+indexImage: quay.io/osd-addons/mock-operator-index@sha256:...
+relatedImages:
+ - quay.io/osd-addons/mock-operator@sha256:...
+ - quay.io/osd-addons/mock-operator@sha256:...
+ - quay.io/osd-addons/mock-operator@sha256:...
+config:
+  env:
+  - name: LOCATION
+    value: Black Mesa Research Facility
+  - name: USER
+    value: Gordon Freeman
+  - name: HUMAN
+    value: ''

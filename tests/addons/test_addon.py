@@ -250,6 +250,16 @@ def test_addon_config_validations(addon, addon_type, request):
             addon._validate_schema_instance(updated_imageset, "imageset")
 
 
+def test_env_value_validation():
+    addon = Addon(addon_with_imageset_path(), "stage")
+    # Use an imageset with invalid env value
+    addon.metadata["addonImageSetVersion"] = "0.0.9"
+    addon.imageset_version = "0.0.9"
+    # Reload imageset
+    with pytest.raises(AddonLoadError):
+        addon.imageset = addon.load_imageset("0.0.9")
+
+
 def test_addon_unique_keys_validation():
     with pytest.raises(AddonLoadError):
         Addon(addon_with_duplicate_keys_path(), "stage")
