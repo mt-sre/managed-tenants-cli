@@ -10,7 +10,7 @@ hypothesis = "6.50.1"
 hypothesis_jsonschema = "0.22.0"
 jsonschema2md = "0.4.0"
 PyYAML = "5.4.1"
-pre-commit = "2.13.0"
+pre-commit = "2.20.0"
 # Please keep the following in-sync /w .pre-commit-config.yaml
 flake8 = "4.0.1"
 isort = "5.10.1"
