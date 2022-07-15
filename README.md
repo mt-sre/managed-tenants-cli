@@ -64,7 +64,7 @@ $ make test
 
 ## Release
 
-Update the VERSION file and change the new version. Submit a pull request and merge it to main. Once it is merged, you need to create a new tag and a new release. You can do this by clicking "Draft a new release" on the release page and then creating a new tag instead of selecting one from the dropdown. Please also use the option to "Generate release notes". After that, a CI job will be triggered that will publish the package on PyPI.
+Update the VERSION file to reflect the new version. Submit a pull request and merge it to main. Once it is merged, you need to create a new tag and a new release. You can do this by clicking "Draft a new release" on the Releases page and then creating a new tag instead of selecting one from the dropdown. Please also use the option to "Generate release notes". After that, a CI job will be triggered that will publish the package on PyPI.
 
 
 Alternatively, you can create a new tag by running:
