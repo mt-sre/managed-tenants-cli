@@ -64,9 +64,16 @@ $ make test
 
 ## Release
 
-Edit the VERSION file and change the new version. Submit a pull request to master. When it is merged, create a tag and push it to app-sre/sretoolbox.
+Update the VERSION file to reflect the new version. Submit a pull request and merge it to main. Once it is merged, you need to create a new tag and a new release. You can do this by clicking "Draft a new release" on the Releases page and then creating a new tag instead of selecting one from the dropdown. Please also use the option to "Generate release notes". After that, a CI job will be triggered that will publish the package on PyPI.
 
-This will trigger a CI job that will publish the package on pypi.
+
+Alternatively, you can create a new tag by running:
+```
+git checkout main && git pull upstream main
+git tag X.Y.Z
+git push upstream X.Y.Z
+```
+and then draft the release in the web UI. 
 
 ## License
 
