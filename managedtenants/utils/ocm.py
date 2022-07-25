@@ -330,15 +330,17 @@ class OcmCli:
         return addon
 
     def set_addon_config(self, addon, config_obj, mapped_key):
-        if config_obj:
+        if config_obj is not None:
             if not addon.get(mapped_key):
                 addon[mapped_key] = {}
 
-            if config_obj.get("env"):
-                env_var_list = self.index_dicts(config_obj["env"])
+            # Can be an empty list hence the not none check
+            if config_obj.get("env") is not None:
+                env_var_list = self.index_dicts(config_obj.get("env"))
                 addon[mapped_key]["add_on_environment_variables"] = env_var_list
 
-            if config_obj.get("secrets"):
+            # Can be an empty list hence the not none check
+            if config_obj.get("secrets") is not None:
                 secret_propagations_list = self.index_dicts(
                     self.map_secret_objs(config_obj.get("secrets"))
                 )
@@ -350,8 +352,14 @@ class OcmCli:
 
     def _addon_from_metadata(self, metadata):
         addon = {}
+        # Set empty values if attrs are not present
         metadata["addOnParameters"] = metadata.get("addOnParameters", [])
         metadata["addOnRequirements"] = metadata.get("addOnRequirements", [])
+        metadata["additionalCatalogSources"] = metadata.get("additionalCatalogSources", [])
+        metadata["config"] = metadata.get("config", {})
+        metadata["config"]["env"] = metadata["config"].get("env", [])
+        metadata["config"]["secrets"] = metadata["config"].get("secrets", [])
+
         for key, val in metadata.items():
             if key in self.ADDON_KEYS:
                 mapped_key = self.ADDON_KEYS[key]
