@@ -355,7 +355,9 @@ class OcmCli:
         # Set empty values if attrs are not present
         metadata["addOnParameters"] = metadata.get("addOnParameters", [])
         metadata["addOnRequirements"] = metadata.get("addOnRequirements", [])
-        metadata["additionalCatalogSources"] = metadata.get("additionalCatalogSources", [])
+        metadata["additionalCatalogSources"] = metadata.get(
+            "additionalCatalogSources", []
+        )
         metadata["config"] = metadata.get("config", {})
         metadata["config"]["env"] = metadata["config"].get("env", [])
         metadata["config"]["secrets"] = metadata["config"].get("secrets", [])

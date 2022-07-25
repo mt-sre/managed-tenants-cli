@@ -17,6 +17,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 IMAGESET_ENABLED_ADDONS = ["reference-addon", "dbaas-operator"]
 
+
 class MtbundlesCLI:
     def __init__(self, args):
         self.args = args
@@ -51,7 +52,7 @@ class MtbundlesCLI:
                 self.imageset_creator.create(
                     addon_bundles,
                     index_image,
-                    with_imagesets=addon_dir.name in IMAGESET_ENABLED_ADDONS
+                    with_imagesets=addon_dir.name in IMAGESET_ENABLED_ADDONS,
                 )
 
     def _get_target_addons(self):

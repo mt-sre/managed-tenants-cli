@@ -61,8 +61,8 @@ from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: n
         (
             # addon without any envs defined.
             "addon_without_config",
-            []
-        )
+            [],
+        ),
     ],
 )
 def test_ocm_addon_environment_variables(addon_str, expected_result, request):
@@ -166,8 +166,8 @@ def test_ocm_addon_parameters(addon_str, expected_result, request):
         (
             # addon without any secrets defined.
             "addon_without_config",
-            []
-        )
+            [],
+        ),
     ],
 )
 def test_ocm_addon_secrets(addon_str, expected_result, request):

@@ -108,6 +108,7 @@ def addon_without_config():
     del addon.metadata["config"]
     return addon
 
+
 @pytest.fixture
 def addon_with_imageset():
     addon_path = addon_with_imageset_path()
