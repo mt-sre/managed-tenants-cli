@@ -304,6 +304,14 @@ class OcmCli:
                 metadata.get("addOnParameters")
             )
 
+        if metadata.get("addOnRequirements"):
+            mapped_key = self.IMAGESET_KEYS["addOnRequirements"]
+            addon[mapped_key] = metadata.get("addOnRequirements")
+
+        if metadata.get("subOperators"):
+            mapped_key = self.IMAGESET_KEYS["subOperators"]
+            addon[mapped_key] = metadata.get("subOperators")
+
         for key, val in imageset.items():
             if key in self.IMAGESET_KEYS:
                 mapped_key = self.IMAGESET_KEYS[key]
