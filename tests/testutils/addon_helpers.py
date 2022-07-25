@@ -102,6 +102,13 @@ def addon_with_indeximage():
 
 
 @pytest.fixture
+def addon_without_config():
+    addon_path = addon_with_indeximage_path()
+    addon = Addon(addon_path, "stage")
+    del addon.metadata["config"]
+    return addon
+
+@pytest.fixture
 def addon_with_imageset():
     addon_path = addon_with_imageset_path()
     return Addon(addon_path, "stage")
