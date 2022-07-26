@@ -8,10 +8,12 @@ from managedtenants.utils.ocm import OcmCli
 from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: noqa: F401
     addon_with_imageset_and_default_config,
     addon_with_imageset_and_multiple_config,
+    addon_with_imageset_and_only_required_attrs,
     addon_with_imageset_and_parameter_config,
     addon_with_indeximage,
     addon_with_only_imageset_config,
     addon_without_config,
+    addon_without_imageset_and_only_required_attrs,
 )
 
 
@@ -184,3 +186,47 @@ def test_ocm_addon_secrets(addon_str, expected_result, request):
         ocm_addon.get("config").get("add_on_secret_propagations")
         == expected_result
     )
+
+
+@pytest.mark.parametrize(
+    "addon_str,expected_result",
+    [
+        (
+            "addon_with_imageset_and_only_required_attrs",
+            {
+                "additional_catalog_sources": [],
+                "config": {
+                    "add_on_environment_variables": [],
+                    "add_on_secret_propagations": [],
+                },
+                "parameters": {"items": []},
+                "requirements": [],
+                "sub_operators": [],
+            },
+        ),
+        (
+            "addon_without_imageset_and_only_required_attrs",
+            {
+                "config": {
+                    "add_on_environment_variables": [],
+                    "add_on_secret_propagations": [],
+                },
+                "parameters": {"items": []},
+                "requirements": [],
+                "sub_operators": [],
+            },
+        ),
+    ],
+)
+def test_ocm_addon_default_values(addon_str, expected_result, request):
+    addon = request.getfixturevalue(addon_str)
+    ocm_cli = OcmCli(offline_token=None)
+    if addon.imageset:
+        ocm_addon = ocm_cli._addon_from_imageset(
+            imageset=addon.imageset, metadata=addon.metadata
+        )
+    else:
+        ocm_addon = ocm_cli._addon_from_metadata(metadata=addon.metadata)
+
+    for k, expected_value in expected_result.items():
+        assert ocm_addon.get(k) == expected_value

@@ -1,0 +1,26 @@
+---
+id: mock-operator
+name: Mock Operator
+description: This is a mock operator.
+icon: mock
+label: "api.openshift.com/addon-mock-operator"
+enabled: true
+addonOwner: Mock <mock@redhat.com>
+quayRepo: quay.io/osd-addons/mock-operator
+installMode: OwnNamespace
+targetNamespace: mock-operator
+namespaces:
+  - mock-operator
+namespaceLabels:
+  monitoring-key: mock
+namespaceAnnotations: {}
+ocmQuotaName: addon-mock-operator
+ocmQuotaCost: 1
+testHarness: quay.io/mock-operator/mock-operator-test-harness
+operatorName: mock-operator
+hasExternalResources: true
+channels:
+- name: alpha
+  currentCSV: mock-operator-v1.0.0
+defaultChannel: alpha
+addonImageSetVersion: 1.0.0
