@@ -268,6 +268,42 @@ class OcmCli:
             raise exception
         return addon
 
+    def _set_default_values_for_addon_version(self, addon, metadata):
+        # Set additionalCatalogSources
+        mapped_key = self.IMAGESET_KEYS["additionalCatalogSources"]
+        addon[mapped_key] = self.index_dicts(
+            metadata.get("additionalCatalogSources", [])
+        )
+
+        # Set default values for attributes under config in metadata,
+        # if not present.
+        metadata["config"] = metadata.get("config", {})
+        metadata["config"]["env"] = metadata["config"].get("env", [])
+        metadata["config"]["secrets"] = metadata["config"].get("secrets", [])
+
+        # Set config
+        addon = self.set_addon_config(
+            addon=addon,
+            config_obj=metadata["config"],
+            mapped_key=self.IMAGESET_KEYS["config"],
+        )
+
+        # Set addOnParameters
+        mapped_key = self.IMAGESET_KEYS["addOnParameters"]
+        addon[mapped_key] = self._parameters_from_list(
+            metadata.get("addOnParameters", [])
+        )
+
+        # Set addOnRequirements
+        mapped_key = self.IMAGESET_KEYS["addOnRequirements"]
+        addon[mapped_key] = metadata.get("addOnRequirements", [])
+
+        # Set subOperators
+        mapped_key = self.IMAGESET_KEYS["subOperators"]
+        addon[mapped_key] = metadata.get("subOperators", [])
+
+        return addon
+
     # Returns a versioned addon payload that corresponds
     # to an ImageSet
     def _addon_from_imageset(self, imageset, metadata):
@@ -277,32 +313,18 @@ class OcmCli:
             "channel": metadata.get("defaultChannel"),
         }
 
-        # Set attributes from metadata file if present.
-        # They will get overwritten with the values from the imageset if they're
-        # present in the imageset as well.
         if metadata.get("pullSecretName"):
             mapped_key = self.IMAGESET_KEYS["pullSecretName"]
             addon[mapped_key] = metadata.get("pullSecretName")
 
-        if metadata.get("additionalCatalogSources"):
-            mapped_key = self.IMAGESET_KEYS["additionalCatalogSources"]
-            addon[mapped_key] = self.index_dicts(
-                metadata.get("additionalCatalogSources")
-            )
+        # Set attributes from metadata file if present, otherwise set them
+        # to their default empty values.
+        # These attributes will get overwritten with the values from
+        # the imageset if they're present in the imageset as well.
 
-        if metadata.get("config"):
-            mapped_key = self.IMAGESET_KEYS["config"]
-            addon = self.set_addon_config(
-                addon=addon,
-                config_obj=metadata["config"],
-                mapped_key=mapped_key,
-            )
-
-        if metadata.get("addOnParameters"):
-            mapped_key = self.IMAGESET_KEYS["addOnParameters"]
-            addon[mapped_key] = self._parameters_from_list(
-                metadata.get("addOnParameters")
-            )
+        addon = self._set_default_values_for_addon_version(
+            addon=addon, metadata=metadata
+        )
 
         for key, val in imageset.items():
             if key in self.IMAGESET_KEYS:
@@ -322,15 +344,17 @@ class OcmCli:
         return addon
 
     def set_addon_config(self, addon, config_obj, mapped_key):
-        if config_obj:
+        if config_obj is not None:
             if not addon.get(mapped_key):
                 addon[mapped_key] = {}
 
-            if config_obj.get("env"):
-                env_var_list = self.index_dicts(config_obj["env"])
+            # Can be an empty list hence the not none check
+            if config_obj.get("env") is not None:
+                env_var_list = self.index_dicts(config_obj.get("env"))
                 addon[mapped_key]["add_on_environment_variables"] = env_var_list
 
-            if config_obj.get("secrets"):
+            # Can be an empty list hence the not none check
+            if config_obj.get("secrets") is not None:
                 secret_propagations_list = self.index_dicts(
                     self.map_secret_objs(config_obj.get("secrets"))
                 )
@@ -342,8 +366,17 @@ class OcmCli:
 
     def _addon_from_metadata(self, metadata):
         addon = {}
+        # Set empty values if attrs are not present
         metadata["addOnParameters"] = metadata.get("addOnParameters", [])
         metadata["addOnRequirements"] = metadata.get("addOnRequirements", [])
+        metadata["subOperators"] = metadata.get("subOperators", [])
+        metadata["additionalCatalogSources"] = metadata.get(
+            "additionalCatalogSources", []
+        )
+        metadata["config"] = metadata.get("config", {})
+        metadata["config"]["env"] = metadata["config"].get("env", [])
+        metadata["config"]["secrets"] = metadata["config"].get("secrets", [])
+
         for key, val in metadata.items():
             if key in self.ADDON_KEYS:
                 mapped_key = self.ADDON_KEYS[key]

@@ -32,6 +32,10 @@ def addon_with_indeximage_path():
     return Path("tests/testdata/addons/test-operator")
 
 
+def addon_with_only_required_attrs_path():
+    return Path("tests/testdata/addons/mock-operator-with-only-required-attrs")
+
+
 def addon_with_deadmanssnitch_path():
     return Path("tests/testdata/addons/test-operator")
 
@@ -99,6 +103,33 @@ def mt_bundles_addon_with_invalid_version_path():
 def addon_with_indeximage():
     addon_path = addon_with_indeximage_path()
     return Addon(addon_path, "stage")
+
+
+@pytest.fixture
+def addon_with_imageset_and_only_required_attrs():
+    addon_path = addon_with_only_required_attrs_path()
+    addon = Addon(addon_path, "stage")
+    return addon
+
+
+@pytest.fixture
+def addon_without_imageset_and_only_required_attrs():
+    addon_path = addon_with_only_required_attrs_path()
+    addon = Addon(addon_path, "stage")
+    addon.imageset = None
+    del addon.metadata["addonImageSetVersion"]
+    addon.metadata[
+        "indexImage"
+    ] = "quay.io/osd-addons/mock-operator-index@sha256:..."
+    return addon
+
+
+@pytest.fixture
+def addon_without_config():
+    addon_path = addon_with_indeximage_path()
+    addon = Addon(addon_path, "stage")
+    del addon.metadata["config"]
+    return addon
 
 
 @pytest.fixture

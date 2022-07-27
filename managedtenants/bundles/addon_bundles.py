@@ -183,20 +183,21 @@ class AddonBundles:
         OCM config is optional in the schema. Defaults have to conform with the
         schema (imageset.schema.yaml).
         """
-        ocm_config = self.config.get("ocm", {})
+        raw_ocm_config = self.config.get("ocm", {})
 
-        def ocm_config_getter(k, default):
-            return ocm_config.get(k, default)
+        def _select_fields(fields, d):
+            return {k: v for k, v in d.items() if k in fields}
 
-        return {
-            k: ocm_config_getter(k, default)
-            for k, default in [
-                ("addOnParameters", []),
-                ("addOnRequirements", []),
-                ("subOperators", []),
-                ("config", {}),
-            ]
-        }
+        ocm_config_fields = (
+            "addOnParameters",
+            "addOnRequirements",
+            "subOperators",
+            "config",
+            "pullSecretName",
+            "additionalCatalogSources",
+        )
+
+        return _select_fields(ocm_config_fields, raw_ocm_config)
 
     def get_all_metadata_paths(self):
         """
