@@ -154,14 +154,14 @@ properties:
         items:
           type: string
           format: printable
-          pattern: ^[A-Za-z0-9-_.]+$
+          pattern: ^[a-zA-Z_:][a-zA-Z0-9_:]*$
         description: "List of series names to federate from the prometheus server."
       matchLabels:
         type: object
         items:
           type: string
           format: printable
-          pattern: ^[A-Za-z0-9-_.]+$
+          pattern: ^[a-zA-Z_][a-zA-Z0-9_]*$
         description: "List of labels used to discover the prometheus server(s) to be federated."
         minItems: 1
   defaultChannel:
