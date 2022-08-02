@@ -15,8 +15,6 @@ from managedtenants.utils.git import ChangeDetector
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-IMAGESET_ENABLED_ADDONS = ["reference-addon", "dbaas-operator"]
-
 
 class MtbundlesCLI:
     def __init__(self, args):
@@ -48,11 +46,12 @@ class MtbundlesCLI:
 
             self.bundle_builder.build_and_push_all(bundles)
             index_image = self.index_builder.build_and_push(bundles)
+            imageset_enabled_addons = self.args.imageset_enabled_addons
             if self.args.enable_gitlab:
                 self.imageset_creator.create(
                     addon_bundles,
                     index_image,
-                    with_imagesets=addon_dir.name in IMAGESET_ENABLED_ADDONS,
+                    with_imagesets=addon_dir.name in imageset_enabled_addons,
                 )
 
     def _get_target_addons(self):
