@@ -156,6 +156,13 @@ class Cli:
                 " index image is built"
             ),
         )
+        bundles_parser.add_argument(
+            "--imageset-enabled-addons",
+            nargs="*",
+            type=str,
+            default=["reference-addon", "dbaas-operator"],
+            help="List of addons for which imageset has to be created",
+        )
 
         self.args = parser.parse_args()
 
