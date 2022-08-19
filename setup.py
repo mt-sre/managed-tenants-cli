@@ -62,7 +62,7 @@ setup(
         "semver~=2.13.0",
         "python-gitlab~=2.6",
         "checksumdir~=1.2",
-        "docker ~=5.0.3",
+        "docker >=5.0.3,<6.1.0",
     ],
     entry_points={
         "console_scripts": [
