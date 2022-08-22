@@ -356,7 +356,7 @@ class OcmCli:
             # Can be an empty list hence the not none check
             if config_obj.get("secrets") is not None:
                 secret_propagations_list = self.index_dicts(
-                    self.map_secret_objs(config_obj.get("secrets"))
+                    self.map_secret_objs(addon, config_obj.get("secrets"))
                 )
                 addon[mapped_key][
                     "add_on_secret_propagations"
@@ -414,10 +414,10 @@ class OcmCli:
 
     # Maps a secret from the addon metadata json to the one ocm expects.
     @staticmethod
-    def map_secret_objs(secrets):
+    def map_secret_objs(addon, secrets):
         return [
             {
-                "source_secret": i["name"],
+                "source_secret": f"{addon.metadata['id']}-{i['name']}",
                 "destination_secret": i["name"],
             }
             for i in secrets
