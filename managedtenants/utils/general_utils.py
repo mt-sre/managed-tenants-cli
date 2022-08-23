@@ -1,4 +1,7 @@
+import signal
 import subprocess
+from contextlib import contextmanager
+from time import sleep
 
 import semver
 
@@ -23,3 +26,34 @@ def run(cmd, logger=None):
     return subprocess.run(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False
     )
+
+
+@contextmanager
+def timeout(duration):
+    def timeout_handler(sig, frame):
+        raise TimeoutError(f"Timed out after {duration} seconds")
+
+    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(duration)
+    try:
+        yield
+    finally:
+        signal.alarm(0)
+
+
+def try_with_timeout_until(
+    predicate_func, poll_interval=2, timeout_duration=15, max_tries=10
+):
+    """
+    Invokes `predicate_func` until it returns true, in which case the
+    function returns True.
+    If predicate_func doesnt evaluate to true before `timeout_duration`,
+    a TimeoutError exception is raised.
+    The function also returns false after trying `max_tries` number of times.
+    """
+    with timeout(timeout_duration):
+        for _ in range(0, max_tries):
+            if predicate_func():
+                return True
+            sleep(poll_interval)
+        return False
