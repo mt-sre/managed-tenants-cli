@@ -1,5 +1,5 @@
 # vi:set ft=dockerfile:
-FROM registry.access.redhat.com/ubi9/python-39:latest
+FROM registry.access.redhat.com/ubi8/python-39@sha256:ad1e728e0ebeffae9159c29d5aeb373797264a7bc7e3166a3780e290e1b524a4
 
 ENV CI=true
 USER root
