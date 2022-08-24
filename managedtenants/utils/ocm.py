@@ -4,7 +4,10 @@ from datetime import datetime, timedelta
 import requests
 from sretoolbox.utils import retry
 
-from managedtenants.utils.general_utils import parse_version_from_imageset_name
+from managedtenants.utils.general_utils import (
+    parse_version_from_imageset_name,
+    try_with_timeout_until,
+)
 
 
 class OCMAPIError(Exception):
@@ -162,6 +165,36 @@ class OcmCli:
             f"/api/clusters_mgmt/v1/addons/{addon_id}", json={"enabled": False}
         )
 
+    def shortcircuit_migrate(self, addon_id):
+        def addon_migration_complete():
+            migration = self.get_addon_migration(addon_id).json()
+            return migration.get("state") == "completed"
+
+        # Enable the migration
+        resp = self.post_addon_migration_with_body(
+            addon_id=addon_id,
+            payload={
+                "addon_id": addon_id,
+                "enabled": True,
+                "white_listed": False,
+                "rollback_migration": False,
+            },
+        )
+
+        if resp.status_code in [200, 201]:
+            try:
+                # Proceed to whitelist only if the migration object's
+                # state is "completed"
+                if try_with_timeout_until(
+                    predicate_func=addon_migration_complete,
+                    timeout_duration=40,
+                ):
+                    resp = self.complete_addon_migration(addon_id)
+                    return resp.status_code == 200
+            except TimeoutError:
+                return False
+        return False
+
     def get_addon_migrations(self):
         return self._get("/api/clusters_mgmt/v1/addon_migrations")
 
@@ -186,6 +219,20 @@ class OcmCli:
                 "rollback_migration": False,
             },
         )
+
+    def post_addon_migration_with_body(self, addon_id, payload):
+        try:
+            output = self._post(
+                "/api/clusters_mgmt/v1/addon_migrations", json=payload
+            )
+        except OCMAPIError as exception:
+            if exception.response.status_code == 409:
+                return self._patch(
+                    f"/api/clusters_mgmt/v1/addon_migrations/{addon_id}",
+                    json=payload,
+                )
+            raise exception
+        return output
 
     def patch_addon_migration(self, addon_id, patch):
         return self._patch(
