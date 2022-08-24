@@ -331,6 +331,7 @@ class OcmCli:
         # Set config
         addon = self.set_addon_config(
             addon=addon,
+            addon_id=metadata['id'],
             config_obj=metadata["config"],
             mapped_key=self.IMAGESET_KEYS["config"],
         )
@@ -382,7 +383,10 @@ class OcmCli:
                     continue
                 if key == "config":
                     addon = self.set_addon_config(
-                        addon=addon, config_obj=val, mapped_key=mapped_key
+                        addon=addon,
+                        addon_id=metadata['id'],
+                        config_obj=val,
+                        mapped_key=mapped_key,
                     )
                     continue
                 if key == "addOnParameters":
@@ -390,7 +394,7 @@ class OcmCli:
                 addon[mapped_key] = val
         return addon
 
-    def set_addon_config(self, addon, config_obj, mapped_key):
+    def set_addon_config(self, addon, addon_id, config_obj, mapped_key):
         if config_obj is not None:
             if not addon.get(mapped_key):
                 addon[mapped_key] = {}
@@ -403,7 +407,7 @@ class OcmCli:
             # Can be an empty list hence the not none check
             if config_obj.get("secrets") is not None:
                 secret_propagations_list = self.index_dicts(
-                    self.map_secret_objs(config_obj.get("secrets"))
+                    self.map_secret_objs(addon_id, config_obj.get("secrets"))
                 )
                 addon[mapped_key][
                     "add_on_secret_propagations"
@@ -444,7 +448,10 @@ class OcmCli:
                     val = self._parameters_from_list(val)
                 if key == "config":
                     addon = self.set_addon_config(
-                        addon=addon, config_obj=val, mapped_key=mapped_key
+                        addon=addon,
+                        addon_id=metadata['id'],
+                        config_obj=val,
+                        mapped_key=mapped_key,
                     )
                     continue
                 addon[mapped_key] = val
@@ -461,10 +468,10 @@ class OcmCli:
 
     # Maps a secret from the addon metadata json to the one ocm expects.
     @staticmethod
-    def map_secret_objs(secrets):
+    def map_secret_objs(addon_id, secrets):
         return [
             {
-                "source_secret": i["name"],
+                "source_secret": f"{addon_id}-{i['name']}",
                 "destination_secret": i["name"],
             }
             for i in secrets

@@ -125,12 +125,12 @@ def test_ocm_addon_parameters(addon_str, expected_result, request):
             [
                 {
                     "id": "0",
-                    "source_secret": "managed-secret-one",
+                    "source_secret": "mock-operator-managed-secret-one",
                     "destination_secret": "managed-secret-one",
                 },
                 {
                     "id": "1",
-                    "source_secret": "pull-secret-one",
+                    "source_secret": "mock-operator-pull-secret-one",
                     "destination_secret": "pull-secret-one",
                 },
             ],
@@ -140,12 +140,12 @@ def test_ocm_addon_parameters(addon_str, expected_result, request):
             [
                 {
                     "id": "0",
-                    "source_secret": "imageset-secret-1",
+                    "source_secret": "mock-operator-imageset-secret-1",
                     "destination_secret": "imageset-secret-1",
                 },
                 {
                     "id": "1",
-                    "source_secret": "pull-secret-one",
+                    "source_secret": "mock-operator-pull-secret-one",
                     "destination_secret": "pull-secret-one",
                 },
             ],
@@ -155,12 +155,12 @@ def test_ocm_addon_parameters(addon_str, expected_result, request):
             [
                 {
                     "id": "0",
-                    "source_secret": "imageset-secret-1",
+                    "source_secret": "mock-operator-imageset-secret-1",
                     "destination_secret": "imageset-secret-1",
                 },
                 {
                     "id": "1",
-                    "source_secret": "pull-secret-one",
+                    "source_secret": "mock-operator-pull-secret-one",
                     "destination_secret": "pull-secret-one",
                 },
             ],
