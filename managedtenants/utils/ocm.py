@@ -336,7 +336,10 @@ class OcmCli:
                     continue
                 if key == "config":
                     addon = self.set_addon_config(
-                        addon=addon, metadata=metadata, config_obj=val, mapped_key=mapped_key
+                        addon=addon,
+                        metadata=metadata,
+                        config_obj=val,
+                        mapped_key=mapped_key,
                     )
                     continue
                 if key == "addOnParameters":
@@ -398,7 +401,10 @@ class OcmCli:
                     val = self._parameters_from_list(val)
                 if key == "config":
                     addon = self.set_addon_config(
-                        addon=addon, metadata=metadata, config_obj=val, mapped_key=mapped_key
+                        addon=addon,
+                        metadata=metadata,
+                        config_obj=val,
+                        mapped_key=mapped_key,
                     )
                     continue
                 addon[mapped_key] = val
