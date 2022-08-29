@@ -66,6 +66,7 @@ properties:
       - "step 3 - change SSS label"
       - "step 4 - enable syncset"
       - "step 5 - migration complete"
+      - "shortcircuit whitelist"
       - "rollback step 1 - ocm"
       - "rollback step 2 - selectorsyncset"
       - "rollback step 3 - reset addon migration"
