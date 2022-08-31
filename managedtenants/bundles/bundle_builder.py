@@ -24,7 +24,6 @@ class BundleBuilder:
         debug=False,
         ssl_verify=True,
     ):
-
         self.dry_run = dry_run
         self.docker_api = docker_api
         self.ssl_verify = ssl_verify
