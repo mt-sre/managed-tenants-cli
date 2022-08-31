@@ -21,7 +21,6 @@ class GitLab:
             return True
 
         except gitlab.exceptions.GitlabGetError as err:
-
             # file not found
             if err.response_code == 404:
                 return False

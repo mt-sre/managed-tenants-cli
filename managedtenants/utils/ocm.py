@@ -95,7 +95,7 @@ class OcmCli:
         }
 
         method = requests.post
-        response = method(url, data=data)
+        response = method(url, data=data)  # pylint: disable=missing-timeout
         self._raise_for_status(response, reqs_method=method, url=url)
         self._token = response.json()["access_token"]
         self._last_token_issue = now
@@ -331,7 +331,7 @@ class OcmCli:
         # Set config
         addon = self.set_addon_config(
             addon=addon,
-            addon_id=metadata['id'],
+            addon_id=metadata["id"],
             config_obj=metadata["config"],
             mapped_key=self.IMAGESET_KEYS["config"],
         )
@@ -384,7 +384,7 @@ class OcmCli:
                 if key == "config":
                     addon = self.set_addon_config(
                         addon=addon,
-                        addon_id=metadata['id'],
+                        addon_id=metadata["id"],
                         config_obj=val,
                         mapped_key=mapped_key,
                     )
@@ -449,7 +449,7 @@ class OcmCli:
                 if key == "config":
                     addon = self.set_addon_config(
                         addon=addon,
-                        addon_id=metadata['id'],
+                        addon_id=metadata["id"],
                         config_obj=val,
                         mapped_key=mapped_key,
                     )
