@@ -92,6 +92,33 @@
           },
           "replicas": {
             "type": "integer"
+          },
+          "taints": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "format": "printable"
+                },
+                "value": {
+                  "type": "string",
+                  "format": "printable"
+                },
+                "effect": {
+                  "type": "string",
+                  "format": "printable"
+                }
+              },
+              "format": "printable"
+            }
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": true,
+            "format": "printable"
           }
         }
       },
