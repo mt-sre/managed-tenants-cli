@@ -50,6 +50,7 @@ class OcmCli:
         "subOperators": "sub_operators",
         "managedService": "managed_service",
         "config": "config",
+        "namespaces": "namespaces",
     }
 
     IMAGESET_KEYS = {
@@ -415,6 +416,14 @@ class OcmCli:
 
         return addon
 
+    def get_namespace_labels_list(self, namespaces, namespaceLabels):
+        namespaceLabelsList = []
+        for namespace in namespaces:
+            namespaceLabelsList.append(
+                {"name": namespace, "labels": namespaceLabels}
+            )
+        return namespaceLabelsList
+
     def _addon_from_metadata(self, metadata):
         addon = {}
         # Set empty values if attrs are not present
@@ -427,6 +436,12 @@ class OcmCli:
         metadata["config"] = metadata.get("config", {})
         metadata["config"]["env"] = metadata["config"].get("env", [])
         metadata["config"]["secrets"] = metadata["config"].get("secrets", [])
+        # ocm client to send in namespaces(along with labels)
+        namespaceLabels = metadata.get("namespaceLabels")
+        namespaces = metadata.get("namespaces", [])
+        metadata["namespaces"] = self.get_namespace_labels_list(
+            namespaces, namespaceLabels
+        )
 
         for key, val in metadata.items():
             if key in self.ADDON_KEYS:

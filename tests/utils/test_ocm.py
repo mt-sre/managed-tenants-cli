@@ -6,6 +6,7 @@ from jsonschema.exceptions import SchemaError
 from managedtenants.data.paths import SCHEMAS_DIR
 from managedtenants.utils.ocm import OcmCli
 from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: noqa: F401
+    addon_with_deadmanssnitch,
     addon_with_imageset_and_default_config,
     addon_with_imageset_and_multiple_config,
     addon_with_imageset_and_only_required_attrs,
@@ -228,5 +229,45 @@ def test_ocm_addon_default_values(addon_str, expected_result, request):
     else:
         ocm_addon = ocm_cli._addon_from_metadata(metadata=addon.metadata)
 
+    for k, expected_value in expected_result.items():
+        assert ocm_addon.get(k) == expected_value
+
+
+@pytest.mark.parametrize(
+    "addon_str,expected_result",
+    [
+        (
+            "addon_without_imageset_and_only_required_attrs",
+            {
+                "namespaces": [
+                    {
+                        "name": "mock-operator",
+                        "labels": {"monitoring-key": "mock"},
+                    },
+                ],
+            },
+        ),
+        (
+            "addon_with_deadmanssnitch",
+            {
+                "namespaces": [
+                    {
+                        "name": "redhat-test-operator",
+                        "labels": {},
+                    }
+                ],
+            },
+        ),
+    ],
+)
+def test_ocm_addon_namespace_with_labels(addon_str, expected_result, request):
+    addon = request.getfixturevalue(addon_str)
+    ocm_cli = OcmCli(offline_token=None)
+    if addon.imageset:
+        ocm_addon = ocm_cli._addon_from_imageset(
+            imageset=addon.imageset, metadata=addon.metadata
+        )
+    else:
+        ocm_addon = ocm_cli._addon_from_metadata(metadata=addon.metadata)
     for k, expected_value in expected_result.items():
         assert ocm_addon.get(k) == expected_value
