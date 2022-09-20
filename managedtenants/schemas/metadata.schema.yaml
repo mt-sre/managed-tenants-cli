@@ -208,6 +208,7 @@ properties:
         pattern: ^addon-[0-9A-Za-z-]+-parameters$
   channels:
     type: array
+    description: "DEPRECATED, can safely be removed."
     items:
       type: object
       additionalProperties: false
