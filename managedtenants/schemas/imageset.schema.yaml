@@ -41,7 +41,7 @@ properties:
       properties:
         name:
           type: string
-          format: printable
+          pattern: ^[a-z]([-a-z0-9]*[a-z0-9])?$
           description: "Name of the additional catalog source."
         image:
           type: string
