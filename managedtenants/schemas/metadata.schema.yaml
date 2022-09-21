@@ -206,19 +206,6 @@ properties:
       addonParamsSecretName:
         type: string
         pattern: ^addon-[0-9A-Za-z-]+-parameters$
-  channels:
-    type: array
-    description: "DEPRECATED, can safely be removed."
-    items:
-      type: object
-      additionalProperties: false
-      properties:
-        name:
-          type: string
-          format: printable
-        currentCSV:
-          type: string
-          format: printable
   startingCSV:
     type: string
     format: printable

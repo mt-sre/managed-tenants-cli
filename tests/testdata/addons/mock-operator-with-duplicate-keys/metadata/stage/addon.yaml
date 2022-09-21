@@ -22,9 +22,6 @@ targetNamespace: redhat-namespace
 testHarness: quay.io/mock-operator/mock-operator-test-harness
 operatorName: mock-operator
 hasExternalResources: true
-channels:
-- name: alpha
-  currentCSV: mock-operator-v1.0.0
 defaultChannel: alpha
 bundleParameters:
   useClusterStorage: "true"
