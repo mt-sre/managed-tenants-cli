@@ -239,7 +239,7 @@ def test_ocm_addon_default_values(addon_str, expected_result, request):
         (
             "addon_without_imageset_and_only_required_attrs",
             {
-                "namespaces": [
+                "namespace": [
                     {
                         "name": "mock-operator",
                         "labels": {"monitoring-key": "mock"},
@@ -250,7 +250,7 @@ def test_ocm_addon_default_values(addon_str, expected_result, request):
         (
             "addon_with_deadmanssnitch",
             {
-                "namespaces": [
+                "namespace": [
                     {
                         "name": "redhat-test-operator",
                         "labels": {},
