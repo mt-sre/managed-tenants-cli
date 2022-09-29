@@ -20,9 +20,6 @@ ocmQuotaCost: 1
 testHarness: quay.io/mock-operator/mock-operator-test-harness
 operatorName: mock-operator-secrets
 hasExternalResources: true
-channels:
-- name: alpha
-  currentCSV: mock-operator-secrets-v1.0.0
 defaultChannel: alpha
 bundleParameters:
   useClusterStorage: "true"

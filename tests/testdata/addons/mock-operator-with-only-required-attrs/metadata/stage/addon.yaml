@@ -19,8 +19,5 @@ ocmQuotaCost: 1
 testHarness: quay.io/mock-operator/mock-operator-test-harness
 operatorName: mock-operator
 hasExternalResources: true
-channels:
-- name: alpha
-  currentCSV: mock-operator-v1.0.0
 defaultChannel: alpha
 addonImageSetVersion: 1.0.0
