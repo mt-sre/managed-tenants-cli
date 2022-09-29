@@ -1,3 +1,4 @@
+import copy
 import re
 from datetime import datetime, timedelta
 
@@ -426,24 +427,8 @@ class OcmCli:
 
     def _addon_from_metadata(self, metadata):
         addon = {}
-        # Set empty values if attrs are not present
-        metadata["addOnParameters"] = metadata.get("addOnParameters", [])
-        metadata["addOnRequirements"] = metadata.get("addOnRequirements", [])
-        metadata["subOperators"] = metadata.get("subOperators", [])
-        metadata["additionalCatalogSources"] = metadata.get(
-            "additionalCatalogSources", []
-        )
-        metadata["config"] = metadata.get("config", {})
-        metadata["config"]["env"] = metadata["config"].get("env", [])
-        metadata["config"]["secrets"] = metadata["config"].get("secrets", [])
-        # ocm client to send in namespaces(along with labels)
-        namespaceLabels = metadata.get("namespaceLabels")
-        namespaces = metadata.get("namespaces", [])
-        metadata["namespaces"] = self.get_namespace_labels_list(
-            namespaces, namespaceLabels
-        )
 
-        for key, val in metadata.items():
+        for key, val in self._complete_metadata(metadata).items():
             if key in self.ADDON_KEYS:
                 mapped_key = self.ADDON_KEYS[key]
                 # Skip adding these parameters as they're present
@@ -471,6 +456,31 @@ class OcmCli:
                     continue
                 addon[mapped_key] = val
         return addon
+
+    @staticmethod
+    def _complete_metadata(raw):
+        list_fields = (
+            "addOnParameters",
+            "addOnRequirements",
+            "subOperators",
+            "additionalCatalogSources",
+        )
+
+        res = copy.deepcopy(raw)
+
+        for field in list_fields:
+            res[field] = res.get(field, [])
+
+        res["config"] = res.get("config", {})
+        res["config"]["env"] = res["config"].get("env", [])
+        res["config"]["secrets"] = res["config"].get("secrets", [])
+
+        res["namespaces"] = [
+            {"name": ns, "labels": res.get("namespaceLabels")}
+            for ns in res.get("namespaces", [])
+        ]
+
+        return res
 
     @staticmethod
     def _parameters_from_list(params):

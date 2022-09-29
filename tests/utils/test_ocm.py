@@ -271,3 +271,29 @@ def test_ocm_addon_namespace_with_labels(addon_str, expected_result, request):
         ocm_addon = ocm_cli._addon_from_metadata(metadata=addon.metadata)
     for k, expected_value in expected_result.items():
         assert ocm_addon.get(k) == expected_value
+
+
+@pytest.mark.parametrize(
+    "addon_str,expected_result",
+    [
+        (
+            "addon_with_deadmanssnitch",
+            {
+                "namespaces": [
+                    {
+                        "name": "redhat-test-operator",
+                        "labels": {},
+                    }
+                ],
+            },
+        ),
+    ],
+)
+def test_ocm_addon_namespace_idempotent(addon_str, expected_result, request):
+    addon = request.getfixturevalue(addon_str)
+    ocm_cli = OcmCli(offline_token=None)
+    ocm_cli._addon_from_metadata(metadata=addon.metadata)
+    ocm_addon = ocm_cli._addon_from_metadata(metadata=addon.metadata)
+
+    for k, expected_value in expected_result.items():
+        assert ocm_addon.get(k) == expected_value

@@ -30,7 +30,7 @@ repos:
       - id: trailing-whitespace
   # Black
   - repo: https://github.com/psf/black
-    rev: 22.6.0
+    rev: 22.8.0
     hooks:
       - id: black
         args: ["--config", ".linters/black", "--experimental-string-processing"]
@@ -51,7 +51,7 @@ repos:
         args: ["--config", ".linters/flake8"]
   # Yamllint
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.27.1
+    rev: v1.28.0
     hooks:
       - id: yamllint
         args: ["--config-file", ".linters/yamllint"]
