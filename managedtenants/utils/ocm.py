@@ -50,7 +50,7 @@ class OcmCli:
         "subOperators": "sub_operators",
         "managedService": "managed_service",
         "config": "config",
-        "namespaces": "namespace",
+        "namespaces": "namespaces",
     }
 
     IMAGESET_KEYS = {
