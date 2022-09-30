@@ -107,14 +107,6 @@
 
   - **`addonParamsSecretName`** *(string)*
 
-- **`channels`** *(array)*
-
-  - **Items** *(object)*: Cannot contain additional properties.
-
-    - **`name`** *(string)*
-
-    - **`currentCSV`** *(string)*
-
 - **`startingCSV`** *(string)*
 
 - **`indexImage`** *(string)*
