@@ -15,7 +15,6 @@ def test_sss_deploy(data):
             custom_strategies.namespace(), min_size=2, max_size=5, unique=True
         )
     )
-    addon.metadata["pullSecret"] = data.draw(custom_strategies.k8s_name())
 
     # Rerender template
     addon.sss = Sss(addon=addon)
@@ -23,7 +22,6 @@ def test_sss_deploy(data):
     resources = walker["sss_deploy"]["spec"]["resources"]
 
     assert len(resources["Namespace"]) == len(addon.metadata["namespaces"])
-    assert len(resources["Secret"]) == len(addon.metadata["namespaces"])
     for ns, _ in resources["Namespace"]:
         assert ns in addon.metadata["namespaces"]
 

@@ -83,10 +83,6 @@ properties:
       type: string
       pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$
     description: "Namespaces managed by the addon-operator. Need to include the TargetNamespace."
-  pullSecret:
-    type: string
-    format: printable
-    description: "'pullSecret' is deprecated for now. Please use the 'secrets' and 'pullSecretName' fields instead."
   pullSecretName:
     type: string
     pattern: ^[a-z0-9][a-z0-9-]{1,60}[a-z0-9]$

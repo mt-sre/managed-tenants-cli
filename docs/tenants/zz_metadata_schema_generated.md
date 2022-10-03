@@ -45,8 +45,6 @@
 
   - **Items** *(string)*
 
-- **`pullSecret`** *(string)*: 'pullSecret' is deprecated for now. Please use the 'secrets' and 'pullSecretName' fields instead.
-
 - **`pullSecretName`** *(string)*: Name of the secret under `secrets` which is supposed to be used for pulling Catalog Image under CatalogSource.
 
 - **`additionalCatalogSources`** *(array)*: List of additional catalog sources to be created.

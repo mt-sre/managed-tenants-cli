@@ -42,24 +42,7 @@ items:
               | indent(8)
         }}
         name: {{namespace}}
-
-    {% if ADDON.metadata['pullSecret'] is defined %}
-    - apiVersion: v1
-      kind: Secret
-      metadata:
-        name: addon-pullsecret
-        namespace: {{namespace}}
-        {{ maybe_annotations(ADDON.metadata.get('commonAnnotations')) | indent(8) }}
-        {{
-            maybe_labels(ADDON.metadata.get('commonLabels', {})
-              | merge_dicts({'addon-pullsecret': ADDON.metadata['id']}))
-              | indent(8)
-        }}
-      type: kubernetes.io/dockerconfigjson
-      data:
-        .dockerconfigjson: >-
-          {{ADDON.metadata['pullSecret']}}
-    {% endif %}
+        
 {% endfor %}
 
 {% if ADDON.catalog_image is not none %}
