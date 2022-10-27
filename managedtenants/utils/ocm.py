@@ -496,7 +496,7 @@ class OcmCli:
         # so that they can be shown in the same order as
         # the metadata file.
         for index, param in enumerate(params):
-            param["order"] = index
+            param["order"] = index + 1
         return {"items": params}
 
     # Maps a secret from the addon metadata json to the one ocm expects.
