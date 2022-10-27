@@ -111,7 +111,11 @@ class OcmCli:
 
     def add_addon(self, metadata):
         addon = self._addon_from_metadata(metadata)
-        return self._post("/api/clusters_mgmt/v1/addons", json=addon)
+        # Update Tooling to point to new API MTSRE-601
+        clusterMgmtResponse = self._post("/api/clusters_mgmt/v1/addons", json=addon) 
+        addonsMgmetReposne = self._post("/api/addons_mgmt/v1/addons", json=addon) 
+        # Both cluster service and addon service responses should have the same data. Is it worth the effort to compre the responses?
+        return clusterMgmtResponse
 
     def _addon_exists(self, addon_id):
         try:
@@ -125,31 +129,35 @@ class OcmCli:
         if self._addon_exists(metadata.get("id")):
             return self._add_addon_version(imageset, metadata)
         # Create the addon first
-        self.add_addon(metadata)
+        self.add_addon(metadata) 
         return self._add_addon_version(imageset, metadata)
 
     def _add_addon_version(self, imageset, metadata):
         addon = self._addon_from_imageset(imageset, metadata)
-        return self._post(
-            f'/api/clusters_mgmt/v1/addons/{metadata.get("id")}/versions',
-            json=addon,
-        )
+        # Update Tooling to point to new API MTSRE-601
+        clusterMgmtResponse = self._post(f'/api/clusters_mgmt/v1/addons/{metadata.get("id")}/versions',json=addon)
+        addonsMgmetReposne = self._post(f'/api/addons_mgmt/v1/addons/{metadata.get("id")}/versions', json=addon)
+        # Both cluster service and addon service responses should have the same data. Is it worth the effort to compre the responses?
+        return clusterMgmtResponse
 
     def update_addon(self, metadata):
         addon = self._addon_from_metadata(metadata)
         addon_id = addon.pop("id")
-        return self._patch(
-            f"/api/clusters_mgmt/v1/addons/{addon_id}", json=addon
-        )
+        # Update Tooling to point to new API MTSRE-601
+        clusterMgmtResponse = self._patch(f"/api/clusters_mgmt/v1/addons/{addon_id}", json=addon)
+        addonsMgmetReposne = self._patch(f"/api/addons_mgmt/v1/addons/{addon_id}", json=addon)
+        # Both cluster service and addon service responses should have the same data. Is it worth the effort to compre the responses?
+        return clusterMgmtResponse
 
     def update_addon_version(self, imageset, metadata):
         addon = self._addon_from_imageset(imageset, metadata)
         version_id = addon.pop("id")
         addon_name = metadata.get("id")
-        return self._patch(
-            f"/api/clusters_mgmt/v1/addons/{addon_name}/versions/{version_id}",
-            json=addon,
-        )
+        # Update Tooling to point to new API MTSRE-601
+        clusterMgmtResponse = self._patch(f"/api/clusters_mgmt/v1/addons/{addon_name}/versions/{version_id}", json=addon)
+        addonsMgmetReposne = self._patch(f"/api/addons_mgmt/v1/addons/{addon_name}/versions/{version_id}", json=addon)
+        # Both cluster service and addon service responses should have the same data. Is it worth the effort to compre the responses?
+        return clusterMgmtResponse
 
     def get_addon(self, addon_id):
         return self._get(f"/api/clusters_mgmt/v1/addons/{addon_id}")
