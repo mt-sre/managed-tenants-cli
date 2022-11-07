@@ -97,7 +97,7 @@ class OcmCli:
         }
 
         method = requests.post
-        response = method(url, data=data)
+        response = method(url, data=data)  # pylint: disable=missing-timeout
         self._raise_for_status(response, reqs_method=method, url=url)
         self._token = response.json()["access_token"]
         self._last_token_issue = now
