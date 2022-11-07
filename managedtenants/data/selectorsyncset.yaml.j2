@@ -163,7 +163,43 @@ items:
 {% endif %}
 
 {# federated metrics namespace + ServiceMonitor (v1 only) #}
-{% if ADDON.metadata['monitoring'] is defined %}
+{% if ADDON.metadata['metricsFederation'] is defined %}
+    - apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: redhat-monitoring-{{ ADDON.metadata['id'] }}
+        labels:
+          openshift.io/cluster-monitoring: 'true'
+    - apiVersion: monitoring.coreos.com/v1
+      kind: ServiceMonitor
+      metadata:
+        name: federated-sm-{{ ADDON.metadata['id'] }}
+        namespace: redhat-monitoring-{{ ADDON.metadata['id'] }}
+      spec:
+        endpoints:
+          - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+            honorLabels: true
+            port: {{ ADDON.metadata['metricsFederation']['portName'] }}
+            path: /federate
+            scheme: https
+            interval: 30s
+            tlsConfig:
+              caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
+              serverName: prometheus.{{ ADDON.metadata['metricsFederation']['namespace'] }}.svc
+            params:
+              'match[]':
+                - ALERTS{alertstate="firing"}
+              {% for matchName in ADDON.metadata['metricsFederation']['matchNames'] %}
+                - '{__name__="{{ matchName }}"}'
+              {% endfor %}
+        namespaceSelector:
+          matchNames:
+            - {{ ADDON.metadata['metricsFederation']['namespace'] }}
+        selector:
+          matchLabels:
+            {{ expand_dict(ADDON.metadata['metricsFederation']['matchLabels']) | indent(12) }}
+{# Backwards-compatibility to the DEPRECATED 'monitoring' field #}
+{% elif ADDON.metadata['monitoring'] is defined %}
     - apiVersion: v1
       kind: Namespace
       metadata:
