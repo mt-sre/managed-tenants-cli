@@ -64,7 +64,11 @@ class OcmCli:
         "config": "config",
     }
 
-    def __init__(self, offline_token, api=API, api_insecure=False):
+    def __init__(self, client_id=None, client_secret=None, offline_token=None, api=API, api_insecure=False):
+        # TODO: Currently supporting client credentials and offline tokens during testing and migrating phase,
+        # afterwards we can probably remove offline token support
+        self.client_id = client_id
+        self.client_secret = client_secret
         self.offline_token = offline_token
         self._token = None
         self._last_token_issue = None
@@ -90,11 +94,18 @@ class OcmCli:
             "redhat-external/protocol/openid-connect/token"
         )
 
-        data = {
-            "grant_type": "refresh_token",
-            "client_id": "cloud-services",
-            "refresh_token": self.offline_token,
-        }
+        if self.client_id and self.client_secret:
+            data = {
+                "grant_type": "client_credentials",
+                "client_id": self.client_id,
+                "refresh_token": self.client_secret,
+            }
+        else:
+            data = {
+                "grant_type": "refresh_token",
+                "client_id": "cloud-services",
+                "refresh_token": self.offline_token,
+            }
 
         method = requests.post
         response = method(url, data=data)  # pylint: disable=missing-timeout
