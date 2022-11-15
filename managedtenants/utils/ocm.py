@@ -566,12 +566,14 @@ class _TokenProvider:
         self,
         client_id=None,
         client_secret=None,
+        offline_token=None,
         token_endpoint=_RHSSO_TOKEN_ENDPOINT,
         token_expiry_period=timedelta(minutes=15),
         request_timeout=None,
     ):  # pylint: disable=too-many-arguments
         self._client_id = client_id
         self._client_secret = client_secret
+        self._offline_token = offline_token
         self._token_endpoint = token_endpoint
         self._token_expiry_period = token_expiry_period
         self._request_timeout = request_timeout
@@ -591,7 +593,7 @@ class _TokenProvider:
     def from_offline_token(cls, offline_token, **kwargs):
         return cls(
             client_id="cloud_services",
-            client_secret=offline_token,
+            offline_token=offline_token,
             **kwargs,
         )
 
@@ -603,11 +605,18 @@ class _TokenProvider:
         if self._token and token_valid:
             return self._token
 
-        data = {
-            "grant_type": "client_credentials",
-            "client_id": self._client_id,
-            "refresh_token": self._client_secret,
-        }
+        if self._client_secret:
+            data = {
+                "grant_type": "client_credentials",
+                "client_id": self._client_id,
+                "client_secret": self._client_secret,
+            }
+        else:
+            data = {
+                "grant_type": "refresh_token",
+                "client_id": self._client_id,
+                "refresh_token": self._offline_token,
+            }
 
         method = requests.post
         response = method(
