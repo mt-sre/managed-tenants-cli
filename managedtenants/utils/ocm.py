@@ -65,6 +65,12 @@ class OcmCli:
     }
 
     def __init__(self, client_id=None, client_secret=None, offline_token=None, api=API, api_insecure=False):
+        """Accepts client_id and client_secret or offline token
+        to authenticate against OCM. client_id and client_secret
+        take precedence.
+        """
+        if not (client_id and client_secret) and not offline_token:
+            raise ValueError("`client_id` and `client_secret` or `offline_token` must be provided")
         # TODO: Currently supporting client credentials and offline tokens during testing and migrating phase,
         # afterwards we can probably remove offline token support
         self.client_id = client_id
