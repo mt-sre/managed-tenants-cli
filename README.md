@@ -73,7 +73,7 @@ git checkout main && git pull upstream main
 git tag X.Y.Z
 git push upstream X.Y.Z
 ```
-and then draft the release in the web UI. 
+and then draft the release in the web UI.
 
 ## License
 
