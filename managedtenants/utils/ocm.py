@@ -76,60 +76,27 @@ class OcmCli:
         to authenticate against OCM. client_id and client_secret
         take precedence.
         """
-        if not (client_id and client_secret) and not offline_token:
+        if client_id and client_secret:
+            self._token_provider = _TokenProvider.from_client_credentials(
+                client_id=client_id,
+                client_secret=client_secret,
+            )
+        elif offline_token:
+            self._token_provider = _TokenProvider.from_offline_token(
+                offline_token=offline_token,
+            )
+        else:
             raise ValueError(
                 "`client_id` and `client_secret` or `offline_token` must be"
                 " provided"
             )
-        # TODO: Currently supporting client credentials and
-        #  offline tokens during testing and migrating phase,
-        # afterwards we can probably remove offline token support
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.offline_token = offline_token
-        self._token = None
-        self._last_token_issue = None
+
         self.api_insecure = api_insecure
 
         if api is None:
             self.api = self.API
         else:
             self.api = api
-
-    @property
-    @retry(hook=retry_hook, max_attempts=10)
-    def token(self):
-        now = datetime.utcnow()
-        if self._token:
-            if now - self._last_token_issue < timedelta(
-                minutes=self.TOKEN_EXPIRATION_MINUTES
-            ):
-                return self._token
-
-        url = (
-            "https://sso.redhat.com/auth/realms/"
-            "redhat-external/protocol/openid-connect/token"
-        )
-
-        if self.client_id and self.client_secret:
-            data = {
-                "grant_type": "client_credentials",
-                "client_id": self.client_id,
-                "refresh_token": self.client_secret,
-            }
-        else:
-            data = {
-                "grant_type": "refresh_token",
-                "client_id": "cloud-services",
-                "refresh_token": self.offline_token,
-            }
-
-        method = requests.post
-        response = method(url, data=data)  # pylint: disable=missing-timeout
-        self._raise_for_status(response, reqs_method=method, url=url)
-        self._token = response.json()["access_token"]
-        self._last_token_issue = now
-        return self._token
 
     def list_addons(self):
         return self._pool_items("/api/clusters_mgmt/v1/addons")
@@ -535,7 +502,8 @@ class OcmCli:
         return [dict(d, id=str(id)) for id, d in enumerate(dicts)]
 
     def _headers(self, extra_headers=None):
-        headers = {"Authorization": f"Bearer {self.token}"}
+        token = self._token_provider.retrieve_token()
+        headers = {"Authorization": f"Bearer {token}"}
 
         if extra_headers:
             headers.update(extra_headers)
@@ -552,9 +520,7 @@ class OcmCli:
         url = self._url(path)
         headers = self._headers(kwargs.pop("headers", None))
         response = reqs_method(url, headers=headers, **kwargs)
-        self._raise_for_status(
-            response, reqs_method=reqs_method, url=url, **kwargs
-        )
+        _raise_for_status(response, reqs_method=reqs_method, url=url, **kwargs)
         return response
 
     def _post(self, path, **kwargs):
@@ -584,20 +550,88 @@ class OcmCli:
 
         return items
 
-    @staticmethod
-    def _raise_for_status(response, reqs_method, url, **kwargs):
-        try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as exception:
-            method = reqs_method.__name__.upper()
-            error_message = f"Error {method} {url}\n{exception}\n"
-            if kwargs.get("params"):
-                error_message += f"params: {kwargs['params']}\n"
-            if kwargs.get("json"):
-                error_message += f"json: {kwargs['json']}\n"
-            error_message += f"original error: {response.text}"
-            raise OCMAPIError(error_message, response)
-
 
 def _camel_to_snake_case(val):
     return re.sub(r"(?<!^)(?=[A-Z])", "_", val).lower()
+
+
+_RHSSO_TOKEN_ENDPOINT = (
+    "https://sso.redhat.com/"
+    "auth/realms/redhat-external/protocol/openid-connect/token"
+)
+
+
+class _TokenProvider:
+    def __init__(
+        self,
+        client_id=None,
+        client_secret=None,
+        token_endpoint=_RHSSO_TOKEN_ENDPOINT,
+        token_expiry_period=timedelta(minutes=15),
+        request_timeout=None,
+    ):  # pylint: disable=too-many-arguments
+        self._client_id = client_id
+        self._client_secret = client_secret
+        self._token_endpoint = token_endpoint
+        self._token_expiry_period = token_expiry_period
+        self._request_timeout = request_timeout
+
+        self._token = None
+        self._last_token_issue = None
+
+    @classmethod
+    def from_client_credentials(cls, client_id, client_secret, **kwargs):
+        return cls(
+            client_id=client_id,
+            client_secret=client_secret,
+            **kwargs,
+        )
+
+    @classmethod
+    def from_offline_token(cls, offline_token, **kwargs):
+        return cls(
+            client_id="cloud_services",
+            client_secret=offline_token,
+            **kwargs,
+        )
+
+    @retry(hook=retry_hook, max_attempts=10)
+    def retrieve_token(self):
+        now = datetime.utcnow()
+        token_valid = now - self._last_token_issue < self._token_expiry_period
+
+        if self._token and token_valid:
+            return self._token
+
+        data = {
+            "grant_type": "client_credentials",
+            "client_id": self._client_id,
+            "refresh_token": self._client_secret,
+        }
+
+        method = requests.post
+        response = method(
+            self._token_endpoint, data=data, timeout=self._request_timeout
+        )
+        _raise_for_status(
+            response, reqs_method=method, url=self._token_endpoint
+        )
+
+        self._token = response.json()["access_token"]
+        self._last_token_issue = now
+
+        return self._token
+
+
+def _raise_for_status(response, reqs_method, url, **kwargs):
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as exception:
+        method = reqs_method.__name__.upper()
+        error_message = f"Error {method} {url}\n{exception}\n"
+        if kwargs.get("params"):
+            error_message += f"params: {kwargs['params']}\n"
+        if kwargs.get("json"):
+            error_message += f"json: {kwargs['json']}\n"
+        error_message += f"original error: {response.text}"
+        raise OCMAPIError(error_message, response)
