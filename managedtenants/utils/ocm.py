@@ -29,6 +29,8 @@ def retry_hook(exception):
 
 class OcmCli:
     API = "https://api.stage.openshift.com"
+    CS_ADDON_MGMT_API_URL_PREFIX = "/api/clusters_mgmt/v1/addons"
+    AS_ADDON_MGMT_API_URL_PREFIX = "/api/addons_mgmt/v1/addons"
     TOKEN_EXPIRATION_MINUTES = 15
 
     ADDON_KEYS = {
@@ -104,67 +106,108 @@ class OcmCli:
         return self._token
 
     def list_addons(self):
-        return self._pool_items("/api/clusters_mgmt/v1/addons")
+        return self._pool_items(self.CS_ADDON_MGMT_API_URL_PREFIX)
 
     def list_sku_rules(self):
         return self._pool_items("/api/accounts_mgmt/v1/sku_rules")
 
     def add_addon(self, metadata):
         addon = self._addon_from_metadata(metadata)
-        return self._post("/api/clusters_mgmt/v1/addons", json=addon)
+        return self._post(
+            self.CS_ADDON_MGMT_API_URL_PREFIX, json=addon)
+
+    # Update Tooling to point to new addon-service API MTSRE-601
+    def add_addon_as(self, metadata):
+        addon = self._addon_from_metadata(metadata)
+        return self._post(
+            self.AS_ADDON_MGMT_API_URL_PREFIX, json=addon)
 
     def _addon_exists(self, addon_id):
         try:
-            self._get(f"/api/clusters_mgmt/v1/addons/{addon_id}")
+            self._get(f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}")
+            return True
+        # `_get` raises OCMAPIError on 404's
+        except OCMAPIError:
+            return False
+    # Update Tooling to point to new addon-service API MTSRE-601
+    def _addon_exists_as(self, addon_id):
+        try:
+            self._get(f"{self.AS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}")
             return True
         # `_get` raises OCMAPIError on 404's
         except OCMAPIError:
             return False
 
     def add_addon_version(self, imageset, metadata):
-        if self._addon_exists(metadata.get("id")):
-            return self._add_addon_version(imageset, metadata)
-        # Create the addon first
-        self.add_addon(metadata)
-        return self._add_addon_version(imageset, metadata)
-
-    def _add_addon_version(self, imageset, metadata):
+        # Create the addon first if it does not exist
+        if self._addon_exists(metadata.get("id")) is False:
+            self.add_addon(metadata)
         addon = self._addon_from_imageset(imageset, metadata)
         return self._post(
-            f'/api/clusters_mgmt/v1/addons/{metadata.get("id")}/versions',
-            json=addon,
-        )
+            f'''{self.CS_ADDON_MGMT_API_URL_PREFIX}/
+            {metadata.get("id")}/versions''',
+            json=addon)
+
+
+    # Update Tooling to point to new addon-service API MTSRE-601
+    def add_addon_version_as(self, imageset, metadata):
+        # Create the addon first if it does not exist
+        if self._addon_exists_as(metadata.get("id")) is False:
+            self.add_addon_as(metadata)
+        addon = self._addon_from_imageset(imageset, metadata)
+        return self._post(
+            f'''{self.AS_ADDON_MGMT_API_URL_PREFIX}/
+            {metadata.get("id")}/versions''',
+            json=addon)
 
     def update_addon(self, metadata):
         addon = self._addon_from_metadata(metadata)
         addon_id = addon.pop("id")
         return self._patch(
-            f"/api/clusters_mgmt/v1/addons/{addon_id}", json=addon
-        )
+            f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}", json=addon)
+
+    # Update Tooling to point to new addon-service API MTSRE-601
+    def update_addon_as(self, metadata):
+        addon = self._addon_from_metadata(metadata)
+        addon_id = addon.pop("id")
+        return self._patch(
+            f"{self.AS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}", json=addon)
 
     def update_addon_version(self, imageset, metadata):
         addon = self._addon_from_imageset(imageset, metadata)
         version_id = addon.pop("id")
         addon_name = metadata.get("id")
         return self._patch(
-            f"/api/clusters_mgmt/v1/addons/{addon_name}/versions/{version_id}",
-            json=addon,
-        )
+            f"""{self.CS_ADDON_MGMT_API_URL_PREFIX}/
+            {addon_name}/versions/{version_id}""",
+            json=addon)
+
+    # Update Tooling to point to new addon-service API MTSRE-601
+    def update_addon_version_as(self, imageset, metadata):
+        addon = self._addon_from_imageset(imageset, metadata)
+        version_id = addon.pop("id")
+        addon_name = metadata.get("id")
+        return self._patch(
+            f"""{self.AS_ADDON_MGMT_API_URL_PREFIX}/
+            {addon_name}/versions/{version_id}""",
+            json=addon)
 
     def get_addon(self, addon_id):
-        return self._get(f"/api/clusters_mgmt/v1/addons/{addon_id}")
+        return self._get(f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}")
 
     def delete_addon(self, addon_id):
-        return self._delete(f"/api/clusters_mgmt/v1/addons/{addon_id}")
+        return self._delete(f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}")
 
     def enable_addon(self, addon_id):
         return self._patch(
-            f"/api/clusters_mgmt/v1/addons/{addon_id}", json={"enabled": True}
+            f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}",
+            json={"enabled": True}
         )
 
     def disable_addon(self, addon_id):
         return self._patch(
-            f"/api/clusters_mgmt/v1/addons/{addon_id}", json={"enabled": False}
+            f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}",
+            json={"enabled": False}
         )
 
     def shortcircuit_migrate(self, addon_id):
@@ -307,6 +350,17 @@ class OcmCli:
             raise exception
         return addon
 
+    # Add/update addon to addon service(MTSRE-601)
+    def addons_service_upsert_addon(self, metadata):
+        try:
+            addon = self.add_addon_as(metadata)
+        except OCMAPIError as exception:
+            if exception.response.status_code == 409:
+                return self.update_addon_as(metadata)
+
+            raise exception
+        return addon
+
     # Post Addon version data to versions endpoint
     def upsert_addon_version(self, imageset, metadata):
         try:
@@ -314,6 +368,16 @@ class OcmCli:
         except OCMAPIError as exception:
             if exception.response.status_code == 409:
                 return self.update_addon_version(imageset, metadata)
+            raise exception
+        return addon
+
+    # Post addon version data to versions endpoint or addon service(MTSRE-601)
+    def addons_service_upsert_addon_version(self, imageset, metadata):
+        try:
+            addon = self.add_addon_version_as(imageset, metadata)
+        except OCMAPIError as exception:
+            if exception.response.status_code == 409:
+                return self.update_addon_version_as(imageset, metadata)
             raise exception
         return addon
 
