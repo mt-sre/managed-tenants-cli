@@ -1,4 +1,6 @@
+import abc
 import copy
+import dataclasses
 import re
 from datetime import datetime, timedelta
 
@@ -76,20 +78,13 @@ class OcmCli:
         to authenticate against OCM. client_id and client_secret
         take precedence.
         """
-        if client_id and client_secret:
-            self._token_provider = _TokenProvider.from_client_credentials(
+        self._token_provider = _TokenProvider.from_options(
+            options=_TokenProviderOptions(
                 client_id=client_id,
                 client_secret=client_secret,
-            )
-        elif offline_token:
-            self._token_provider = _TokenProvider.from_offline_token(
                 offline_token=offline_token,
             )
-        else:
-            raise ValueError(
-                "`client_id` and `client_secret` or `offline_token` must be"
-                " provided"
-            )
+        )
 
         self.api_insecure = api_insecure
 
@@ -561,75 +556,106 @@ _RHSSO_TOKEN_ENDPOINT = (
 )
 
 
-class _TokenProvider:
-    def __init__(
-        self,
-        client_id=None,
-        client_secret=None,
-        offline_token=None,
-        token_endpoint=_RHSSO_TOKEN_ENDPOINT,
-        token_expiry_period=timedelta(minutes=15),
-        request_timeout=None,
-    ):  # pylint: disable=too-many-arguments
-        self._client_id = client_id
-        self._client_secret = client_secret
-        self._offline_token = offline_token
-        self._token_endpoint = token_endpoint
-        self._token_expiry_period = token_expiry_period
-        self._request_timeout = request_timeout
+class _TokenProvider(abc.ABCMeta):
+    def __init__(cls, options):
+        cls._token_endpoint = options.token_endpoint
+        cls._token_expiry_period = options.token_expiry_period
+        cls._request_timeout = options.request_timeout
 
-        self._token = None
-        self._last_token_issue = None
+        cls._token = None
+        cls._last_token_issue = None
 
-    @classmethod
-    def from_client_credentials(cls, client_id, client_secret, **kwargs):
-        return cls(
-            client_id=client_id,
-            client_secret=client_secret,
-            **kwargs,
-        )
+    @staticmethod
+    def from_options(options):
+        # https://github.com/PyCQA/pylint/issues/3268
+        # pylint: disable=no-value-for-parameter
+        if options.client_secret:
+            return _ClientCredentialTokenProvider(options)
 
-    @classmethod
-    def from_offline_token(cls, offline_token, **kwargs):
-        return cls(
-            client_id="cloud_services",
-            offline_token=offline_token,
-            **kwargs,
-        )
+        return _OfflineTokenProvider(options)
 
     @retry(hook=retry_hook, max_attempts=10)
-    def retrieve_token(self):
+    def retrieve_token(cls):
         now = datetime.utcnow()
-        token_valid = now - self._last_token_issue < self._token_expiry_period
+        token_valid = now - cls._last_token_issue < cls._token_expiry_period
 
-        if self._token and token_valid:
-            return self._token
-
-        if self._client_secret:
-            data = {
-                "grant_type": "client_credentials",
-                "client_id": self._client_id,
-                "client_secret": self._client_secret,
-            }
-        else:
-            data = {
-                "grant_type": "refresh_token",
-                "client_id": self._client_id,
-                "refresh_token": self._offline_token,
-            }
+        if cls._token and token_valid:
+            return cls._token
 
         method = requests.post
         response = method(
-            self._token_endpoint, data=data, timeout=self._request_timeout
+            cls._token_endpoint,
+            data=cls._token_request_body(),
+            timeout=cls._request_timeout,
         )
-        _raise_for_status(
-            response, reqs_method=method, url=self._token_endpoint
+        _raise_for_status(response, reqs_method=method, url=cls._token_endpoint)
+
+        cls._token = response.json()["access_token"]
+        cls._last_token_issue = now
+
+        return cls._token
+
+    @classmethod
+    @abc.abstractmethod
+    def _token_request_body(cls):
+        pass
+
+
+_RHSSO_TOKEN_ENDPOINT = (
+    "https://sso.redhat.com/"
+    "auth/realms/redhat-external/protocol/openid-connect/token"
+)
+
+
+@dataclasses.dataclass(frozen=True)
+class _TokenProviderOptions:
+    client_id: str
+    client_secret: str
+    offline_token: str
+    token_endpoint: str = _RHSSO_TOKEN_ENDPOINT
+    token_expiry_period: timedelta = (timedelta(minutes=15),)
+    request_timeout: int = None
+
+    def __post_init__(self):
+        if (self.client_id and self.client_secret) or self.offline_token:
+            return
+
+        raise ValueError(
+            "`client_id` and `client_secret` or `offline_token` must be"
+            " provided"
         )
 
-        self._token = response.json()["access_token"]
-        self._last_token_issue = now
 
-        return self._token
+class _ClientCredentialTokenProvider(_TokenProvider):
+    def __init__(cls, options):
+        super().__init__(cls, options)  # pylint: disable=too-many-function-args
+
+        cls._client_id = options.client_id
+        cls._client_secret = options.client_secret
+
+    @classmethod
+    def _token_request_body(cls):
+        return {
+            "grant_type": "client_credentials",
+            "client_id": cls._client_id,
+            "client_secret": cls._client_secret,
+        }
+
+
+class _OfflineTokenProvider(_TokenProvider):
+    def __init__(cls, options):
+        super().__init__(cls, options)  # pylint: disable=too-many-function-args
+
+        cls._client_id = options.client_id or "cloud_services"
+        cls._offline_token = options.offline_token
+
+    @classmethod
+    def _token_request_body(cls):
+        return {
+            "grant_type": "refresh_token",
+            "client_id": cls._client_id,
+            "refresh_token": cls._offline_token,
+        }
 
 
 def _raise_for_status(response, reqs_method, url, **kwargs):
