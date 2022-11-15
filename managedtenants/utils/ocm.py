@@ -71,7 +71,7 @@ class OcmCli:
         offline_token=None,
         api=API,
         api_insecure=False,
-    ):
+    ):  # pylint: disable=too-many-arguments
         """Accepts client_id and client_secret or offline token
         to authenticate against OCM. client_id and client_secret
         take precedence.
