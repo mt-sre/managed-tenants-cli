@@ -70,7 +70,7 @@ from tests.testutils.addon_helpers import (  # noqa: F401; noqa: F401; flake8: n
 )
 def test_ocm_addon_environment_variables(addon_str, expected_result, request):
     addon = request.getfixturevalue(addon_str)
-    ocm_cli = OcmCli(offline_token=None)
+    ocm_cli = OcmCli(offline_token="dummy_value")
     if addon.imageset:
         ocm_addon = ocm_cli._addon_from_imageset(
             imageset=addon.imageset, metadata=addon.metadata
@@ -99,7 +99,7 @@ def test_ocm_addon_environment_variables(addon_str, expected_result, request):
 )
 def test_ocm_addon_parameters(addon_str, expected_result, request):
     addon = request.getfixturevalue(addon_str)
-    ocm_cli = OcmCli(offline_token=None)
+    ocm_cli = OcmCli(offline_token="dummy_value")
     if addon.imageset:
         ocm_addon = ocm_cli._addon_from_imageset(
             imageset=addon.imageset, metadata=addon.metadata
@@ -175,7 +175,7 @@ def test_ocm_addon_parameters(addon_str, expected_result, request):
 )
 def test_ocm_addon_secrets(addon_str, expected_result, request):
     addon = request.getfixturevalue(addon_str)
-    ocm_cli = OcmCli(offline_token=None)
+    ocm_cli = OcmCli(offline_token="dummy_value")
     if addon.imageset:
         ocm_addon = ocm_cli._addon_from_imageset(
             imageset=addon.imageset, metadata=addon.metadata
@@ -221,7 +221,7 @@ def test_ocm_addon_secrets(addon_str, expected_result, request):
 )
 def test_ocm_addon_default_values(addon_str, expected_result, request):
     addon = request.getfixturevalue(addon_str)
-    ocm_cli = OcmCli(offline_token=None)
+    ocm_cli = OcmCli(offline_token="dummy_value")
     if addon.imageset:
         ocm_addon = ocm_cli._addon_from_imageset(
             imageset=addon.imageset, metadata=addon.metadata
@@ -262,7 +262,7 @@ def test_ocm_addon_default_values(addon_str, expected_result, request):
 )
 def test_ocm_addon_namespace_with_labels(addon_str, expected_result, request):
     addon = request.getfixturevalue(addon_str)
-    ocm_cli = OcmCli(offline_token=None)
+    ocm_cli = OcmCli(offline_token="dummy_value")
     if addon.imageset:
         ocm_addon = ocm_cli._addon_from_imageset(
             imageset=addon.imageset, metadata=addon.metadata
@@ -291,7 +291,7 @@ def test_ocm_addon_namespace_with_labels(addon_str, expected_result, request):
 )
 def test_ocm_addon_namespace_idempotent(addon_str, expected_result, request):
     addon = request.getfixturevalue(addon_str)
-    ocm_cli = OcmCli(offline_token=None)
+    ocm_cli = OcmCli(offline_token="dummy_value")
     ocm_cli._addon_from_metadata(metadata=addon.metadata)
     ocm_addon = ocm_cli._addon_from_metadata(metadata=addon.metadata)
 
