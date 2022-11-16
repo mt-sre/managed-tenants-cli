@@ -113,14 +113,20 @@ class OcmCli:
 
     def add_addon(self, metadata):
         addon = self._addon_from_metadata(metadata)
-        return self._post(
-            self.CS_ADDON_MGMT_API_URL_PREFIX, json=addon)
+        return self._post(self.CS_ADDON_MGMT_API_URL_PREFIX, json=addon)
+
+    def _sanitize_addon_metadata_for_addons_service(self, addon, metadata):
+        mapped_key = self.IMAGESET_KEYS["addOnParameters"]
+        addon[mapped_key] = metadata.get("addOnParameters", [])
+        return addon
 
     # Update Tooling to point to new addon-service API MTSRE-601
     def add_addon_as(self, metadata):
         addon = self._addon_from_metadata(metadata)
-        return self._post(
-            self.AS_ADDON_MGMT_API_URL_PREFIX, json=addon)
+        addon = self._sanitize_addon_metadata_for_addons_service(
+            addon=addon, metadata=metadata
+        )
+        return self._post(self.AS_ADDON_MGMT_API_URL_PREFIX, json=addon)
 
     def _addon_exists(self, addon_id):
         try:
@@ -129,6 +135,7 @@ class OcmCli:
         # `_get` raises OCMAPIError on 404's
         except OCMAPIError:
             return False
+
     # Update Tooling to point to new addon-service API MTSRE-601
     def _addon_exists_as(self, addon_id):
         try:
@@ -144,10 +151,10 @@ class OcmCli:
             self.add_addon(metadata)
         addon = self._addon_from_imageset(imageset, metadata)
         return self._post(
-            f'''{self.CS_ADDON_MGMT_API_URL_PREFIX}/
-            {metadata.get("id")}/versions''',
-            json=addon)
-
+            f"""{self.CS_ADDON_MGMT_API_URL_PREFIX}/
+            {metadata.get("id")}/versions""",
+            json=addon,
+        )
 
     # Update Tooling to point to new addon-service API MTSRE-601
     def add_addon_version_as(self, imageset, metadata):
@@ -155,23 +162,32 @@ class OcmCli:
         if self._addon_exists_as(metadata.get("id")) is False:
             self.add_addon_as(metadata)
         addon = self._addon_from_imageset(imageset, metadata)
+        addon = self._sanitize_addon_metadata_for_addons_service(
+            addon=addon, metadata=metadata
+        )
         return self._post(
-            f'''{self.AS_ADDON_MGMT_API_URL_PREFIX}/
-            {metadata.get("id")}/versions''',
-            json=addon)
+            f"""{self.AS_ADDON_MGMT_API_URL_PREFIX}/
+            {metadata.get("id")}/versions""",
+            json=addon,
+        )
 
     def update_addon(self, metadata):
         addon = self._addon_from_metadata(metadata)
         addon_id = addon.pop("id")
         return self._patch(
-            f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}", json=addon)
+            f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}", json=addon
+        )
 
     # Update Tooling to point to new addon-service API MTSRE-601
     def update_addon_as(self, metadata):
         addon = self._addon_from_metadata(metadata)
+        addon = self._sanitize_addon_metadata_for_addons_service(
+            addon=addon, metadata=metadata
+        )
         addon_id = addon.pop("id")
         return self._patch(
-            f"{self.AS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}", json=addon)
+            f"{self.AS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}", json=addon
+        )
 
     def update_addon_version(self, imageset, metadata):
         addon = self._addon_from_imageset(imageset, metadata)
@@ -180,17 +196,22 @@ class OcmCli:
         return self._patch(
             f"""{self.CS_ADDON_MGMT_API_URL_PREFIX}/
             {addon_name}/versions/{version_id}""",
-            json=addon)
+            json=addon,
+        )
 
     # Update Tooling to point to new addon-service API MTSRE-601
     def update_addon_version_as(self, imageset, metadata):
         addon = self._addon_from_imageset(imageset, metadata)
+        addon = self._sanitize_addon_metadata_for_addons_service(
+            addon=addon, metadata=metadata
+        )
         version_id = addon.pop("id")
         addon_name = metadata.get("id")
         return self._patch(
             f"""{self.AS_ADDON_MGMT_API_URL_PREFIX}/
             {addon_name}/versions/{version_id}""",
-            json=addon)
+            json=addon,
+        )
 
     def get_addon(self, addon_id):
         return self._get(f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}")
@@ -201,13 +222,13 @@ class OcmCli:
     def enable_addon(self, addon_id):
         return self._patch(
             f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}",
-            json={"enabled": True}
+            json={"enabled": True},
         )
 
     def disable_addon(self, addon_id):
         return self._patch(
             f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}",
-            json={"enabled": False}
+            json={"enabled": False},
         )
 
     def shortcircuit_migrate(self, addon_id):
