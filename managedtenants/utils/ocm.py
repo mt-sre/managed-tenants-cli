@@ -583,7 +583,9 @@ class _TokenProvider(abc.ABC):
             data=self._token_request_body(),
             timeout=self._request_timeout,
         )
-        _raise_for_status(response, reqs_method=method, url=self._token_endpoint)
+        _raise_for_status(
+            response, reqs_method=method, url=self._token_endpoint
+        )
 
         self._token = response.json()["access_token"]
         self._last_token_issue = now
