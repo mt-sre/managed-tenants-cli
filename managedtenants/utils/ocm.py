@@ -623,7 +623,7 @@ class _TokenProviderOptions:
 
 class _ClientCredentialTokenProvider(_TokenProvider):
     def __init__(cls, options):
-        super().__init__(cls, options)
+        super().__init__(cls, options)  # pylint: disable=too-many-function-args
 
         cls._client_id = options.client_id
         cls._client_secret = options.client_secret
@@ -639,7 +639,7 @@ class _ClientCredentialTokenProvider(_TokenProvider):
 
 class _OfflineTokenProvider(_TokenProvider):
     def __init__(cls, options):
-        super().__init__(cls, options)
+        super().__init__(cls, options)  # pylint: disable=too-many-function-args
 
         cls._client_id = options.client_id or "cloud_services"
         cls._offline_token = options.offline_token
