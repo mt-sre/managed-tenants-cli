@@ -590,9 +590,8 @@ class _TokenProvider(abc.ABC):
 
         return self._token
 
-    @classmethod
     @abc.abstractmethod
-    def _token_request_body(cls):
+    def _token_request_body(self):
         pass
 
 
