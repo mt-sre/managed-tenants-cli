@@ -551,7 +551,7 @@ def _camel_to_snake_case(val):
     return re.sub(r"(?<!^)(?=[A-Z])", "_", val).lower()
 
 
-class _TokenProvider(abc.ABCMeta):
+class _TokenProvider(abc.ABC):
     def __init__(cls, options):
         cls._token_endpoint = options.token_endpoint
         cls._token_expiry_period = options.token_expiry_period
@@ -623,7 +623,7 @@ class _TokenProviderOptions:
 
 class _ClientCredentialTokenProvider(_TokenProvider):
     def __init__(cls, options):
-        super().__init__(cls, options)  # pylint: disable=too-many-function-args
+        super().__init__(options)  # pylint: disable=too-many-function-args
 
         cls._client_id = options.client_id
         cls._client_secret = options.client_secret
@@ -639,7 +639,7 @@ class _ClientCredentialTokenProvider(_TokenProvider):
 
 class _OfflineTokenProvider(_TokenProvider):
     def __init__(cls, options):
-        super().__init__(cls, options)  # pylint: disable=too-many-function-args
+        super().__init__(options)  # pylint: disable=too-many-function-args
 
         cls._client_id = options.client_id or "cloud_services"
         cls._offline_token = options.offline_token
