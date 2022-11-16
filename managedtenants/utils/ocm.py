@@ -552,13 +552,13 @@ def _camel_to_snake_case(val):
 
 
 class _TokenProvider(abc.ABC):
-    def __init__(cls, options):
-        cls._token_endpoint = options.token_endpoint
-        cls._token_expiry_period = options.token_expiry_period
-        cls._request_timeout = options.request_timeout
+    def __init__(self, options):
+        self._token_endpoint = options.token_endpoint
+        self._token_expiry_period = options.token_expiry_period
+        self._request_timeout = options.request_timeout
 
-        cls._token = None
-        cls._last_token_issue = None
+        self._token = None
+        self._last_token_issue = None
 
     @staticmethod
     def from_options(options):
@@ -570,25 +570,25 @@ class _TokenProvider(abc.ABC):
         return _OfflineTokenProvider(options)
 
     @retry(hook=retry_hook, max_attempts=10)
-    def retrieve_token(cls):
+    def retrieve_token(self):
         now = datetime.utcnow()
-        token_valid = now - cls._last_token_issue < cls._token_expiry_period
+        token_valid = now - self._last_token_issue < self._token_expiry_period
 
-        if cls._token and token_valid:
-            return cls._token
+        if self._token and token_valid:
+            return self._token
 
         method = requests.post
         response = method(
-            cls._token_endpoint,
-            data=cls._token_request_body(),
-            timeout=cls._request_timeout,
+            self._token_endpoint,
+            data=self._token_request_body(),
+            timeout=self._request_timeout,
         )
-        _raise_for_status(response, reqs_method=method, url=cls._token_endpoint)
+        _raise_for_status(response, reqs_method=method, url=self._token_endpoint)
 
-        cls._token = response.json()["access_token"]
-        cls._last_token_issue = now
+        self._token = response.json()["access_token"]
+        self._last_token_issue = now
 
-        return cls._token
+        return self._token
 
     @classmethod
     @abc.abstractmethod
@@ -622,34 +622,32 @@ class _TokenProviderOptions:
 
 
 class _ClientCredentialTokenProvider(_TokenProvider):
-    def __init__(cls, options):
-        super().__init__(options)  # pylint: disable=too-many-function-args
+    def __init__(self, options):
+        super().__init__(options)
 
-        cls._client_id = options.client_id
-        cls._client_secret = options.client_secret
+        self._client_id = options.client_id
+        self._client_secret = options.client_secret
 
-    @classmethod
-    def _token_request_body(cls):
+    def _token_request_body(self):
         return {
             "grant_type": "client_credentials",
-            "client_id": cls._client_id,
-            "client_secret": cls._client_secret,
+            "client_id": self._client_id,
+            "client_secret": self._client_secret,
         }
 
 
 class _OfflineTokenProvider(_TokenProvider):
-    def __init__(cls, options):
-        super().__init__(options)  # pylint: disable=too-many-function-args
+    def __init__(self, options):
+        super().__init__(options)
 
-        cls._client_id = options.client_id or "cloud_services"
-        cls._offline_token = options.offline_token
+        self._client_id = options.client_id or "cloud_services"
+        self._offline_token = options.offline_token
 
-    @classmethod
-    def _token_request_body(cls):
+    def _token_request_body(self):
         return {
             "grant_type": "refresh_token",
-            "client_id": cls._client_id,
-            "refresh_token": cls._offline_token,
+            "client_id": self._client_id,
+            "refresh_token": self._offline_token,
         }
 
 
