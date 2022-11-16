@@ -407,13 +407,14 @@ class OcmCli:
 
         return addon
 
-    def get_namespace_labels_list(self, namespaces, namespaceLabels):
-        namespaceLabelsList = []
+    @staticmethod
+    def get_namespace_labels_list(namespaces, namespace_labels):
+        namespace_labels_list = []
         for namespace in namespaces:
-            namespaceLabelsList.append(
-                {"name": namespace, "labels": namespaceLabels}
+            namespace_labels_list.append(
+                {"name": namespace, "labels": namespace_labels}
             )
-        return namespaceLabelsList
+        return namespace_labels_list
 
     def _addon_from_metadata(self, metadata):
         addon = {}
@@ -550,12 +551,6 @@ def _camel_to_snake_case(val):
     return re.sub(r"(?<!^)(?=[A-Z])", "_", val).lower()
 
 
-_RHSSO_TOKEN_ENDPOINT = (
-    "https://sso.redhat.com/"
-    "auth/realms/redhat-external/protocol/openid-connect/token"
-)
-
-
 class _TokenProvider(abc.ABCMeta):
     def __init__(cls, options):
         cls._token_endpoint = options.token_endpoint
@@ -613,7 +608,7 @@ class _TokenProviderOptions:
     client_secret: str
     offline_token: str
     token_endpoint: str = _RHSSO_TOKEN_ENDPOINT
-    token_expiry_period: timedelta = (timedelta(minutes=15),)
+    token_expiry_period: timedelta = timedelta(minutes=15)
     request_timeout: int = None
 
     def __post_init__(self):
@@ -628,7 +623,7 @@ class _TokenProviderOptions:
 
 class _ClientCredentialTokenProvider(_TokenProvider):
     def __init__(cls, options):
-        super().__init__(cls, options)  # pylint: disable=too-many-function-args
+        super().__init__(cls, options)
 
         cls._client_id = options.client_id
         cls._client_secret = options.client_secret
@@ -644,7 +639,7 @@ class _ClientCredentialTokenProvider(_TokenProvider):
 
 class _OfflineTokenProvider(_TokenProvider):
     def __init__(cls, options):
-        super().__init__(cls, options)  # pylint: disable=too-many-function-args
+        super().__init__(cls, options)
 
         cls._client_id = options.client_id or "cloud_services"
         cls._offline_token = options.offline_token
