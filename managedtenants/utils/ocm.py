@@ -498,7 +498,7 @@ class OcmCli:
         return [dict(d, id=str(id)) for id, d in enumerate(dicts)]
 
     def _headers(self, extra_headers=None):
-        token = self._token_provider.retrieve_token()
+        token = self._token_provider.retrieve_access_token()
         headers = {"Authorization": f"Bearer {token}"}
 
         if extra_headers:
@@ -557,7 +557,6 @@ class _TokenProvider(abc.ABC):
         self._request_timeout = options.request_timeout
 
         self._token = None
-        self._expiration_time = datetime.fromtimestamp(0)
 
     @staticmethod
     def from_options(options):
@@ -569,12 +568,10 @@ class _TokenProvider(abc.ABC):
         return _OfflineTokenProvider(options)
 
     @retry(hook=retry_hook, max_attempts=10)
-    def retrieve_token(self):
-        now = datetime.utcnow()
-        token_valid = now < self._expiration_time
+    def retrieve_access_token(self):
 
-        if self._token and token_valid:
-            return self._token
+        if self._token and self._token.still_valid():
+            return self._token.access_token
 
         method = requests.post
         response = method(
@@ -586,16 +583,42 @@ class _TokenProvider(abc.ABC):
             response, reqs_method=method, url=self._token_endpoint
         )
 
-        self._token = response.json()["access_token"]
-        self._expiration_time = now + timedelta(
-            seconds=response.json()["expires_in"]
-        )
+        self._token = _Token.from_json(response.json())
 
-        return self._token
+        return self._token.access_token
 
     @abc.abstractmethod
     def _token_request_body(self):
         pass
+
+
+class _Token:
+    def __init__(self, access_token, expiration_time):
+        self._access_token = access_token
+        self._expiration_time = expiration_time
+
+    @classmethod
+    def from_json(cls, json):
+        access_token = json.get("access_token")
+        if access_token is None:
+            raise ValueError(
+                "'access_token' is a required field of the input JSON"
+            )
+
+        expires_in = json.get("expires_in", 0)
+        expiration_time = datetime.now() + timedelta(seconds=expires_in)
+
+        return cls(
+            access_token=access_token,
+            expiration_time=expiration_time,
+        )
+
+    @property
+    def access_token(self):
+        return self._access_token
+
+    def still_valid(self):
+        return datetime.now() < self._expiration_time
 
 
 _RHSSO_TOKEN_ENDPOINT = (
