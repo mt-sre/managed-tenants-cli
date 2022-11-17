@@ -554,11 +554,10 @@ def _camel_to_snake_case(val):
 class _TokenProvider(abc.ABC):
     def __init__(self, options):
         self._token_endpoint = options.token_endpoint
-        self._token_expiry_period = options.token_expiry_period
         self._request_timeout = options.request_timeout
 
         self._token = None
-        self._last_token_issue = None
+        self._expiration_time = datetime.fromtimestamp(0)
 
     @staticmethod
     def from_options(options):
@@ -572,7 +571,7 @@ class _TokenProvider(abc.ABC):
     @retry(hook=retry_hook, max_attempts=10)
     def retrieve_token(self):
         now = datetime.utcnow()
-        token_valid = now - self._last_token_issue < self._token_expiry_period
+        token_valid = now < self._expiration_time
 
         if self._token and token_valid:
             return self._token
@@ -588,7 +587,9 @@ class _TokenProvider(abc.ABC):
         )
 
         self._token = response.json()["access_token"]
-        self._last_token_issue = now
+        self._expiration_time = now + timedelta(
+            seconds=response.json()["expires_in"]
+        )
 
         return self._token
 
@@ -605,11 +606,10 @@ _RHSSO_TOKEN_ENDPOINT = (
 
 @dataclasses.dataclass(frozen=True)
 class _TokenProviderOptions:
-    client_id: str
-    client_secret: str
-    offline_token: str
+    client_id: str = ""
+    client_secret: str = ""
+    offline_token: str = ""
     token_endpoint: str = _RHSSO_TOKEN_ENDPOINT
-    token_expiry_period: timedelta = timedelta(minutes=15)
     request_timeout: int = None
 
     def __post_init__(self):
@@ -641,7 +641,7 @@ class _OfflineTokenProvider(_TokenProvider):
     def __init__(self, options):
         super().__init__(options)
 
-        self._client_id = options.client_id or "cloud_services"
+        self._client_id = options.client_id or "cloud-services"
         self._offline_token = options.offline_token
 
     def _token_request_body(self):
