@@ -94,17 +94,25 @@ class Cli:
         bundles_parser_examples = [
             "Examples:",
             "# Build all bundles and index images locally.",
-            "$ managedtenants --addons-dir=PATH --dry-run bundles"
-            " --build-with tag",
+            (
+                "$ managedtenants --addons-dir=PATH --dry-run bundles"
+                " --build-with tag"
+            ),
             "",
-            "# Build and push all bundles and index images to a custom quay"
-            " org.",
+            (
+                "# Build and push all bundles and index images to a custom quay"
+                " org."
+            ),
             "$ managedtenants --addons-dir=PATH bundles --quay-org QUAY_ORG",
             "",
-            "# Debug the gitlab merge request integration for the"
-            " reference-addon.",
-            "$ managedtenants --addons-dir=PATH --addon-name=reference-addon"
-            " --debug bundles --enable-gitlab",
+            (
+                "# Debug the gitlab merge request integration for the"
+                " reference-addon."
+            ),
+            (
+                "$ managedtenants --addons-dir=PATH"
+                " --addon-name=reference-addon --debug bundles --enable-gitlab"
+            ),
         ]
         bundles_parser = subcommands.add_parser(
             "bundles",
