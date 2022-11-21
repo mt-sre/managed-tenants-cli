@@ -29,6 +29,9 @@ def retry_hook(exception):
         raise exception
 
 
+# pylint: disable=line-too-long
+# fmt: off
+# flake8: noqa: E501
 class OcmCli:
     API = "https://api.stage.openshift.com"
     CS_ADDON_MGMT_API_URL_PREFIX = "/api/clusters_mgmt/v1/addons"
@@ -113,9 +116,7 @@ class OcmCli:
     # Update Tooling to point to new addon-service API MTSRE-601
     def add_addon_as(self, metadata):
         addon = self._addon_from_metadata(metadata)
-        addon = self._sanitize_addon_metadata_for_addons_service(
-            addon=addon, metadata=metadata
-        )
+        addon = self._sanitize_addon_metadata_for_addons_service(addon=addon, metadata=metadata)
         return self._post(self.AS_ADDON_MGMT_API_URL_PREFIX, json=addon)
 
     def _addon_exists(self, addon_id):
@@ -141,8 +142,7 @@ class OcmCli:
             self.add_addon(metadata)
         addon = self._addon_from_imageset(imageset, metadata)
         return self._post(
-            f"""{self.CS_ADDON_MGMT_API_URL_PREFIX}/
-            {metadata.get("id")}/versions""",
+            f"""{self.CS_ADDON_MGMT_API_URL_PREFIX}/{metadata.get("id")}/versions""",
             json=addon,
         )
 
@@ -152,54 +152,41 @@ class OcmCli:
         if self._addon_exists_as(metadata.get("id")) is False:
             self.add_addon_as(metadata)
         addon = self._addon_from_imageset(imageset, metadata)
-        addon = self._sanitize_addon_metadata_for_addons_service(
-            addon=addon, metadata=metadata
-        )
+        addon = self._sanitize_addon_metadata_for_addons_service(addon=addon, metadata=metadata)
         return self._post(
-            f"""{self.AS_ADDON_MGMT_API_URL_PREFIX}/
-            {metadata.get("id")}/versions""",
+            f"""{self.AS_ADDON_MGMT_API_URL_PREFIX}/{metadata.get("id")}/versions""",
             json=addon,
         )
 
     def update_addon(self, metadata):
         addon = self._addon_from_metadata(metadata)
         addon_id = addon.pop("id")
-        return self._patch(
-            f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}", json=addon
-        )
+        return self._patch(f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}", json=addon)
 
     # Update Tooling to point to new addon-service API MTSRE-601
     def update_addon_as(self, metadata):
         addon = self._addon_from_metadata(metadata)
-        addon = self._sanitize_addon_metadata_for_addons_service(
-            addon=addon, metadata=metadata
-        )
+        addon = self._sanitize_addon_metadata_for_addons_service(addon=addon, metadata=metadata)
         addon_id = addon.pop("id")
-        return self._patch(
-            f"{self.AS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}", json=addon
-        )
+        return self._patch(f"{self.AS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}", json=addon)
 
     def update_addon_version(self, imageset, metadata):
         addon = self._addon_from_imageset(imageset, metadata)
         version_id = addon.pop("id")
         addon_name = metadata.get("id")
         return self._patch(
-            f"""{self.CS_ADDON_MGMT_API_URL_PREFIX}/
-            {addon_name}/versions/{version_id}""",
+            f"""{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_name}/versions/{version_id}""",
             json=addon,
         )
 
     # Update Tooling to point to new addon-service API MTSRE-601
     def update_addon_version_as(self, imageset, metadata):
         addon = self._addon_from_imageset(imageset, metadata)
-        addon = self._sanitize_addon_metadata_for_addons_service(
-            addon=addon, metadata=metadata
-        )
+        addon = self._sanitize_addon_metadata_for_addons_service(addon=addon, metadata=metadata)
         version_id = addon.pop("id")
         addon_name = metadata.get("id")
         return self._patch(
-            f"""{self.AS_ADDON_MGMT_API_URL_PREFIX}/
-            {addon_name}/versions/{version_id}""",
+            f"""{self.AS_ADDON_MGMT_API_URL_PREFIX}/{addon_name}/versions/{version_id}""",
             json=addon,
         )
 
@@ -278,9 +265,7 @@ class OcmCli:
 
     def post_addon_migration_with_body(self, addon_id, payload):
         try:
-            output = self._post(
-                "/api/clusters_mgmt/v1/addon_migrations", json=payload
-            )
+            output = self._post("/api/clusters_mgmt/v1/addon_migrations", json=payload)
         except OCMAPIError as exception:
             if exception.response.status_code == 409:
                 return self._patch(
@@ -291,14 +276,10 @@ class OcmCli:
         return output
 
     def patch_addon_migration(self, addon_id, patch):
-        return self._patch(
-            f"/api/clusters_mgmt/v1/addon_migrations/{addon_id}", json=patch
-        )
+        return self._patch(f"/api/clusters_mgmt/v1/addon_migrations/{addon_id}", json=patch)
 
     def delete_addon_migration(self, addon_id):
-        return self._delete(
-            f"/api/clusters_mgmt/v1/addon_migrations/{addon_id}"
-        )
+        return self._delete(f"/api/clusters_mgmt/v1/addon_migrations/{addon_id}")
 
     def disable_addon_installation(self, addon_id):
         try:
@@ -395,9 +376,7 @@ class OcmCli:
     def _set_default_values_for_addon_version(self, addon, metadata):
         # Set additionalCatalogSources
         mapped_key = self.IMAGESET_KEYS["additionalCatalogSources"]
-        addon[mapped_key] = self.index_dicts(
-            metadata.get("additionalCatalogSources", [])
-        )
+        addon[mapped_key] = self.index_dicts(metadata.get("additionalCatalogSources", []))
 
         # Set default values for attributes under config in metadata,
         # if not present.
@@ -415,9 +394,7 @@ class OcmCli:
 
         # Set addOnParameters
         mapped_key = self.IMAGESET_KEYS["addOnParameters"]
-        addon[mapped_key] = self._parameters_from_list(
-            metadata.get("addOnParameters", [])
-        )
+        addon[mapped_key] = self._parameters_from_list(metadata.get("addOnParameters", []))
 
         # Set addOnRequirements
         mapped_key = self.IMAGESET_KEYS["addOnRequirements"]
@@ -447,9 +424,7 @@ class OcmCli:
         # These attributes will get overwritten with the values from
         # the imageset if they're present in the imageset as well.
 
-        addon = self._set_default_values_for_addon_version(
-            addon=addon, metadata=metadata
-        )
+        addon = self._set_default_values_for_addon_version(addon=addon, metadata=metadata)
 
         for key, val in imageset.items():
             if key in self.IMAGESET_KEYS:
@@ -486,9 +461,7 @@ class OcmCli:
                 secret_propagations_list = self.index_dicts(
                     self.map_secret_objs(addon_id, config_obj.get("secrets"))
                 )
-                addon[mapped_key][
-                    "add_on_secret_propagations"
-                ] = secret_propagations_list
+                addon[mapped_key]["add_on_secret_propagations"] = secret_propagations_list
 
         return addon
 
@@ -552,8 +525,7 @@ class OcmCli:
         res["config"]["secrets"] = res["config"].get("secrets", [])
 
         res["namespaces"] = [
-            {"name": ns, "labels": res.get("namespaceLabels")}
-            for ns in res.get("namespaces", [])
+            {"name": ns, "labels": res.get("namespaceLabels")} for ns in res.get("namespaces", [])
         ]
 
         return res
