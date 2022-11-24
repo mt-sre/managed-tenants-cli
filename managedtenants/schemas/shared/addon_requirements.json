@@ -12,7 +12,8 @@
     "properties": {
       "id": {
         "type": "string",
-        "format": "printable"
+        "format": "printable",
+        "description": "ID of the add-on requirement"
       },
       "resource": {
         "type": "string",
@@ -20,111 +21,190 @@
           "cluster",
           "addon",
           "machine_pool"
-        ]
+        ],
+        "description": "Representation of an add-on requirement resource"
       },
       "data": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
+        "description": "Data for the add-on requirement",
         "properties": {
           "id": {
             "type": "string",
-            "format": "printable"
-          },
-          "state": {
-            "type": "string",
-            "format": "printable"
-          },
-          "aws.sts.enabled": {
-            "type": "boolean"
-          },
-          "cloud_provider.id": {
-            "type": [
-              "array",
-              "string"
-            ],
-            "items": {
-              "type": "string",
-              "format": "printable"
-            }
-          },
-          "product.id": {
-            "type": [
-              "array",
-              "string"
-            ],
-            "items": {
-              "type": "string",
-              "format": "printable"
-            }
-          },
-          "compute.security_group_filters": {
-            "type": "string"
-          },
-          "compute.memory": {
-            "type": "integer"
-          },
-          "compute.cpu": {
-            "type": "integer"
-          },
-          "ccs.enabled": {
-            "type": "boolean"
-          },
-          "nodes.compute": {
-            "type": "integer"
-          },
-          "nodes.compute_machine_type.id": {
-            "type": [
-              "array",
-              "string"
-            ],
-            "format": "printable"
-          },
-          "version.raw_id": {
-            "type": "string",
-            "format": "printable"
-          },
-          "instance_type": {
-            "type": [
-              "array",
-              "string"
-            ],
-            "format": "printable"
-          },
-          "replicas": {
-            "type": "integer"
-          },
-          "taints": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "key": {
-                  "type": "string",
-                  "format": "printable"
-                },
-                "value": {
-                  "type": "string",
-                  "format": "printable"
-                },
-                "effect": {
-                  "type": "string",
-                  "format": "printable"
-                }
-              },
-              "format": "printable"
-            }
-          },
-          "labels": {
-            "type": "object",
-            "additionalProperties": true,
             "format": "printable"
           }
         }
       },
       "enabled": {
-        "type": "boolean"
+        "type": "boolean",
+        "default": true,
+        "description": "Indicates if this requirement is enabled for the add-on"
       }
-    }
+    },
+    "allOf": [
+      {
+        "if": {
+          "properties": {
+            "resource": {
+              "const": "machine_pool"
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "data": {
+              "additionalProperties": false,
+              "properties": {
+                "taints": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalproperties": false,
+                    "properties": {
+                      "key": {
+                        "type": "string",
+                        "format": "printable"
+                      },
+                      "value": {
+                        "type": "string",
+                        "format": "printable"
+                      },
+                      "effect": {
+                        "type": "string",
+                        "format": "printable"
+                      }
+                    },
+                    "format": "printable"
+                  }
+                },
+                "aws.sts.enabled": {
+                  "type": "boolean"
+                },
+                "compute.security_group_filters": {
+                  "type": "string"
+                },
+                "compute.memory": {
+                  "type": "integer"
+                },
+                "compute.cpu": {
+                  "type": "integer"
+                },
+                "labels": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "format": "printable"
+                },
+                "instance_type": {
+                  "type": [
+                    "array",
+                    "string"
+                  ],
+                  "format": "printable"
+                },
+                "replicas": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "resource": {
+              "const": "addon"
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "data": {
+              "additionalproperties": true,
+              "properties": {
+                "state": {
+                  "type": "string",
+                  "format": "printable"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "resource": {
+              "const": "cluster"
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "data": {
+              "additionalProperties": false,
+              "properties": {
+                "version.raw_id": {
+                  "type": "string",
+                  "format": "printable",
+                  "pattern":  "^[a-z|0-9|\\s|>|=|<|.]*$"
+                },
+                "state": {
+                  "type": "string",
+                  "format": "printable"
+                },
+                "cloud_provider.id": {
+                  "type": [
+                    "array",
+                    "string"
+                  ],
+                  "items": {
+                    "type": "string",
+                    "format": "printable"
+                  }
+                },
+                "ccs.enabled": {
+                  "type": "boolean"
+                },
+                "aws.sts.enabled": {
+                  "type": "boolean"
+                },
+                "compute.security_group_filters": {
+                  "type": "string"
+                },
+                "compute.memory": {
+                  "type": "integer"
+                },
+                "compute.cpu": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "product.id": {
+                  "type": [
+                    "array",
+                    "string"
+                  ],
+                  "items": {
+                    "type": "string",
+                    "format": "printable"
+                  }
+                },
+                "nodes.compute": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "nodes.compute_machine_type.id": {
+                  "type": [
+                    "array",
+                    "string"
+                  ],
+                  "format": "printable"
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
   }
 }
