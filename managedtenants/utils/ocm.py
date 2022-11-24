@@ -376,7 +376,7 @@ class OcmCli:
     def _set_default_values_for_addon_version(self, addon, metadata):
         # Set additionalCatalogSources
         mapped_key = self.IMAGESET_KEYS["additionalCatalogSources"]
-        addon[mapped_key] = self.index_dicts(metadata.get("additionalCatalogSources", []))
+        addon[mapped_key] = metadata.get("additionalCatalogSources", [])
 
         # Set default values for attributes under config in metadata,
         # if not present.
@@ -429,10 +429,6 @@ class OcmCli:
         for key, val in imageset.items():
             if key in self.IMAGESET_KEYS:
                 mapped_key = self.IMAGESET_KEYS[key]
-                if key == "additionalCatalogSources":
-                    catalog_src_list = self.index_dicts(val)
-                    addon[mapped_key] = catalog_src_list
-                    continue
                 if key == "config":
                     addon = self.set_addon_config(
                         addon=addon,
