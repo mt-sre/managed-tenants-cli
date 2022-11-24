@@ -65,9 +65,9 @@ class IndexBuilder:
             "docker",
             "add",
             "--binary-image",
-            # Custom base image based on UBI, OPM 1.19.5
+            # Custom base image based on UBI, OPM 1.24.0
             # https://github.com/mt-sre/containers/tree/main/opm-ubi
-            "quay.io/mtsre/opm-ubi@sha256:471dc5652a045103d75bafd24072926fbd7a520bd613cee896f2ce1602316eac",  # noqa: 501
+            "quay.io/mtsre/opm-ubi@sha256:4f1d7cc3d3399caaaba4716574fcbac74f5d213cc8d45a4bada0987263e74470",  # noqa: 501
             "--permissive",
             "--bundles",
             ",".join(
