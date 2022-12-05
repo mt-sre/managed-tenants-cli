@@ -24,6 +24,24 @@
         ]
       }
     },
+    "allOf": [
+      {
+        "if": {
+          "properties": {
+            "value_type": {
+              "const": "resource_requirement"
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "options": {
+              "minimum": 1
+            }
+          }
+        }
+      }
+    ],
     "properties": {
       "id": {
         "type": "string",
@@ -98,7 +116,7 @@
               "type": "integer",
               "minimum": 0
             },
-            "requirements":{
+            "requirements": {
               "$ref": "addon_requirements.json"
             }
           }
