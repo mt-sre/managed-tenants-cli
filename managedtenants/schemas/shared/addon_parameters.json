@@ -36,7 +36,14 @@
         "then": {
           "properties": {
             "options": {
-              "minimum": 1
+              "minimum": 1,
+              "items": {
+                "required": [
+                  "name",
+                  "value",
+                  "requirements"
+                ]
+              }
             }
           }
         }
