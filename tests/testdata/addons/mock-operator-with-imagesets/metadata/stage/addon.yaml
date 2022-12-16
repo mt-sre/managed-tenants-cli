@@ -13,6 +13,12 @@ namespaces:
   - mock-operator
 namespaceLabels:
   monitoring-key: mock
+commonLabels:
+  cached:  addons.openshift.com/addon-operator
+  labels: present
+commonAnnotations:
+  cached:  addons.openshift.com/addon-operator
+  annotations: present
 namespaceAnnotations: {}
 ocmQuotaName: addon-mock-operator
 ocmQuotaCost: 1
