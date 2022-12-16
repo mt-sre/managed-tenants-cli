@@ -59,6 +59,8 @@ class OcmCli:
         "managedService": "managed_service",
         "config": "config",
         "namespaces": "namespaces",
+        "commonAnnotations": "common_annotations",
+        "commonLabels": "common_labels"
     }
 
     IMAGESET_KEYS = {

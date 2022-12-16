@@ -297,3 +297,36 @@ def test_ocm_addon_namespace_idempotent(addon_str, expected_result, request):
 
     for k, expected_value in expected_result.items():
         assert ocm_addon.get(k) == expected_value
+
+
+@pytest.mark.parametrize(
+    "addon_str,expected_result",
+    [
+        (
+            "addon_with_imageset_and_default_config",
+            {
+                "common_labels": {
+                    "cached":  "addons.openshift.com/addon-operator",
+                    "labels": "present"
+                },
+                "common_annotations":{
+                    "cached":  "addons.openshift.com/addon-operator",
+                    "annotations": "present"
+                }
+            }
+        ),
+        (
+            "addon_with_imageset_and_only_required_attrs",
+            {
+                "common_labels": None,
+                "common_annotations": None,
+            },
+        )
+    ]
+)
+def test_ocm_common_labels_and_annotations(addon_str, expected_result, request):
+    addon = request.getfixturevalue(addon_str)
+    ocm_cli = OcmCli(offline_token="dummy_value")
+    ocm_addon = ocm_cli._addon_from_metadata(metadata=addon.metadata)
+    for key, expected_value in expected_result.items():
+        assert ocm_addon.get(key) == expected_value
