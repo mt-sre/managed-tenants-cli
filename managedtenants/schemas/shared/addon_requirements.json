@@ -103,6 +103,10 @@
                 },
                 "replicas": {
                   "type": "integer"
+                },
+                "id": {
+                  "type": "string",
+                  "format": "printable"
                 }
               }
             }
