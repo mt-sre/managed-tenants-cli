@@ -21,11 +21,11 @@ class Package:
         return json.dumps(self.data, indent=4)
 
     def _get_data(self):
-        return dict(
-            packageName=self._addon.metadata["id"],
-            defaultChannel=self._addon.metadata["defaultChannel"],
-            channels=self._addon.metadata["channels"],
-        )
+        return {
+            "packageName": self._addon.metadata["id"],
+            "defaultChannel": self._addon.metadata["defaultChannel"],
+            "channels": self._addon.metadata["channels"],
+        }
 
     def __repr__(self):
         return f"{self.__class__.__name__}({repr(self._addon.name)})"
