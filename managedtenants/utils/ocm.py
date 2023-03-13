@@ -71,7 +71,17 @@ class OcmCli:
         "pullSecretName": "pull_secret_name",
         "additionalCatalogSources": "additional_catalog_sources",
         "config": "config",
+        "monitoring": "metrics_federation",
+        "metricsFederation": "metrics_federation",
+        "monitoringStack": "monitoring_stack"
     }
+
+    # TODO: pop 'metrics_federation' from this list after this MR - https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/merge_requests/5194 - is merged and propagated to the fleet
+    UNSUPPORTED_FIELDS_CS = ["metrics_federation", "monitoring_stack"]
+
+    # TODO: pop 'monitoring_stack' from this list after this MR - https://gitlab.cee.redhat.com/ocm/ocm-addons-service/-/merge_requests/177 - is propagated to the fleet
+    # TODO: pop 'metrics_federation' from this list after this MR - https://gitlab.cee.redhat.com/ocm/ocm-addons-service/-/merge_requests/183 - is merged and propagated to the fleet
+    UNSUPPORTED_FIELDS_AS = ["metrics_federation", "monitoring_stack"]
 
     def __init__(
         self,
@@ -108,11 +118,22 @@ class OcmCli:
 
     def add_addon(self, metadata):
         addon = self._addon_from_metadata(metadata)
+        addon = self._sanitize_addon_metadata_for_cluster_service(addon=addon)
         return self._post(self.CS_ADDON_MGMT_API_URL_PREFIX, json=addon)
 
     def _sanitize_addon_metadata_for_addons_service(self, addon, metadata):
         mapped_key = self.IMAGESET_KEYS["addOnParameters"]
         addon[mapped_key] = metadata.get("addOnParameters", [])
+
+        for key in self.UNSUPPORTED_FIELDS_AS:
+            del addon[key]
+
+        return addon
+
+    def _sanitize_addon_metadata_for_cluster_service(self, addon):
+        for key in self.UNSUPPORTED_FIELDS_CS:
+            del addon[key]
+
         return addon
 
     # Update Tooling to point to new addon-service API MTSRE-601
@@ -143,6 +164,7 @@ class OcmCli:
         if self._addon_exists(metadata.get("id")) is False:
             self.add_addon(metadata)
         addon = self._addon_from_imageset(imageset, metadata)
+        addon = self._sanitize_addon_metadata_for_cluster_service(addon=addon)
         return self._post(
             f"""{self.CS_ADDON_MGMT_API_URL_PREFIX}/{metadata.get("id")}/versions""",
             json=addon,
@@ -162,6 +184,7 @@ class OcmCli:
 
     def update_addon(self, metadata):
         addon = self._addon_from_metadata(metadata)
+        addon = self._sanitize_addon_metadata_for_cluster_service(addon=addon)
         addon_id = addon.pop("id")
         return self._patch(f"{self.CS_ADDON_MGMT_API_URL_PREFIX}/{addon_id}", json=addon)
 
@@ -174,6 +197,7 @@ class OcmCli:
 
     def update_addon_version(self, imageset, metadata):
         addon = self._addon_from_imageset(imageset, metadata)
+        addon = self._sanitize_addon_metadata_for_cluster_service(addon=addon)
         version_id = addon.pop("id")
         addon_name = metadata.get("id")
         return self._patch(
@@ -505,6 +529,11 @@ class OcmCli:
                         mapped_key=mapped_key,
                     )
                     continue
+                # when key="monitoring" or key="metricsFederation", mapped_key="metrics_federation"
+                # skip addon["metrics_federation"]=val by key="monitoring" if it was already populated by key="metricsFederation"
+                if key == "monitoring" and addon.get(mapped_key, {}) != {}:
+                    continue
+
                 addon[mapped_key] = val
         return addon
 
