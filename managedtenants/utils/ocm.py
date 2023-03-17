@@ -130,6 +130,19 @@ class OcmCli:
 
         return addon
 
+    def _sanitize_addon_imageset_for_addons_service(self, addon, imageset, metadata):
+        mapped_key = self.IMAGESET_KEYS["addOnParameters"]
+        # This will remove order attribute in addon.
+        if imageset.get("addOnParameters") is None:
+            addon[mapped_key] = metadata.get("addOnParameters", [])
+        else:
+            addon[mapped_key] = imageset.get("addOnParameters", [])
+
+        for key in self.UNSUPPORTED_FIELDS_AS:
+            del addon[key]
+
+        return addon
+
     def _sanitize_addon_metadata_for_cluster_service(self, addon):
         for key in self.UNSUPPORTED_FIELDS_CS:
             del addon[key]
@@ -176,7 +189,7 @@ class OcmCli:
         if self._addon_exists_as(metadata.get("id")) is False:
             self.add_addon_as(metadata)
         addon = self._addon_from_imageset(imageset, metadata)
-        addon = self._sanitize_addon_metadata_for_addons_service(addon=addon, metadata=metadata)
+        addon = self._sanitize_addon_imageset_for_addons_service(addon=addon, imageset=imageset, metadata=metadata)
         return self._post(
             f"""{self.AS_ADDON_MGMT_API_URL_PREFIX}/{metadata.get("id")}/versions""",
             json=addon,
@@ -208,7 +221,7 @@ class OcmCli:
     # Update Tooling to point to new addon-service API MTSRE-601
     def update_addon_version_as(self, imageset, metadata):
         addon = self._addon_from_imageset(imageset, metadata)
-        addon = self._sanitize_addon_metadata_for_addons_service(addon=addon, metadata=metadata)
+        addon = self._sanitize_addon_imageset_for_addons_service(addon=addon, imageset=imageset, metadata=metadata)
         version_id = addon.pop("id")
         addon_name = metadata.get("id")
         return self._patch(
