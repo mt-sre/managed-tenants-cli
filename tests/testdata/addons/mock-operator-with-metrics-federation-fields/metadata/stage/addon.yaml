@@ -1,0 +1,52 @@
+---
+id: mocksecret
+name: Mock Operator
+description: This is a mock operator with Secrets.
+icon: mock
+label: "api.openshift.com/addon-mock-operator-secrets"
+enabled: true
+addonOwner: Mock <mock@redhat.com>
+quayRepo: quay.io/osd-addons/mock-operator-secrets
+installMode: OwnNamespace
+targetNamespace: mock-operator
+indexImage: quay.io/osd-addons/mock-operator-secrets-index
+namespaces:
+  - mock-operator
+namespaceLabels:
+  monitoring-key: mock
+namespaceAnnotations: {}
+ocmQuotaName: addon-mock-operator
+ocmQuotaCost: 1
+testHarness: quay.io/mock-operator/mock-operator-test-harness
+operatorName: mock-operator-secrets
+hasExternalResources: true
+metricsFederation:
+  portName: https
+  namespace: mocok-operator
+  matchNames:
+  - ALERTS
+  matchLabels:
+    kubernetes.io/app-name: mock-operator
+defaultChannel: alpha
+bundleParameters:
+  useClusterStorage: "true"
+config:
+  secrets:
+    - name: managed-secret-one
+      type: Opaque
+      vaultPath: mtsre/quay/osd-addons/secrets/mocksecret/managed-secret-one
+      version: 1
+      fields:
+        - field1
+        - field2
+    - name: pull-secret-one
+      type: kubernetes.io/dockerconfigjson
+      vaultPath: mtsre/quay/osd-addons/secrets/pull-secret-one
+      version: 2
+      fields:
+        - field3
+        - field4
+pullSecretName: pull-secret-one
+additionalCatalogSources:
+  - name: new-catalog
+    image: quay.io/osd-addons/test-operator-index@sha256:12ce3270c72134273440c477653b568980b407722366080af758b138f43861891

@@ -23,6 +23,8 @@ ADDON_WITH_INDEXIMAGE_TYPE = "with_indeximage"
 def addon_with_imageset_path():
     return Path("tests/testdata/addons/mock-operator-with-imagesets")
 
+def addon_with_metrics_federation_fields():
+    return Path("tests/testdata/addons/mock-operator-with-metrics-federation-fields")
 
 def addon_with_bundles_path():
     return Path("tests/testdata/addons/mock-operator-with-bundles")
