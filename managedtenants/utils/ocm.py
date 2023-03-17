@@ -126,7 +126,8 @@ class OcmCli:
         addon[mapped_key] = metadata.get("addOnParameters", [])
 
         for key in self.UNSUPPORTED_FIELDS_AS:
-            del addon[key]
+            if key in addon:
+                del addon[key]
 
         return addon
 
@@ -139,13 +140,15 @@ class OcmCli:
             addon[mapped_key] = imageset.get("addOnParameters", [])
 
         for key in self.UNSUPPORTED_FIELDS_AS:
-            del addon[key]
+            if key in addon:
+                del addon[key]
 
         return addon
 
     def _sanitize_addon_metadata_for_cluster_service(self, addon):
         for key in self.UNSUPPORTED_FIELDS_CS:
-            del addon[key]
+            if key in addon:
+                del addon[key]
 
         return addon
 
