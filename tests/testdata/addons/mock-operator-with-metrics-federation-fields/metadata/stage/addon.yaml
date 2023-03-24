@@ -27,6 +27,15 @@ metricsFederation:
   - ALERTS
   matchLabels:
     kubernetes.io/app-name: mock-operator
+monitoringStack:
+  enabled: true
+  resources:
+    requests:
+      cpu: 80m
+      memory: 80Mi
+    limits:
+      cpu: 100m
+      memory: 100Mi
 defaultChannel: alpha
 bundleParameters:
   useClusterStorage: "true"
