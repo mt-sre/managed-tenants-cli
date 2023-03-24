@@ -79,9 +79,8 @@ class OcmCli:
     # TODO: pop 'metrics_federation' from this list after this MR - https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/merge_requests/5194 - is merged and propagated to the fleet
     UNSUPPORTED_FIELDS_CS = ["metrics_federation", "monitoring_stack"]
 
-    # TODO: pop 'monitoring_stack' from this list after this MR - https://gitlab.cee.redhat.com/ocm/ocm-addons-service/-/merge_requests/177 - is propagated to the fleet
     # TODO: pop 'metrics_federation' from this list after this MR - https://gitlab.cee.redhat.com/ocm/ocm-addons-service/-/merge_requests/183 - is merged and propagated to the fleet
-    UNSUPPORTED_FIELDS_AS = ["metrics_federation", "monitoring_stack"]
+    UNSUPPORTED_FIELDS_AS = ["metrics_federation"]
 
     def __init__(
         self,
