@@ -209,9 +209,9 @@ properties:
     description: "Configuration parameters which will determine the underlying configuration of the MonitoringStack CR which will be created in runtime whenever the respective addon would be installed"
     additionalProperties: false
     required:
-      - exists
+      - enabled
     properties:
-      exists:
+      enabled:
         type: boolean
         description: "This denotes whether the addon requires the MonitoringStack CR to be created in runtime or not. Validation fails if it is provided as 'false' and at the same time other parameters are specified"
       resources:
