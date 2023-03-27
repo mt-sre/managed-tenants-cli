@@ -65,6 +65,7 @@ class OcmCli:
 
     IMAGESET_KEYS = {
         "indexImage": "source_image",
+        "packageImage": "package_image",
         "addOnParameters": "parameters",
         "addOnRequirements": "requirements",
         "subOperators": "sub_operators",
