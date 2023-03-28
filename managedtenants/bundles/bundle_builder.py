@@ -43,9 +43,11 @@ class BundleBuilder:
         try:
             for bundle in bundles:
                 image = Image(
-                    f"{self.docker_api.registry}/"
-                    f"{bundle.bundle_repo_name()}:"
-                    f"{bundle.version}-{hash_string}",
+                    (
+                        f"{self.docker_api.registry}/"
+                        f"{bundle.bundle_repo_name()}:"
+                        f"{bundle.version}-{hash_string}"
+                    ),
                     ssl_verify=self.ssl_verify,
                 )
                 bundle.image = image

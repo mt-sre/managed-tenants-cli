@@ -23,8 +23,12 @@ ADDON_WITH_INDEXIMAGE_TYPE = "with_indeximage"
 def addon_with_imageset_path():
     return Path("tests/testdata/addons/mock-operator-with-imagesets")
 
+
 def addon_with_metrics_federation_fields():
-    return Path("tests/testdata/addons/mock-operator-with-metrics-federation-fields")
+    return Path(
+        "tests/testdata/addons/mock-operator-with-metrics-federation-fields"
+    )
+
 
 def addon_with_bundles_path():
     return Path("tests/testdata/addons/mock-operator-with-bundles")
@@ -120,9 +124,9 @@ def addon_without_imageset_and_only_required_attrs():
     addon = Addon(addon_path, "stage")
     addon.imageset = None
     del addon.metadata["addonImageSetVersion"]
-    addon.metadata[
-        "indexImage"
-    ] = "quay.io/osd-addons/mock-operator-index@sha256:..."
+    addon.metadata["indexImage"] = (
+        "quay.io/osd-addons/mock-operator-index@sha256:..."
+    )
     return addon
 
 
