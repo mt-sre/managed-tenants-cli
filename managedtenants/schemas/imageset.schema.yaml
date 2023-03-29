@@ -11,6 +11,10 @@ properties:
     type: string
     pattern: ^quay\.io/osd-addons/[a-z-]+
     description: "The url for the index image."
+  packageImage:
+    type: string
+    pattern: ^quay\.io/osd-addons/[a-z-]+
+    description: "The url for the package image."
   relatedImages:
     type: array
     description: "A list of image urls of related operators."
