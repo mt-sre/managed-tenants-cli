@@ -38,13 +38,16 @@ class ImageSetCreator:
             self.log.error(e)
             raise ImageSetCreatorError(e)
 
-    def create(self, addon_bundles, index_image, with_imagesets=False):
+    def create(
+        self, addon_bundles, index_image, package_image, with_imagesets=False
+    ):
         """
         Post a merge request to managed-tenants for all addons and all envs
         found in the config.yaml file.
 
         :param addon_bundles: AddonBundles for addon.
         :param index_image: Built and Pushed index_image for addon.
+        :param package_image: Built and Pushed package_image for addon.
         :param with_imagesets: Enable/Disable imageset feature.
         """
         new_branch = addon_bundles.get_unique_name()
@@ -58,7 +61,9 @@ class ImageSetCreator:
         self._ensure_branch(new_branch)
 
         if with_imagesets:
-            imagesets = addon_bundles.get_all_imagesets(index_image)
+            imagesets = addon_bundles.get_all_imagesets(
+                index_image, package_image
+            )
             self._update_imagesets(new_branch, imagesets)
         else:
             metadata_paths = addon_bundles.get_all_metadata_paths()

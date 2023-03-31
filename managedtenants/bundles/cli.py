@@ -6,6 +6,7 @@ import urllib3
 from sretoolbox.utils.logger import get_text_logger
 
 from managedtenants.bundles.addon_bundles import AddonBundles
+from managedtenants.bundles.addon_package import AddonPackage
 from managedtenants.bundles.bundle_builder import BundleBuilder
 from managedtenants.bundles.docker_api import DockerAPI
 from managedtenants.bundles.exceptions import MtbundlesCLIError
@@ -48,11 +49,24 @@ class MtbundlesCLI:
 
             self.bundle_builder.build_and_push_all(bundles)
             index_image = self.index_builder.build_and_push(bundles)
+
+            package_image = None
+            for fd in addon_dir.iterdir():
+                if fd.name == "package":
+                    addon_package = AddonPackage(
+                        addon_dir / "package", debug=self.args.debug
+                    )
+                    package_image = self.package_builder.build_and_push(
+                        addon_package
+                    )
+                    continue
+
             imageset_enabled_addons = self.args.imageset_enabled_addons
             if self.args.enable_gitlab:
                 self.imageset_creator.create(
                     addon_bundles,
                     index_image,
+                    package_image,
                     with_imagesets=addon_dir.name in imageset_enabled_addons,
                 )
 
