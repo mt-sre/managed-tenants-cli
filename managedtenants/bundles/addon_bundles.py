@@ -26,12 +26,15 @@ class AddonBundles:
             │   ├── 1.9.0
             └── nfd-operator
                 └── 4.8.0
+            └── VERSION
 
     Lexicography:
       - "gpu-operator" is the main operator
       - "nfd-operator" is a dependency operator
       - "1.9.0/" is the bundle associated with the "gpu-operator"
       - "4.8.0/" is the bundle associated with the "nfd-operator"
+      - "VERSION" is optional and when not provided, the max
+         main bundle version is used
 
     Notes:
       - each bundle directory must have a valid semver name
@@ -145,8 +148,14 @@ class AddonBundles:
         """
         Returns the latest version amongst the main_bundles.
         """
-        all_versions = [bundle.version for bundle in self.main_bundle]
-        return max(all_versions, key=semver.VersionInfo.parse)
+        version_file = self.root_dir / "VERSION"
+        if version_file.is_file():
+            with open(version_file, encoding="utf-8") as fd:
+                version = semver.VersionInfo.parse(fd.read())
+        else:
+            all_versions = [bundle.version for bundle in self.main_bundle]
+            version = max(all_versions, key=semver.VersionInfo.parse)
+        return version
 
     def get_all_bundles(self):
         """
