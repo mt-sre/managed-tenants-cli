@@ -13,7 +13,7 @@ PyYAML = "5.4.1"
 pre-commit = "3.2.1"
 # Please keep the following in-sync /w .pre-commit-config.yaml
 flake8 = "6.0.0"
-isort = "5.11.4"
+isort = "5.12.0"
 pylint = "2.15.10"
 black = "22.12.0"
 yamllint = "1.29.0"
