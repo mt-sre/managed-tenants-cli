@@ -137,6 +137,7 @@ def test_additional_ctlg_src_accessor_method():
         addon.get_additional_catalog_srcs() == sample_additional_catalog_srcs()
     )
 
+
 def test_metrics_federation_loading():
     addon = Addon(addon_with_metrics_federation_fields(), "stage")
     metricsFederationMetadata = addon.metadata.get("metricsFederation", None)
@@ -146,6 +147,7 @@ def test_metrics_federation_loading():
     assert matchLabels is not None
 
     assert matchLabels.get("kubernetes.io/app-name", "") == "mock-operator"
+
 
 def assert_exceptions_on_addon_initialization(imageset_version, error_to_raise):
     required_metadata = addon_metadata_with_imageset_version(imageset_version)

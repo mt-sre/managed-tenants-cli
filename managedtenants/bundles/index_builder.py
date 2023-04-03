@@ -72,9 +72,11 @@ class IndexBuilder:
             "--bundles",
             ",".join(
                 [
-                    bundle.image.url_tag
-                    if self.build_with == "tag"
-                    else bundle.image.url_digest
+                    (
+                        bundle.image.url_tag
+                        if self.build_with == "tag"
+                        else bundle.image.url_digest
+                    )
                     for bundle in bundles
                 ]
             ),

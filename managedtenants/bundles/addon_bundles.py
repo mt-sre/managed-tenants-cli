@@ -23,15 +23,22 @@ class AddonBundles:
     Example directory structure:
         gpu-operator
             ├── main
-            │   ├── 1.9.0
-            └── nfd-operator
-                └── 4.8.0
+            │   └── 1.9.0
+            ├── nfd-operator
+            │   └── 4.8.0
+            ├── package
+            │   ├── manifest.yaml
+            │   └── deployment.yaml
+            └── VERSION
 
     Lexicography:
       - "gpu-operator" is the main operator
       - "nfd-operator" is a dependency operator
       - "1.9.0/" is the bundle associated with the "gpu-operator"
       - "4.8.0/" is the bundle associated with the "nfd-operator"
+      - "package" is the dir for Package Image artifacts
+      - "VERSION" is optional and when not provided, the max
+         main bundle version is used
 
     Notes:
       - each bundle directory must have a valid semver name
@@ -64,8 +71,11 @@ class AddonBundles:
     def _parse_dependency_bundles(self):
         res = []
         for operator_dir in get_subdirs(self.root_dir):
-            if operator_dir.name != "main":
-                res.extend(self._parse_operator_bundle(operator_dir))
+            if operator_dir.name == "main":
+                continue
+            if operator_dir.name == "package":
+                continue
+            res.extend(self._parse_operator_bundle(operator_dir))
         return res
 
     def _parse_operator_bundle(self, operator_dir):
@@ -145,8 +155,14 @@ class AddonBundles:
         """
         Returns the latest version amongst the main_bundles.
         """
-        all_versions = [bundle.version for bundle in self.main_bundle]
-        return max(all_versions, key=semver.VersionInfo.parse)
+        version_file = self.root_dir / "VERSION"
+        if version_file.is_file():
+            with open(version_file, encoding="utf-8") as fd:
+                version = semver.VersionInfo.parse(fd.read())
+        else:
+            all_versions = [bundle.version for bundle in self.main_bundle]
+            version = max(all_versions, key=semver.VersionInfo.parse)
+        return version
 
     def get_all_bundles(self):
         """
@@ -154,11 +170,12 @@ class AddonBundles:
         """
         return self.main_bundle + self.dependency_bundles
 
-    def get_all_imagesets(self, index_image):
+    def get_all_imagesets(self, index_image, package_image):
         """
         Produce all imagesets for a given index_image.
 
-        :param index_image_str: representation of an index_image
+        :param index_image: representation of an index_image
+        :param package_image: representation of a package_image
         """
         res = []
 
@@ -172,6 +189,7 @@ class AddonBundles:
                     env=env,
                     version=version,
                     index_image=index_image,
+                    package_image=package_image,
                     ocm_config=ocm_config,
                 )
                 res.append(imageset)

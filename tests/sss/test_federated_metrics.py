@@ -8,6 +8,7 @@ import tests.testutils.strategies as custom_strategies
 from managedtenants.core.addon_manager import AddonManager
 from managedtenants.core.addons_loader.sss import Sss
 
+
 @given(data=hypothesis_strategies.data())
 def test_metrics_federation_v1(data):
     env = data.draw(custom_strategies.environment())

@@ -66,6 +66,17 @@ class DockerAPI:
             labels=bundle.annotations,
         )
 
+    def build_package(self, addon_package):
+        dockerfile = """
+        FROM scratch
+        ADD . /package
+        """
+        return self._build(
+            path=addon_package.path,
+            dockerfile=dockerfile,
+            tag=addon_package.image.url_tag,
+        )
+
     def _build(self, path, dockerfile, tag, labels=None):
         """
         Build a docker image using in-memory dockerfile.

@@ -63,7 +63,7 @@ class Manifest:
 
         raise ManifestLoadError(
             f"{self.path}: installMode "
-            f'"{self._metadata["installMode"]}" '
+            f"\"{self._metadata['installMode']}\" "
             "must be supported by the "
             "ClusterServiceVersion"
         )
