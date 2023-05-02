@@ -25,7 +25,7 @@ class PackageBuilder:
         self.docker_api = docker_api
         self.build_with = build_with
         self.kubectl_package = KubectlPackage(
-            version="1.4.0", download_path="/tmp"
+            version="1.6.4", download_path="/tmp"
         )
         self.log = get_text_logger(
             "managedtenants-package-builder",
