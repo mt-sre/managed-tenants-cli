@@ -63,7 +63,6 @@ setup(
         "python-gitlab~=2.6",
         "checksumdir~=1.2",
         "docker ~=5.0.3",
-        "urllib3>=1.21.1,<3",
     ],
     entry_points={
         "console_scripts": [
