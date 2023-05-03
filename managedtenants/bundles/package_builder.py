@@ -45,8 +45,7 @@ class PackageBuilder:
         addon_package.image = package_image
 
         command = [
-            "tree",
-            "--cluster",
+            "validate",
             f"{addon_package.path.resolve()}",
         ]
         self.log.info(f'Validating package image "{package_image.url_tag}"')
