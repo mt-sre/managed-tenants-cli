@@ -57,7 +57,7 @@ setup(
         "markupsafe~=2.0.1",
         "PyYAML~=5.4.1",
         "jsonschema~=4.7",
-        "requests~=2.23",
+        "requests<2.29.0",
         "sretoolbox~=2.4",
         "semver~=2.13.0",
         "python-gitlab~=2.6",
