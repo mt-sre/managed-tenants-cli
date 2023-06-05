@@ -584,7 +584,7 @@ class OcmCli:
         # the metadata file.
         for index, param in enumerate(params):
             param["order"] = index + 1
-        return {"items": params}
+        return params
 
     # Maps a secret from the addon metadata json to the one ocm expects.
     @staticmethod

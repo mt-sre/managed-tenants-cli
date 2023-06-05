@@ -109,12 +109,10 @@ def test_ocm_addon_parameters(addon_str, expected_result, request):
 
     params = ocm_addon.get("parameters")
     assert params is not None
-    items = params.get("items")
-    assert items is not None
 
-    assert len(items) == len(expected_result)
+    assert len(params) == len(expected_result)
 
-    for idx, item in enumerate(items):
+    for idx, item in enumerate(params):
         assert item["id"] == expected_result[idx]["id"]
 
 
@@ -200,7 +198,7 @@ def test_ocm_addon_secrets(addon_str, expected_result, request):
                     "add_on_environment_variables": [],
                     "add_on_secret_propagations": [],
                 },
-                "parameters": {"items": []},
+                "parameters": [],
                 "requirements": [],
                 "sub_operators": [],
             },
@@ -212,7 +210,7 @@ def test_ocm_addon_secrets(addon_str, expected_result, request):
                     "add_on_environment_variables": [],
                     "add_on_secret_propagations": [],
                 },
-                "parameters": {"items": []},
+                "parameters": [],
                 "requirements": [],
                 "sub_operators": [],
             },
