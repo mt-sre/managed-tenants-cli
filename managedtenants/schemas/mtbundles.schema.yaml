@@ -64,5 +64,6 @@ properties:
             enum:
               - integration
               - stage
+              - production
 required:
   - addons
