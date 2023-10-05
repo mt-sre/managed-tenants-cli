@@ -60,7 +60,7 @@ setup(
         "requests<2.29.0",
         "sretoolbox~=2.4",
         "semver~=2.13.0",
-        "python-gitlab~=2.6",
+        "python-gitlab>=2.6,<4.0",
         "checksumdir~=1.2",
         "docker ~=5.0.3",
     ],
