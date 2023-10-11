@@ -124,9 +124,9 @@ def addon_without_imageset_and_only_required_attrs():
     addon = Addon(addon_path, "stage")
     addon.imageset = None
     del addon.metadata["addonImageSetVersion"]
-    addon.metadata["indexImage"] = (
-        "quay.io/osd-addons/mock-operator-index@sha256:..."
-    )
+    addon.metadata[
+        "indexImage"
+    ] = "quay.io/osd-addons/mock-operator-index@sha256:..."
     return addon
 
 

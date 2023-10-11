@@ -11,6 +11,8 @@
 
 - **`indexImage`** *(string)*: The url for the index image.
 
+- **`packageImage`** *(string)*: The url for the package image.
+
 - **`relatedImages`** *(array)*: A list of image urls of related operators.
 
   - **Items** *(string)*

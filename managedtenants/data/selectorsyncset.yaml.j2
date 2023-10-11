@@ -155,9 +155,7 @@ items:
         {% endif %}
 {% endif %}
 
-{% if ADDON.metadata['manualInstallPlanApproval'] is defined and ADDON.metadata['manualInstallPlanApproval'] %}
-        installPlanApproval: Manual
-{% endif %}
+
 {% if ADDON.metadata['startingCSV'] is defined %}
         startingCSV: {{ADDON.metadata['startingCSV']}}
 {% endif %}
