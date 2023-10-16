@@ -71,8 +71,6 @@ properties:
       - "rollback step 2 - selectorsyncset"
       - "rollback step 3 - reset addon migration"
     description: "The step currently in consideration in the process of migrating the addon to SyncSet."
-  manualInstallPlanApproval:
-    type: boolean
   targetNamespace:
     type: string
     pattern: ^[A-Za-z0-9][A-Za-z0-9-]{0,60}[A-Za-z0-9]$

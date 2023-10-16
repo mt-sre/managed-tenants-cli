@@ -35,4 +35,4 @@
 
     - **`environments`** *(array)*: List of all environments in managed-tenants to be upgraded by automated MRs. Production has to be upgraded manually.
 
-      - **Items** *(string)*: Must be one of: `['integration', 'stage']`.
+      - **Items** *(string)*: Must be one of: `['integration', 'stage', 'production']`.
