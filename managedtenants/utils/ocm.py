@@ -123,7 +123,7 @@ class OcmCli:
 
     def _sanitize_addon_metadata_for_addons_service(self, addon, metadata):
         mapped_key = self.IMAGESET_KEYS["addOnParameters"]
-        addon[mapped_key] = metadata.get("addOnParameters", [])
+        addon[mapped_key] = {"items": metadata.get("addOnParameters", [])}
 
         for key in self.UNSUPPORTED_FIELDS_AS:
             if key in addon:
@@ -135,9 +135,9 @@ class OcmCli:
         mapped_key = self.IMAGESET_KEYS["addOnParameters"]
         # This will remove order attribute in addon.
         if imageset.get("addOnParameters") is None:
-            addon[mapped_key] = metadata.get("addOnParameters", [])
+            addon[mapped_key] = {"items": metadata.get("addOnParameters", [])}
         else:
-            addon[mapped_key] = imageset.get("addOnParameters", [])
+            addon[mapped_key] = {"items": imageset.get("addOnParameters", [])}
 
         for key in self.UNSUPPORTED_FIELDS_AS:
             if key in addon:
