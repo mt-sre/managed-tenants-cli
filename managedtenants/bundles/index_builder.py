@@ -67,7 +67,7 @@ class IndexBuilder:
             "--binary-image",
             # Custom base image based on UBI, OPM 1.24.0
             # https://github.com/mt-sre/containers/tree/main/opm-ubi
-            "quay.io/mtsre/opm-ubi@sha256:4f1d7cc3d3399caaaba4716574fcbac74f5d213cc8d45a4bada0987263e74470",  # noqa: 501
+            "quay.io/mtsre/opm-ubi@sha256:b874c8814225383cea1c617245d84c95bf3b94622cac8373d2e791c1fcb679c4",  # noqa: 501
             "--permissive",
             "--bundles",
             ",".join(
