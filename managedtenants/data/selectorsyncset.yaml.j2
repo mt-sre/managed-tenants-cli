@@ -305,6 +305,11 @@ items:
     pagerdutyApiKeySecretRef:
       name: pagerduty-api-key
       namespace: pagerduty-operator
+    serviceOrchestration:
+      enabled: "true"
+      ruleConfigConfigMapRef:
+        name: osd-serviceorchestration
+        namespace: pagerduty-operator
     clusterDeploymentSelector:
       matchLabels:
           {{ADDON.metadata['label']}}: "true"
