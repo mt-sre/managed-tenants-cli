@@ -120,6 +120,7 @@ class MtbundlesCLI:
             dry_run=self.args.dry_run,
             debug=self.args.debug,
             build_with=self.args.build_with,
+            base_image=self.args.base_index_image,
         )
 
     def _init_package_builder(self):

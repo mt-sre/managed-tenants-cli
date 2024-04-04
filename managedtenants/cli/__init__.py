@@ -123,7 +123,7 @@ class Cli:
                 "managedtenants --addons-dir ADDONS_DIR [--addon-name"
                 " ADDON_NAME] [--dry-run] [--debug]"
                 " bundles [-h] [--build-with {tag,digest}] [--quay-org QUAY_ORG"
-                "] [--force-push] [--enable-gitlab]"
+                "] [--force-push] [--enable-gitlab] [--base-index-image IMAGE]"
             ),
         )
         bundles_parser.add_argument(
@@ -170,6 +170,13 @@ class Cli:
             type=str,
             default=["reference-addon", "dbaas-operator"],
             help="List of addons for which imageset has to be created",
+        )
+        bundles_parser.add_argument(
+            "--base-index-image",
+            type=str,
+            # pylint: disable=line-too-long
+            default="quay.io/mtsre/opm-ubi@sha256:fcaa5e9cb99bf6df239e63b3412bce972937aeee9b7c74862dec07b048b7c569",  # noqa: E501
+            help="Base image for OLM indexes",
         )
 
         self.args = parser.parse_args()

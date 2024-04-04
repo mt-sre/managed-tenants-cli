@@ -12,9 +12,11 @@ from managedtenants.utils.git import get_short_hash
 
 
 class IndexBuilder:
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         docker_api,
+        base_image,
         dry_run=False,
         debug=False,
         build_with="digest",
@@ -26,6 +28,7 @@ class IndexBuilder:
             "managedtenants-index-builder",
             level=logging.DEBUG if debug else logging.INFO,
         )
+        self.base_image = base_image
 
     def build_and_push(
         self, bundles, hash_string=get_short_hash(), skip_validation=False
@@ -58,7 +61,6 @@ class IndexBuilder:
             f"Index image contains {len(bundles)} bundles: {bundles}."
         )
 
-        # pylint: disable=line-too-long
         cmd = [
             "index",
             "--container-tool",
@@ -67,7 +69,7 @@ class IndexBuilder:
             "--binary-image",
             # Custom base image based on UBI, OPM 1.24.0
             # https://github.com/mt-sre/containers/tree/main/opm-ubi
-            "quay.io/mtsre/opm-ubi@sha256:b874c8814225383cea1c617245d84c95bf3b94622cac8373d2e791c1fcb679c4",  # noqa: 501
+            self.base_image,
             "--permissive",
             "--bundles",
             ",".join(
