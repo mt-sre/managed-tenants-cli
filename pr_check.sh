@@ -6,9 +6,10 @@ IMAGE_TEST=managedtenants-cli
 
 docker build -t ${IMAGE_TEST} -f Dockerfile.test .
 
-systemctl --user start docker.socket
+systemctl --user start podman.socket
 
 ls -l
+ls -l "/run/user/$(id -u)/"
 
 docker_run_args=(
     --rm
