@@ -8,12 +8,9 @@ docker build -t ${IMAGE_TEST} -f Dockerfile.test .
 
 systemctl --user start podman.socket
 
-ls -l
-ls -l "/run/user/$(id -u)/"
-
 docker_run_args=(
     --rm
-    -v "/run/user/$(id -u)/docker.sock:/var/run/docker.sock"
+    -v "/run/user/$(id -u)/podman/podman.sock:/var/run/docker.sock"
     --net "host"
 )
 
