@@ -10,7 +10,8 @@ systemctl --user start podman.socket
 
 docker_run_args=(
     --rm
-    -u "$(id -u):$(id -g)"
+    # -u "$(id -u):$(id -g)"
+    --security-opt label=disable 
     -v "/run/user/$(id -u)/podman/podman.sock:/var/run/docker.sock"
     --net "host"
 )
