@@ -10,7 +10,7 @@ systemctl --user start podman.socket
 
 docker_run_args=(
     --rm
-    -v "/run/user/$(id -u)/podman/podman.sock:/var/run/docker.sock"
+    -v "/run/user/$(id -u)/podman/podman.sock:/var/run/docker.sock:z"
     --net "host"
 )
 
