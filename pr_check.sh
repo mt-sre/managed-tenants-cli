@@ -6,6 +6,10 @@ IMAGE_TEST=managedtenants-cli
 
 docker build -t ${IMAGE_TEST} -f Dockerfile.test .
 
+systemctl --user start docker.socket
+
+ls -l
+
 docker_run_args=(
     --rm
     -v "/run/user/$(id -u)/docker.sock:/var/run/docker.sock"
