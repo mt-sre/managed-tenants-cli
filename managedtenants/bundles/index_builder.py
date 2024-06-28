@@ -64,7 +64,7 @@ class IndexBuilder:
         cmd = [
             "index",
             "--container-tool",
-            "docker",
+            "podman",
             "add",
             "--binary-image",
             # Custom base image based on UBI, OPM 1.24.0
