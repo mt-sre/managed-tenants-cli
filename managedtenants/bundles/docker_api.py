@@ -282,7 +282,9 @@ class PodmanAPI(ContainerRuntime):
 
         :raise DockerError: on a build error or if the built image has Size 0.
         """
-        with open(path / 'Containerfile', 'w+', encoding='utf-8') as f:
+        temp_file = path / "Containerfile"
+
+        with open(temp_file, "w+", encoding="utf-8") as f:
             f.write(dockerfile)
 
         try:
@@ -303,7 +305,7 @@ class PodmanAPI(ContainerRuntime):
                 f"Failed to build image for path {path}, got {e}."
             )
         finally:
-            os.remove(path / "Containerfile")
+            os.remove(temp_file)
 
     def push(self, image, ensure_repo=True):
         """
