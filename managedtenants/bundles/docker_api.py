@@ -57,11 +57,9 @@ class ContainerRuntime(abc.ABC):
             )
             creds = []
             with open(creds_file, "r", encoding="utf-8") as f:
-                creds = base64.b64decode(
-                    json.loads(base64.b64decode(f.read()))["auths"]["quay.io"][
-                        "auth"
-                    ].split(b":")
-                )
+                creds = json.loads(base64.b64decode(f.read()))["auths"][
+                    "quay.io"
+                ]["auth"].split(b":")
 
             return PodmanAPI(
                 registry=registry,
