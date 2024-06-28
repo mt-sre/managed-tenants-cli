@@ -4,13 +4,17 @@ set -exvo pipefail -o nounset
 
 IMAGE_TEST=managedtenants-cli
 
-docker build -t ${IMAGE_TEST} -f Dockerfile.test .
+podman build -t ${IMAGE_TEST} -f Dockerfile.test .
 
-docker_run_args=(
+systemctl --user start podman.socket
+
+podman_run_args=(
     --rm
-    -v "/var/run/docker.sock:/var/run/docker.sock"
+    -e "CONTAINER_HOST=unix:///var/run/podman.sock"
+    -e "CONTAINER_RUNTIME=podman"
+    --security-opt label=disable
+    -v "${XDG_RUNTIME_DIR}/podman/podman.sock:/var/run/podman.sock"
     --net "host"
 )
 
-
-docker run "${docker_run_args[@]}" "${IMAGE_TEST}" check test
+podman run "${podman_run_args[@]}" "${IMAGE_TEST}" check test

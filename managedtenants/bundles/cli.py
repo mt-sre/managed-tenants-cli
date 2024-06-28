@@ -8,7 +8,7 @@ from sretoolbox.utils.logger import get_text_logger
 from managedtenants.bundles.addon_bundles import AddonBundles
 from managedtenants.bundles.addon_package import AddonPackage
 from managedtenants.bundles.bundle_builder import BundleBuilder
-from managedtenants.bundles.docker_api import DockerAPI
+from managedtenants.bundles.docker_api import ContainerRuntime
 from managedtenants.bundles.exceptions import MtbundlesCLIError
 from managedtenants.bundles.imageset_creator import ImageSetCreator
 from managedtenants.bundles.index_builder import IndexBuilder
@@ -99,7 +99,7 @@ class MtbundlesCLI:
         return list(self.addons_dir.iterdir())
 
     def _init_docker_api(self):
-        return DockerAPI(
+        return ContainerRuntime.from_env(
             registry=f"quay.io/{self.args.quay_org}",
             quay_org=self.args.quay_org,
             dockercfg_path=os.environ.get("DOCKER_CONF"),

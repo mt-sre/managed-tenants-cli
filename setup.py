@@ -63,6 +63,7 @@ setup(
         "python-gitlab~=2.6",
         "checksumdir~=1.2",
         "docker ~=5.0.3",
+        "podman~=5.0.0",
     ],
     entry_points={
         "console_scripts": [
