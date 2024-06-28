@@ -57,11 +57,11 @@ check: pylint
 
 MINIMAL_IMAGE := registry.access.redhat.com/ubi8/ubi-minimal@sha256:e83a3146aa8d34dccfb99097aa79a3914327942337890aa6f73911996a80ebb8
 test:
-	docker container create --name storageContainer -v sharedCertsVol:/certs $(MINIMAL_IMAGE)
-	docker cp ./managedtenants/bundles/certs/. storageContainer:/certs
-	docker rm storageContainer
+	podman container create --name storageContainer -v sharedCertsVol:/certs $(MINIMAL_IMAGE)
+	podman cp ./managedtenants/bundles/certs/. storageContainer:/certs
+	podman rm storageContainer
 	pipenv run pytest --cache-clear -v tests/
-	docker volume rm sharedCertsVol
+	podman volume rm sharedCertsVol
 
 release:
 	python -m pip install twine wheel
@@ -85,11 +85,11 @@ pre-commit-autoupdate: develop
 
 DEV_IMAGE := managedtenants_cli:dev
 docker-build:
-	docker build -t $(DEV_IMAGE) -f Dockerfile.test .
+	podman build -t $(DEV_IMAGE) -f Dockerfile.test .
 
 CMD := check
 docker-run: docker-build
-	docker run --rm -it --name managedtenants_cli-dev -v "/var/run/docker.sock:/var/run/docker.sock" $(DEV_IMAGE) $(CMD)
+	podman run --rm -it --name managedtenants_cli-dev -v "/var/run/docker.sock:/var/run/docker.sock" $(DEV_IMAGE) $(CMD)
 
 clean:
 	pipenv --rm || true
