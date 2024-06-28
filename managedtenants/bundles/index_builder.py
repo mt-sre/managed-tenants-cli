@@ -1,4 +1,5 @@
 import logging
+import os
 import sqlite3
 import subprocess
 import tempfile
@@ -64,7 +65,7 @@ class IndexBuilder:
         cmd = [
             "index",
             "--container-tool",
-            "docker",
+            os.getenv("CONTAINER_RUNTIME") or "docker",
             "add",
             "--binary-image",
             # Custom base image based on UBI, OPM 1.24.0
