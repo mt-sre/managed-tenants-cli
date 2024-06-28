@@ -1,5 +1,7 @@
 import abc
+import base64
 import io
+import json
 import logging
 import os
 import tarfile
@@ -28,13 +30,11 @@ class ContainerRuntime(abc.ABC):
     def __init__(
         self,
         registry,
-        dockercfg_path,
         quay_org,
         debug,
         force_push,
     ):
         self.registry = registry
-        self.dockercfg_path = dockercfg_path
         self.force_push = force_push
         self.log = get_text_logger(
             "managedtenants-docker",
@@ -46,15 +46,27 @@ class ContainerRuntime(abc.ABC):
     @staticmethod
     def from_env(
         registry,
-        dockercfg_path,
         quay_org,
         debug=False,
         force_push=False,
+        dockercfg_path="",
     ):
         if os.getenv("CONTAINER_RUNTIME") == "podman":
+            creds_file = (
+                os.getenv("REGISTRY_AUTH_FILE") or ".docker/config.json"
+            )
+            creds = []
+            with open(creds_file, "r", encoding="utf-8") as f:
+                creds = base64.b64decode(
+                    json.loads(base64.b64decode(f.read()))["auths"]["quay.io"][
+                        "auth"
+                    ].split(b":")
+                )
+
             return PodmanAPI(
                 registry=registry,
-                dockercfg_path=dockercfg_path,
+                user=creds[0].decode("utf-8"),
+                password=creds[1].decode("utf-8"),
                 quay_org=quay_org,
                 debug=debug,
                 force_push=force_push,
@@ -150,7 +162,8 @@ class DockerAPI(ContainerRuntime):
         debug,
         force_push,
     ):
-        super().__init__(registry, dockercfg_path, quay_org, debug, force_push)
+        super().__init__(registry, quay_org, debug, force_push)
+        self.dockercfg_path = dockercfg_path
         self.client = docker.from_env()
 
     def _build(self, path, dockerfile, tag, labels=None):
@@ -263,12 +276,15 @@ class PodmanAPI(ContainerRuntime):
     def __init__(
         self,
         registry,
-        dockercfg_path,
+        user,
+        password,
         quay_org,
         debug,
         force_push,
     ):
-        super().__init__(registry, dockercfg_path, quay_org, debug, force_push)
+        super().__init__(registry, quay_org, debug, force_push)
+        self._user = user
+        self._password = password
         self.client = PodmanClient.from_env()
 
     def _build(self, path, dockerfile, tag, labels=None):
@@ -316,17 +332,19 @@ class PodmanAPI(ContainerRuntime):
         :raise DockerError: failed to push image.
         """
         try:
-            # docker-py add auth headers from cred store
-            # https://github.com/docker/docker-py/blob/a48a5a9647761406d66e8271f19fab7fa0c5f582/docker/utils/config.py#L33-L38
-            os.environ["DOCKER_CONFIG"] = str(self.dockercfg_path)
-
             if self._is_quay_registry() and ensure_repo:
                 self.log.info(f"Ensuring quay repo: {image.image}.")
                 self.quay_api.ensure_repo(image.image)
 
             if not self._image_exists(image) or self.force_push:
                 response = self.client.images.push(
-                    image.url_tag, stream=True, decode=True
+                    image.url_tag,
+                    auth_config={
+                        "username": self._user,
+                        "password": self._password,
+                    },
+                    stream=True,
+                    decode=True,
                 )
                 for log in response:
                     self.log.debug(log)
