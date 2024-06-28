@@ -282,7 +282,7 @@ class PodmanAPI(ContainerRuntime):
 
         :raise DockerError: on a build error or if the built image has Size 0.
         """
-        with open(path / "Containerfile", encoding="utf-8") as f:
+        with open(path / 'Containerfile', 'w+', encoding='utf-8') as f:
             f.write(dockerfile)
 
         try:
