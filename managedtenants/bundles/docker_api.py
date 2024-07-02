@@ -49,22 +49,21 @@ class ContainerRuntime(abc.ABC):
         quay_org,
         debug=False,
         force_push=False,
-        dockercfg_path="",
     ):
         if os.getenv("CONTAINER_RUNTIME") == "podman":
-            creds_file = (
-                os.getenv("REGISTRY_AUTH_FILE") or ".docker/config.json"
-            )
-            creds = []
-            with open(creds_file, "r", encoding="utf-8") as f:
-                creds = base64.b64decode(
-                    json.loads(f.read())["auths"]["quay.io"]["auth"]
-                ).split(b":")
+            try:
+                credentials = _get_credentials(
+                    os.getenv(
+                        "REGISTRY_AUTH_FILE", default=".docker/config.json"
+                    )
+                )
+            except Exception as e:
+                raise DockerError(f"Failed to get credentials: {e}")
 
             return PodmanAPI(
                 registry=registry,
-                user=creds[0].decode("utf-8"),
-                password=creds[1].decode("utf-8"),
+                user=credentials["username"],
+                password=credentials["password"],
                 quay_org=quay_org,
                 debug=debug,
                 force_push=force_push,
@@ -72,7 +71,7 @@ class ContainerRuntime(abc.ABC):
 
         return DockerAPI(
             registry=registry,
-            dockercfg_path=dockercfg_path,
+            dockercfg_path=os.environ.get("DOCKER_CONF"),
             quay_org=quay_org,
             debug=debug,
             force_push=force_push,
@@ -135,6 +134,18 @@ class ContainerRuntime(abc.ABC):
 
     def _is_quay_registry(self):
         return self.registry.startswith("quay.io")
+
+
+def _get_credentials(path):
+    with open(path, "r", encoding="utf-8") as f:
+        creds = base64.b64decode(
+            json.loads(f.read())["auths"]["quay.io"]["auth"]
+        ).split(b":")
+
+    return {
+        "username": creds[0].decode("utf-8"),
+        "password": creds[1].decode("utf-8"),
+    }
 
 
 class DockerAPI(ContainerRuntime):

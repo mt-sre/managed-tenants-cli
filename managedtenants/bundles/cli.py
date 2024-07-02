@@ -1,5 +1,4 @@
 import logging
-import os
 from pathlib import Path
 
 import urllib3
@@ -102,7 +101,6 @@ class MtbundlesCLI:
         return ContainerRuntime.from_env(
             registry=f"quay.io/{self.args.quay_org}",
             quay_org=self.args.quay_org,
-            dockercfg_path=os.environ.get("DOCKER_CONF"),
             debug=self.args.debug,
             force_push=self.args.force_push,
         )
